@@ -9,13 +9,13 @@ router.use(AuthController.protect);
 
 router
   .route('/:id')
-  .get(AuthController.requirePermissions('year:view'), YearController.getYear)
+  .get(AuthController.requirePermission('year:view'), YearController.getYear)
   .patch(
-    AuthController.requirePermissions('year:update'),
+    AuthController.requirePermission('year:update'),
     YearController.updateYear,
   )
   .delete(
-    AuthController.requirePermissions('year:delete'),
+    AuthController.requirePermission('year:delete'),
     YearController.deleteYear,
   );
 
@@ -23,11 +23,11 @@ router
 router
   .route('/:yearId/modules/')
   .get(
-    AuthController.requirePermissions('module:view'),
+    AuthController.requirePermission('module:view'),
     ModuleController.getAllModules,
   )
   .post(
-    AuthController.requirePermissions('module:create'),
+    AuthController.requirePermission('module:create'),
     ModuleController.createModule,
   );
 

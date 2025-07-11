@@ -7,13 +7,13 @@ const router = Router();
 router.use(AuthController.protect);
 router
   .route('/:id')
-  .get(AuthController.requirePermissions('quiz:view'), QuizController.getQuiz)
+  .get(AuthController.requirePermission('quiz:view'), QuizController.getQuiz)
   .patch(
-    AuthController.requirePermissions('quiz:update'),
+    AuthController.requirePermission('quiz:update'),
     QuizController.updateQuiz,
   )
   .delete(
-    AuthController.requirePermissions('quiz:delete'),
+    AuthController.requirePermission('quiz:delete'),
     QuizController.deleteQuiz,
   );
 

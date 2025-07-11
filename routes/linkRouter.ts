@@ -9,15 +9,15 @@ router.use(AuthController.protect);
 router
   .route('/:id')
   .get(
-    AuthController.requirePermissions('lecture:view'),
+    AuthController.requirePermission('lecture:view'),
     LectureController.getLecture,
   )
   .patch(
-    AuthController.requirePermissions('lecture:update'),
+    AuthController.requirePermission('lecture:update'),
     LectureController.updateLecture,
   )
   .delete(
-    AuthController.requirePermissions('lecture:delete'),
+    AuthController.requirePermission('lecture:delete'),
     LectureController.deleteLecture,
   );
 
@@ -26,11 +26,11 @@ router
 router
   .route('/:lectureId/quizzes')
   .get(
-    AuthController.requirePermissions('quiz:view'),
+    AuthController.requirePermission('quiz:view'),
     QuizController.getAllQuizzes,
   )
   .post(
-    AuthController.requirePermissions('quiz:create'),
+    AuthController.requirePermission('quiz:create'),
     QuizController.createQuiz,
   );
 

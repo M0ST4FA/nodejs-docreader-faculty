@@ -11,7 +11,7 @@ router.use(AuthController.protect);
 router.get('/me', UserController.getMe, UserController.getUser);
 router.patch(
   '/updateMe',
-  AuthController.requirePermissions('user:update_self'),
+  AuthController.requirePermission('user:update_self'),
   UserController.getMe,
   UserController.updateUser,
 );
@@ -21,26 +21,26 @@ router.delete('/deleteMe', UserController.getMe, UserController.deleteUser); // 
 router
   .route('/')
   .get(
-    AuthController.requirePermissions('user:view'),
+    AuthController.requirePermission('user:view'),
     UserController.getAllUsers,
   );
 
 router
   .route('/:id')
-  .get(AuthController.requirePermissions('user:view'), UserController.getUser)
+  .get(AuthController.requirePermission('user:view'), UserController.getUser)
   .patch(
-    AuthController.requirePermissions('user:update_any'),
+    AuthController.requirePermission('user:update_any'),
     UserController.updateUser,
   )
   .delete(
-    AuthController.requirePermissions('user:delete_any'),
+    AuthController.requirePermission('user:delete_any'),
     UserController.deleteUser,
   );
 
 router
   .route('/:id/assignRole')
   .patch(
-    AuthController.requirePermissions('user:assign_role'),
+    AuthController.requirePermission('user:assign_role'),
     UserController.assignRole,
   );
 

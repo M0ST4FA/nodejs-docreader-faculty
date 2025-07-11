@@ -1,20 +1,44 @@
 import db from '../prisma/db';
-import { Role as PrismaRole } from '@prisma/client';
+import {
+  Role as PrismaRole,
+  Permission as PrismaPermission,
+  PermissionAction,
+  PermissionScope,
+  PermissionResource,
+} from '@prisma/client';
 import AppError from '../utils/AppError';
 
 export default class RoleModel {
   private data: Partial<PrismaRole>;
 
-  public static rolePermissionMap: Record<string, Set<string>> =
+  public static rolePermissionMap: Record<string, Set<PrismaPermission>> =
     Object.create(null);
 
-  public hasPermission(permission: string): boolean {
-    const perms = RoleModel.rolePermissionMap[this.name];
-    if (!perms) return false;
-    return perms.has('*') || perms.has(permission);
+  public hasPermission(
+    action: PermissionAction,
+    scope: PermissionScope,
+    resource: PermissionResource,
+  ): boolean {
+    // Handle the SuperAdmin role case
+    if (this.id === 0) return true;
+
+    const perms = Array.from(RoleModel.rolePermissionMap[this.name]);
+
+    const hasPermissibleScope = function (perm: PrismaPermission): Boolean {
+      if (scope === PermissionScope.ANY)
+        return perm.scope === PermissionScope.ANY;
+      else return true; // OWN is less restrictive, so both OWN and ANY should give it access
+    };
+
+    return perms.some(
+      perm =>
+        perm.action === action &&
+        resource === resource &&
+        hasPermissibleScope(perm),
+    );
   }
 
-  public getPermissions(): string[] {
+  public getPermissions(): PrismaPermission[] {
     return Array.from(RoleModel.rolePermissionMap[this.name] ?? []);
   }
 
@@ -23,7 +47,14 @@ export default class RoleModel {
       include: {
         permissions: {
           include: {
-            permission: true,
+            permission: {
+              select: {
+                id: true,
+                action: true,
+                scope: true,
+                resource: true,
+              },
+            },
           },
         },
       },
@@ -37,7 +68,7 @@ export default class RoleModel {
     // Rebuild map
     for (const role of roles) {
       RoleModel.rolePermissionMap[role.name] = new Set(
-        role.permissions.map(rp => rp.permission.name),
+        role.permissions.map(rp => rp.permission),
       );
     }
 

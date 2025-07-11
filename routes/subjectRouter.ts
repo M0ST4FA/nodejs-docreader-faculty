@@ -10,15 +10,15 @@ router.use(AuthController.protect);
 router
   .route('/:id')
   .get(
-    AuthController.requirePermissions('subject:view'),
+    AuthController.requirePermission('subject:view'),
     SubjectController.getSubject,
   )
   .patch(
-    AuthController.requirePermissions('subject:update_any'),
+    AuthController.requirePermission('subject:update_any'),
     SubjectController.updateSubject,
   )
   .delete(
-    AuthController.requirePermissions('subject:delete_any'),
+    AuthController.requirePermission('subject:delete_any'),
     SubjectController.deleteSubject,
   );
 
@@ -26,11 +26,11 @@ router
 router
   .route('/:subjectId/lectures')
   .get(
-    AuthController.requirePermissions('lecture:view'),
+    AuthController.requirePermission('lecture:view'),
     LectureController.getAllLectures,
   )
   .post(
-    AuthController.requirePermissions('lecture:create'),
+    AuthController.requirePermission('lecture:create'),
     LectureController.createLecture,
   );
 

@@ -5,6 +5,11 @@ import { Credentials, OAuth2Client, TokenPayload } from 'google-auth-library';
 import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
 import JWTService from '../utils/JWTService';
+import {
+  PermissionAction,
+  PermissionResource,
+  PermissionScope,
+} from '@prisma/client';
 
 declare global {
   namespace Express {
@@ -161,7 +166,11 @@ export default class AuthController {
     next();
   });
 
-  static requirePermissions = function (...permissions: Array<string>) {
+  static requirePermission = function (
+    action: PermissionAction,
+    scope: PermissionScope,
+    resource: PermissionResource,
+  ) {
     return catchAsync(
       async (req: Request, res: Response, next: NextFunction) => {
         const role = await req.user.role();

@@ -9,26 +9,26 @@ router.use(AuthController.protect);
 router
   .route('/')
   .get(
-    AuthController.requirePermissions('faculty:view'),
+    AuthController.requirePermission('faculty:view'),
     FacultyController.getAllFaculties,
   )
   .post(
-    AuthController.requirePermissions('faculty:create'),
+    AuthController.requirePermission('faculty:create'),
     FacultyController.createFaculty,
   );
 
 router
   .route('/:id')
   .get(
-    AuthController.requirePermissions('faculty:view'),
+    AuthController.requirePermission('faculty:view'),
     FacultyController.getFaculty,
   )
   .patch(
-    AuthController.requirePermissions('faculty:update'),
+    AuthController.requirePermission('faculty:update'),
     FacultyController.updateFaculty,
   )
   .delete(
-    AuthController.requirePermissions('faculty:delete'),
+    AuthController.requirePermission('faculty:delete'),
     FacultyController.deleteFaculty,
   );
 
@@ -36,11 +36,11 @@ router
 router
   .route('/:facultyId/years')
   .get(
-    AuthController.requirePermissions('year:view'),
+    AuthController.requirePermission('year:view'),
     YearController.getAllYears,
   )
   .post(
-    AuthController.requirePermissions('year:create'),
+    AuthController.requirePermission('year:create'),
     YearController.createYear,
   );
 
