@@ -4,6 +4,8 @@ import LectureController from '../controllers/LectureController';
 import QuizController from '../controllers/QuizController';
 import LinkController from '../controllers/LinkController';
 import LectureModel from '../models/Lecture';
+import QuizModel from '../models/Quiz';
+import LinkModel from '../models/Link';
 
 const router = Router();
 
@@ -24,7 +26,6 @@ router
   );
 
 // Nested quiz routes
-
 router
   .route('/:lectureId/quizzes')
   .get(
@@ -32,10 +33,11 @@ router
     QuizController.getAllQuizzes,
   )
   .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'QUIZ'),
+    AuthController.requirePermission('CREATE', 'ANY', 'QUIZ', QuizModel),
     QuizController.createQuiz,
   );
 
+// Nested link routes
 router
   .route('/:lectureId/links')
   .get(
@@ -43,7 +45,7 @@ router
     LinkController.getAllLinks,
   )
   .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'LINK'),
+    AuthController.requirePermission('CREATE', 'ANY', 'LINK', LinkModel),
     LinkController.createLink,
   );
 

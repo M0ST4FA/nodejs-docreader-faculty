@@ -1,9 +1,7 @@
 import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
-import LectureController from '../controllers/LectureController';
-import QuizController from '../controllers/QuizController';
-import LectureModel from '../models/Lecture';
-import QuizModel from '../models/Quiz';
+import LinkModel from '../models/Link';
+import LinkController from '../controllers/LinkController';
 
 const router = Router();
 
@@ -11,29 +9,16 @@ router.use(AuthController.protect);
 router
   .route('/:id')
   .get(
-    AuthController.requirePermission('READ', 'ANY', 'LECTURE'),
-    LectureController.getLecture,
+    AuthController.requirePermission('READ', 'ANY', 'LINK'),
+    LinkController.getLink,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'LECTURE', LectureModel),
-    LectureController.updateLecture,
+    AuthController.requirePermission('UPDATE', 'OWN', 'LINK', LinkModel),
+    LinkController.updateLink,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'OWN', 'LECTURE', LectureModel),
-    LectureController.deleteLecture,
-  );
-
-// Nested quiz routes
-
-router
-  .route('/:lectureId/quizzes')
-  .get(
-    AuthController.requirePermission('READ', 'ANY', 'QUIZ'),
-    QuizController.getAllQuizzes,
-  )
-  .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'QUIZ', QuizModel),
-    QuizController.createQuiz,
+    AuthController.requirePermission('DELETE', 'OWN', 'LINK', LinkModel),
+    LinkController.deleteLink,
   );
 
 export default router;

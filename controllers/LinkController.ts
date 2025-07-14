@@ -75,7 +75,7 @@ export default class LinkController {
     });
   });
 
-  public static getLecture = catchAsync(async function (
+  public static getLink = catchAsync(async function (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -92,7 +92,7 @@ export default class LinkController {
     });
   });
 
-  public static updateLecture = catchAsync(async function (
+  public static updateLink = catchAsync(async function (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -109,7 +109,7 @@ export default class LinkController {
     });
   });
 
-  public static deleteLecture = catchAsync(async function (
+  public static deleteLink = catchAsync(async function (
     req: Request,
     res: Response,
     next: NextFunction,
