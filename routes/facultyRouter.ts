@@ -15,46 +15,26 @@ router.use(AuthController.protect);
 router
   .route('/')
   .get(
-    AuthController.requirePermission(
-      PermissionAction.READ,
-      PermissionScope.ANY,
-      PermissionResource.FACULTY,
-    ),
+    AuthController.requirePermission('READ', 'ANY', 'FACULTY'),
     FacultyController.getAllFaculties,
   )
   .post(
-    AuthController.requirePermission(
-      PermissionAction.CREATE,
-      PermissionScope.ANY,
-      PermissionResource.FACULTY,
-    ),
+    AuthController.requirePermission('CREATE', 'ANY', 'FACULTY'),
     FacultyController.createFaculty,
   );
 
 router
   .route('/:id')
   .get(
-    AuthController.requirePermission(
-      PermissionAction.READ,
-      PermissionScope.ANY,
-      PermissionResource.FACULTY,
-    ),
+    AuthController.requirePermission('READ', 'ANY', 'FACULTY'),
     FacultyController.getFaculty,
   )
   .patch(
-    AuthController.requirePermission(
-      PermissionAction.UPDATE,
-      PermissionScope.ANY,
-      PermissionResource.FACULTY,
-    ),
+    AuthController.requirePermission('UPDATE', 'ANY', 'FACULTY'),
     FacultyController.updateFaculty,
   )
   .delete(
-    AuthController.requirePermission(
-      PermissionAction.DELETE,
-      PermissionScope.ANY,
-      PermissionResource.FACULTY,
-    ),
+    AuthController.requirePermission('DELETE', 'ANY', 'FACULTY'),
     FacultyController.deleteFaculty,
   );
 
@@ -62,19 +42,11 @@ router
 router
   .route('/:facultyId/years')
   .get(
-    AuthController.requirePermission(
-      PermissionAction.READ,
-      PermissionScope.ANY,
-      PermissionResource.YEAR,
-    ),
+    AuthController.requirePermission('READ', 'ANY', 'YEAR'),
     YearController.getAllYears,
   )
   .post(
-    AuthController.requirePermission(
-      PermissionAction.CREATE,
-      PermissionScope.ANY,
-      PermissionResource.YEAR,
-    ),
+    AuthController.requirePermission('CREATE', 'ANY', 'YEAR'),
     YearController.createYear,
   );
 

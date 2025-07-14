@@ -14,8 +14,6 @@ export class ModelFactory {
     wrap?: (data: TCreateResult) => TInstance,
   ) {
     return async (data: TCreateInput): Promise<TInstance | TCreateResult> => {
-      console.log(data);
-
       const validated = schema.create.safeParse(data);
 
       if (!validated.success) {

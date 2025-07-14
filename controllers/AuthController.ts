@@ -197,9 +197,7 @@ export default class AuthController {
             return next(new AppError('Invalid resource ID.', 400));
           }
 
-          console.log(resourceId);
           const creatorId = await modelClass.findCreatorIdById(resourceId);
-          console.log(creatorId);
 
           // To handle old resources (that didn't have creatorId)
           if (creatorId === 0) return next();

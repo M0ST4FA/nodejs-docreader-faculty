@@ -80,8 +80,8 @@ export default class RoleModel {
     }
 
     console.log(
-      '[Auth] Permission cache refreshed:',
-      Object.entries(RoleModel.rolePermissionMap),
+      '[Auth] Permission cache refreshed.',
+      // Object.entries(RoleModel.rolePermissionMap),
     );
   }
 

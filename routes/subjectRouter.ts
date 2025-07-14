@@ -31,17 +31,13 @@ router
 router
   .route('/:subjectId/lectures')
   .get(
-    AuthController.requirePermission(
-      PermissionAction.READ,
-      PermissionScope.ANY,
-      PermissionResource.LECTURE,
-    ),
+    AuthController.requirePermission('READ', 'ANY', PermissionResource.LECTURE),
     LectureController.getAllLectures,
   )
   .post(
     AuthController.requirePermission(
-      PermissionAction.CREATE,
-      PermissionScope.ANY,
+      'CREATE',
+      'ANY',
       PermissionResource.LECTURE,
     ),
     LectureController.createLecture,
