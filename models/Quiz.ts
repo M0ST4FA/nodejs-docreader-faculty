@@ -66,6 +66,8 @@ export default class QuizModel {
     return new QuizModel(quiz);
   }
 
+  static findCreatorIdById = ModelFactory.findCreatorIdById(db.quiz);
+
   static updateOne = ModelFactory.updateOne(
     db.quiz,
     quizSchema,

@@ -1,19 +1,23 @@
 import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
 import QuizController from '../controllers/QuizController';
+import QuizModel from '../models/Quiz';
 
 const router = Router();
 
 router.use(AuthController.protect);
 router
   .route('/:id')
-  .get(AuthController.requirePermission('quiz:view'), QuizController.getQuiz)
+  .get(
+    AuthController.requirePermission('READ', 'ANY', 'QUIZ'),
+    QuizController.getQuiz,
+  )
   .patch(
-    AuthController.requirePermission('quiz:update'),
+    AuthController.requirePermission('UPDATE', 'OWN', 'QUIZ', QuizModel),
     QuizController.updateQuiz,
   )
   .delete(
-    AuthController.requirePermission('quiz:delete'),
+    AuthController.requirePermission('DELETE', 'OWN', 'QUIZ', QuizModel),
     QuizController.deleteQuiz,
   );
 
