@@ -9,6 +9,7 @@ import {
   PermissionAction,
   PermissionResource,
   PermissionScope,
+  PrismaClient,
 } from '@prisma/client';
 
 declare global {
@@ -130,7 +131,7 @@ export default class AuthController {
         familyName: jwtPayload.family_name || '',
         email: jwtPayload.email || '',
         picture: jwtPayload.picture || '',
-        roleId: 1,
+        roleId: 1, // User ID
         status: false,
       });
     }
@@ -170,20 +171,50 @@ export default class AuthController {
     action: PermissionAction,
     scope: PermissionScope,
     resource: PermissionResource,
+    modelClass?: {
+      findCreatorIdById(id: number): Promise<number | null>;
+    }, // optional model
   ) {
     return catchAsync(
       async (req: Request, res: Response, next: NextFunction) => {
         const role = await req.user.role();
 
-        for (const permission of permissions)
-          if (role.hasPermission(permission)) return next();
+        // Check permission first (to fail fast)
+        if (!role.hasPermission(action, scope, resource)) {
+          return next(
+            new AppError(
+              "You don't have enough permissions to do this action!",
+              403,
+            ),
+          );
+        }
 
-        return next(
-          new AppError(
-            "You don't have enough permissions to do this action!",
-            403,
-          ),
-        );
+        // If the scope is OWN, check if the user is the creator
+        if (scope === PermissionScope.OWN && modelClass !== undefined) {
+          const resourceId = Number(req.params.id);
+
+          if (isNaN(resourceId)) {
+            return next(new AppError('Invalid resource ID.', 400));
+          }
+
+          console.log(resourceId);
+          const creatorId = await modelClass.findCreatorIdById(resourceId);
+          console.log(creatorId);
+
+          // To handle old resources (that didn't have creatorId)
+          if (creatorId === 0) return next();
+
+          if (creatorId !== req.user.id) {
+            return next(
+              new AppError(
+                "You can't modify or delete a resource created by someone else!",
+                403,
+              ),
+            );
+          }
+        }
+
+        return next();
       },
     );
   };

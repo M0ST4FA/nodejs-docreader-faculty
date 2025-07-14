@@ -11,6 +11,8 @@ const fullSchema = z
       .min(1, { message: 'Title is required.' })
       .max(255, { message: 'Cannot be greater than 255 characters.' }),
     notifiable: z.boolean(),
+
+    creatorId: z.number().int({ message: 'Creator ID must be an integer.' }),
     createdAt: z.date(),
     updatedAt: z.date(),
   })
@@ -18,7 +20,7 @@ const fullSchema = z
 
 const quizSchema = createModelSchema(
   fullSchema,
-  { required: ['lectureId', 'title'], optional: [] },
+  { required: ['lectureId', 'title', 'creatorId'], optional: [] },
   ['lectureId', 'title', 'notifiable'],
 );
 

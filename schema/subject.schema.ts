@@ -12,6 +12,7 @@ const fullSchema = z
     icon: z.string().url({ message: 'Icon must be a URL.' }),
     moduleId: z.number().int({ message: 'Module ID must be an integer.' }),
 
+    creatorId: z.number().int({ message: 'Creator ID must be an integer.' }),
     createdAt: z.date(),
     updatedAt: z.date(),
   })
@@ -19,7 +20,7 @@ const fullSchema = z
 
 const subjectSchema = createModelSchema(
   fullSchema,
-  { required: ['name', 'icon', 'moduleId'], optional: [] },
+  { required: ['name', 'icon', 'moduleId', 'creatorId'], optional: [] },
   ['name', 'icon', 'moduleId'],
 );
 

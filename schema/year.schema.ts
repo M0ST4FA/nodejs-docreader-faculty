@@ -10,6 +10,8 @@ const fullSchema = z
       .min(1, { message: 'Title is required.' })
       .max(255, { message: 'Cannot be greater than 255 characters.' }),
     facultyId: z.number().int({ message: 'Faculty ID must be an integer.' }),
+
+    creatorId: z.number().int({ message: 'Creator ID must be an integer.' }),
     createdAt: z.date(),
     updatedAt: z.date(),
   })
@@ -17,7 +19,7 @@ const fullSchema = z
 
 const yearSchema = createModelSchema(
   fullSchema,
-  { required: ['id', 'title', 'facultyId'], optional: [] },
+  { required: ['id', 'title', 'facultyId', 'creatorId'], optional: [] },
   ['title', 'facultyId'],
 );
 

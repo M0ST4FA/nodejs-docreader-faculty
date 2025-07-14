@@ -42,6 +42,7 @@ export default class LinkController {
   ) {
     const lectureId = LinkController.extractLectureID(req);
     req.body.lectureId = lectureId;
+    req.body.creatorId = req.user.id;
 
     const link = await LinkModel.createOne(req.body);
 

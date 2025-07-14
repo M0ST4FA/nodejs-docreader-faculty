@@ -27,6 +27,7 @@ const fullSchema = z
     lectureId: z.number().int({ message: 'Lecture ID must be an integer.' }),
     notifiable: z.boolean(),
 
+    creatorId: z.number().int({ message: 'Creator ID must be an integer.' }),
     createdAt: z.date(),
     updatedAt: z.date(),
   })
@@ -34,7 +35,10 @@ const fullSchema = z
 
 const linkSchema = createModelSchema(
   fullSchema,
-  { required: ['title', 'url', 'category', 'type', 'lectureId'], optional: [] },
+  {
+    required: ['title', 'url', 'category', 'type', 'lectureId', 'creatorId'],
+    optional: [],
+  },
   ['title', 'subTitle', 'url', 'category', 'type', 'lectureId'],
 );
 

@@ -15,6 +15,8 @@ const fullSchema = z.object({
   facultyId: z.number().gt(0),
   yearId: z.number().gt(0),
   // devices: deviceSchema.array(),
+
+  creatorId: z.number().int({ message: 'Creator ID must be an integer.' }),
   createdAt: z
     .date({ message: 'Invalid creation date.' })
     .default(new Date(Date.now())),
@@ -34,6 +36,7 @@ const userSchema = createModelSchema(
       'picture',
       'status',
       'roleId',
+      'creatorId',
     ],
     optional: [],
   },

@@ -42,8 +42,7 @@ export default class LectureController {
   ) {
     const subjectId = LectureController.extractSubjectID(req);
     req.body.subjectId = subjectId;
-
-    console.log(req.body);
+    req.body.creatorId = req.user.id;
 
     const lecture = await LectureModel.createOne(req.body);
 

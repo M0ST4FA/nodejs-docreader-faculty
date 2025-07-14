@@ -14,6 +14,8 @@ export class ModelFactory {
     wrap?: (data: TCreateResult) => TInstance,
   ) {
     return async (data: TCreateInput): Promise<TInstance | TCreateResult> => {
+      console.log(data);
+
       const validated = schema.create.safeParse(data);
 
       if (!validated.success) {
@@ -32,6 +34,28 @@ export class ModelFactory {
       });
 
       return wrap ? wrap(created) : created;
+    };
+  }
+
+  static findCreatorIdById(prismaModel: {
+    findUnique: (args: {
+      where: { id: number };
+      select: { creatorId: true };
+    }) => Promise<{ creatorId: number | null } | null>;
+  }) {
+    return async function (id: number): Promise<number> {
+      const object = await prismaModel.findUnique({
+        where: { id },
+        select: { creatorId: true },
+      });
+
+      if (!object)
+        throw new AppError(`Couldn't find resource with ID ${id}`, 404);
+
+      // 0 means no creatorId set (for old resources)
+      if (object?.creatorId === null) return 0;
+
+      return object.creatorId;
     };
   }
 

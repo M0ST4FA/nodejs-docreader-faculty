@@ -67,6 +67,8 @@ export default class LectureModel {
     return new LectureModel(lecture);
   }
 
+  static findCreatorIdById = ModelFactory.findCreatorIdById(db.lecture);
+
   static updateOne = ModelFactory.updateOne(
     db.lecture,
     lectureSchema,

@@ -67,6 +67,8 @@ export default class LinkModel {
     return new LinkModel(link);
   }
 
+  static findCreatorIdById = ModelFactory.findCreatorIdById(db.lectureLink);
+
   static updateOne = ModelFactory.updateOne(
     db.lectureLink,
     linkSchema,

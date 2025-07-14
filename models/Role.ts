@@ -8,10 +8,17 @@ import {
 } from '@prisma/client';
 import AppError from '../utils/AppError';
 
+type PartialPermission = {
+  id: number;
+  action: PermissionAction;
+  scope: PermissionScope;
+  resource: PermissionResource;
+};
+
 export default class RoleModel {
   private data: Partial<PrismaRole>;
 
-  public static rolePermissionMap: Record<string, Set<PrismaPermission>> =
+  public static rolePermissionMap: Record<string, Set<PartialPermission>> =
     Object.create(null);
 
   public hasPermission(
@@ -24,7 +31,7 @@ export default class RoleModel {
 
     const perms = Array.from(RoleModel.rolePermissionMap[this.name]);
 
-    const hasPermissibleScope = function (perm: PrismaPermission): Boolean {
+    const hasPermissibleScope = function (perm: PartialPermission): Boolean {
       if (scope === PermissionScope.ANY)
         return perm.scope === PermissionScope.ANY;
       else return true; // OWN is less restrictive, so both OWN and ANY should give it access
@@ -33,12 +40,12 @@ export default class RoleModel {
     return perms.some(
       perm =>
         perm.action === action &&
-        resource === resource &&
+        perm.resource === resource &&
         hasPermissibleScope(perm),
     );
   }
 
-  public getPermissions(): PrismaPermission[] {
+  public getPermissions(): PartialPermission[] {
     return Array.from(RoleModel.rolePermissionMap[this.name] ?? []);
   }
 

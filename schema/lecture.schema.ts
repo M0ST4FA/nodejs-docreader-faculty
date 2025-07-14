@@ -23,6 +23,8 @@ const fullSchema = z
     }),
     date: z.date({ message: 'Lecture date is required.', coerce: true }),
 
+    creatorId: z.number().int({ message: 'Creator ID must be an integer.' }),
+
     createdAt: z.date(),
     updatedAt: z.date(),
   })
@@ -30,7 +32,10 @@ const fullSchema = z
 
 const lectureSchema = createModelSchema(
   fullSchema,
-  { required: ['title', 'subjectId', 'date', 'type'], optional: ['subTitle'] },
+  {
+    required: ['title', 'subjectId', 'creatorId', 'date', 'type'],
+    optional: ['subTitle'],
+  },
   ['title', 'subTitle', 'subjectId', 'date', 'type'],
 );
 
