@@ -3,6 +3,7 @@ import AuthController from '../controllers/AuthController';
 import YearController from '../controllers/YearController';
 import ModuleController from '../controllers/ModuleController';
 import YearModel from '../models/Year';
+import ModuleModel from '../models/Module';
 
 const router = Router();
 
@@ -27,11 +28,11 @@ router
 router
   .route('/:yearId/modules/')
   .get(
-    AuthController.requirePermission('module:view'),
+    AuthController.requirePermission('READ', 'ANY', 'MODULE'),
     ModuleController.getAllModules,
   )
   .post(
-    AuthController.requirePermission('module:create'),
+    AuthController.requirePermission('CREATE', 'ANY', 'MODULE', ModuleModel),
     ModuleController.createModule,
   );
 

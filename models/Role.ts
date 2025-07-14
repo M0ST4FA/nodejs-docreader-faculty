@@ -32,9 +32,10 @@ export default class RoleModel {
     const perms = Array.from(RoleModel.rolePermissionMap[this.name]);
 
     const hasPermissibleScope = function (perm: PartialPermission): Boolean {
-      if (scope === PermissionScope.ANY)
-        return perm.scope === PermissionScope.ANY;
-      else return true; // OWN is less restrictive, so both OWN and ANY should give it access
+      // If user has scope ANY, it doesn't matter the required scope
+      if (perm.scope === PermissionScope.ANY) return true;
+
+      return perm.scope === scope;
     };
 
     return perms.some(

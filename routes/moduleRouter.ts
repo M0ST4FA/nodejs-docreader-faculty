@@ -2,6 +2,7 @@ import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
 import ModuleController from '../controllers/ModuleController';
 import SubjectController from '../controllers/SubjectController';
+import ModuleModel from '../models/Module';
 
 const router = Router();
 
@@ -10,15 +11,15 @@ router.use(AuthController.protect);
 router
   .route('/:id')
   .get(
-    AuthController.requirePermission('module:view'),
+    AuthController.requirePermission('READ', 'ANY', 'MODULE'),
     ModuleController.getModule,
   )
   .patch(
-    AuthController.requirePermission('module:update'),
+    AuthController.requirePermission('UPDATE', 'OWN', 'MODULE', ModuleModel),
     ModuleController.updateModule,
   )
   .delete(
-    AuthController.requirePermission('module:delete'),
+    AuthController.requirePermission('DELETE', 'OWN', 'MODULE', ModuleModel),
     ModuleController.deleteModule,
   );
 

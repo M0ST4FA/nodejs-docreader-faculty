@@ -66,6 +66,8 @@ export default class ModuleModel {
     return new ModuleModel(module);
   }
 
+  static findCreatorIdById = ModelFactory.findCreatorIdById(db.module);
+
   static updateOne = ModelFactory.updateOne(
     db.module,
     moduleSchema,

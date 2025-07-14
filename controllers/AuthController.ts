@@ -215,6 +215,8 @@ export default class AuthController {
 
         // You don't need to check for ownership for a user who can update any instance of a resource
         if (scope === PermissionScope.ANY) return next();
+        if (role.hasPermission(action, PermissionScope.ANY, resource))
+          return next();
 
         // This is likely a bug (whenever scope is OWN, modelClass must be input)
         if (!modelClass)
@@ -234,7 +236,7 @@ export default class AuthController {
             modelClass,
           );
 
-        if (userIsResourceCreator) return next();
+        if (!userIsResourceCreator) return next();
 
         // Make failure the default action
         return next(
