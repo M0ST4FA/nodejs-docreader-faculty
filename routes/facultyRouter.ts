@@ -7,6 +7,7 @@ import {
   PermissionResource,
   PermissionScope,
 } from '@prisma/client';
+import YearModel from '../models/Year';
 
 const router = Router();
 
@@ -46,7 +47,7 @@ router
     YearController.getAllYears,
   )
   .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'YEAR'),
+    AuthController.requirePermission('CREATE', 'ANY', 'YEAR', YearModel),
     YearController.createYear,
   );
 

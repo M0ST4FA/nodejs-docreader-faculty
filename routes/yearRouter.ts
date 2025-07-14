@@ -2,6 +2,7 @@ import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
 import YearController from '../controllers/YearController';
 import ModuleController from '../controllers/ModuleController';
+import YearModel from '../models/Year';
 
 const router = Router();
 
@@ -9,13 +10,16 @@ router.use(AuthController.protect);
 
 router
   .route('/:id')
-  .get(AuthController.requirePermission('year:view'), YearController.getYear)
+  .get(
+    AuthController.requirePermission('READ', 'ANY', 'YEAR'),
+    YearController.getYear,
+  )
   .patch(
-    AuthController.requirePermission('year:update'),
+    AuthController.requirePermission('UPDATE', 'OWN', 'YEAR', YearModel),
     YearController.updateYear,
   )
   .delete(
-    AuthController.requirePermission('year:delete'),
+    AuthController.requirePermission('DELETE', 'OWN', 'YEAR', YearModel),
     YearController.deleteYear,
   );
 

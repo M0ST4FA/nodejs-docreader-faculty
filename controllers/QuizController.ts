@@ -40,6 +40,7 @@ export default class QuizController {
     const lectureId = QuizController.extractLectureID(req);
 
     req.body.lectureId = lectureId;
+    req.body.creatorId = req.user.id;
 
     const quiz = await QuizModel.createOne(req.body);
 

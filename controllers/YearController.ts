@@ -37,8 +37,9 @@ export default class YearController {
     res: Response,
     next: NextFunction,
   ) {
-    const facultyId = YearController.extractFacultyID(req, next);
+    const facultyId = YearController.extractFacultyID(req);
     req.body.facultyId = facultyId;
+    req.body.creatorId = req.user.id;
 
     const year = await YearModel.createOne(req.body);
 

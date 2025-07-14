@@ -40,6 +40,8 @@ export default class ModuleController {
     const yearId = ModuleController.extractYearID(req);
     req.body.yearId = yearId;
 
+    req.body.creatorId = req.user.id;
+
     const module = await ModuleModel.createOne(req.body);
 
     res.status(201).json({

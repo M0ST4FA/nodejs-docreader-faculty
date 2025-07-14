@@ -43,6 +43,7 @@ export default class SubjectController {
     const moduleId = SubjectController.extractModuleID(req);
 
     req.body.moduleId = moduleId;
+    req.body.creatorId = req.user.id;
 
     const subject = await SubjectModel.createOne(req.body);
 

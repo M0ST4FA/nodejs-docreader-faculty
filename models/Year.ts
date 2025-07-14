@@ -70,6 +70,8 @@ export default class YearModel {
     return new YearModel(year);
   }
 
+  static findCreatorIdById = ModelFactory.findCreatorIdById(db.studyingYear);
+
   static updateOne = ModelFactory.updateOne(
     db.studyingYear,
     yearSchema,
