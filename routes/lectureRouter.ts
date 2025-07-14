@@ -3,11 +3,6 @@ import AuthController from '../controllers/AuthController';
 import LectureController from '../controllers/LectureController';
 import QuizController from '../controllers/QuizController';
 import LinkController from '../controllers/LinkController';
-import {
-  PermissionAction,
-  PermissionScope,
-  PermissionResource,
-} from '@prisma/client';
 import LectureModel from '../models/Lecture';
 
 const router = Router();
@@ -16,29 +11,15 @@ router.use(AuthController.protect);
 router
   .route('/:id')
   .get(
-    AuthController.requirePermission(
-      PermissionAction.READ,
-      PermissionScope.ANY,
-      PermissionResource.LECTURE,
-    ),
+    AuthController.requirePermission('READ', 'ANY', 'LECTURE'),
     LectureController.getLecture,
   )
   .patch(
-    AuthController.requirePermission(
-      PermissionAction.UPDATE,
-      PermissionScope.OWN,
-      PermissionResource.LECTURE,
-      LectureModel,
-    ),
+    AuthController.requirePermission('UPDATE', 'OWN', 'LECTURE', LectureModel),
     LectureController.updateLecture,
   )
   .delete(
-    AuthController.requirePermission(
-      PermissionAction.DELETE,
-      PermissionScope.OWN,
-      PermissionResource.LECTURE,
-      LectureModel,
-    ),
+    AuthController.requirePermission('DELETE', 'OWN', 'LECTURE', LectureModel),
     LectureController.deleteLecture,
   );
 
@@ -47,38 +28,22 @@ router
 router
   .route('/:lectureId/quizzes')
   .get(
-    AuthController.requirePermission(
-      PermissionAction.READ,
-      PermissionScope.ANY,
-      PermissionResource.QUIZ,
-    ),
+    AuthController.requirePermission('READ', 'ANY', 'QUIZ'),
     QuizController.getAllQuizzes,
   )
   .post(
-    AuthController.requirePermission(
-      PermissionAction.CREATE,
-      PermissionScope.ANY,
-      PermissionResource.QUIZ,
-    ),
+    AuthController.requirePermission('CREATE', 'ANY', 'QUIZ'),
     QuizController.createQuiz,
   );
 
 router
   .route('/:lectureId/links')
   .get(
-    AuthController.requirePermission(
-      PermissionAction.READ,
-      PermissionScope.ANY,
-      PermissionResource.LINK,
-    ),
+    AuthController.requirePermission('READ', 'ANY', 'LINK'),
     LinkController.getAllLinks,
   )
   .post(
-    AuthController.requirePermission(
-      PermissionAction.CREATE,
-      PermissionScope.ANY,
-      PermissionResource.LINK,
-    ),
+    AuthController.requirePermission('CREATE', 'ANY', 'LINK'),
     LinkController.createLink,
   );
 
