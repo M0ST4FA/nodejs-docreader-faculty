@@ -167,6 +167,28 @@ export default class AuthController {
     next();
   });
 
+  private static async checkUserIsResourceCreator(
+    req: Request,
+    next: NextFunction,
+    modelClass: {
+      findCreatorIdById(id: number): Promise<number | null>;
+    },
+  ): Promise<Boolean> {
+    const resourceId = Number(req.params.id);
+
+    if (isNaN(resourceId)) throw new AppError('Invalid resource ID.', 400);
+
+    const creatorId = await modelClass.findCreatorIdById(resourceId);
+
+    // To handle old resources (that didn't have creatorId), assume that everyone is their owner
+    if (!creatorId || creatorId === 0) return true;
+
+    if (creatorId === req.user.id) return true;
+
+    // The default is: don't give ownership (to counteract any possible security bugs)
+    return false;
+  }
+
   static requirePermission = function (
     action: PermissionAction,
     scope: PermissionScope,
@@ -179,40 +201,48 @@ export default class AuthController {
       async (req: Request, res: Response, next: NextFunction) => {
         const role = await req.user.role();
 
-        // Check permission first (to fail fast)
-        if (!role.hasPermission(action, scope, resource)) {
+        // 0 is the ID of the SuperAdmin role. They can do anything.
+        if (role.id === 0) return next();
+
+        // Check general permission first, to fail fast (Doesn't consider resource ownership)
+        if (!role.hasPermission(action, scope, resource))
           return next(
             new AppError(
               "You don't have enough permissions to do this action!",
               403,
             ),
           );
-        }
 
-        // If the scope is OWN, check if the user is the creator
-        if (scope === PermissionScope.OWN && modelClass !== undefined) {
-          const resourceId = Number(req.params.id);
+        // You don't need to check for ownership for a user who can update any instance of a resource
+        if (scope === PermissionScope.ANY) return next();
 
-          if (isNaN(resourceId)) {
-            return next(new AppError('Invalid resource ID.', 400));
-          }
+        // This is likely a bug (whenever scope is OWN, modelClass must be input)
+        if (!modelClass)
+          return next(
+            new AppError(
+              'For OWN ownership check, `modelClass` must be provided!',
+              500,
+              false,
+            ),
+          );
 
-          const creatorId = await modelClass.findCreatorIdById(resourceId);
+        // If the scope is OWN, check if the user is the resource creator
+        const userIsResourceCreator =
+          await AuthController.checkUserIsResourceCreator(
+            req,
+            next,
+            modelClass,
+          );
 
-          // To handle old resources (that didn't have creatorId)
-          if (creatorId === 0) return next();
+        if (userIsResourceCreator) return next();
 
-          if (creatorId !== req.user.id) {
-            return next(
-              new AppError(
-                "You can't modify or delete a resource created by someone else!",
-                403,
-              ),
-            );
-          }
-        }
-
-        return next();
+        // Make failure the default action
+        return next(
+          new AppError(
+            "You can't modify or delete a resource created by someone else!",
+            403,
+          ),
+        );
       },
     );
   };

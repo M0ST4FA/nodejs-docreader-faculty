@@ -9,7 +9,7 @@ export default class UserController {
     res: Response,
     next: NextFunction,
   ) {
-    req.params.id = req.user.id;
+    req.params.id = req.user.id.toString();
 
     next();
   });

@@ -20,7 +20,7 @@ export default class ModuleController {
     return yearId;
   }
 
-  private static extractModuleID(req: Request, next: NextFunction): number {
+  private static extractModuleID(req: Request): number {
     const id = Number.parseInt(req.params.id);
 
     if (Number.isNaN(id))
@@ -39,7 +39,6 @@ export default class ModuleController {
   ) {
     const yearId = ModuleController.extractYearID(req);
     req.body.yearId = yearId;
-
     req.body.creatorId = req.user.id;
 
     const module = await ModuleModel.createOne(req.body);
