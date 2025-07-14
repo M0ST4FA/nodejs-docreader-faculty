@@ -78,6 +78,8 @@ export default class SubjectModel {
     return new SubjectModel(subject);
   }
 
+  static findCreatorIdById = ModelFactory.findCreatorIdById(db.subject);
+
   static updateOne = ModelFactory.updateOne(
     db.subject,
     subjectSchema,

@@ -236,7 +236,7 @@ export default class AuthController {
             modelClass,
           );
 
-        if (!userIsResourceCreator) return next();
+        if (userIsResourceCreator) return next();
 
         // Make failure the default action
         return next(

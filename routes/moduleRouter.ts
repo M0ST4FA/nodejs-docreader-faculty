@@ -3,6 +3,7 @@ import AuthController from '../controllers/AuthController';
 import ModuleController from '../controllers/ModuleController';
 import SubjectController from '../controllers/SubjectController';
 import ModuleModel from '../models/Module';
+import SubjectModel from '../models/Subject';
 
 const router = Router();
 
@@ -27,11 +28,11 @@ router
 router
   .route('/:moduleId/subjects')
   .get(
-    AuthController.requirePermission('subject:view'),
+    AuthController.requirePermission('READ', 'ANY', 'SUBJECT'),
     SubjectController.getAllSubjects,
   )
   .post(
-    AuthController.requirePermission('subject:create'),
+    AuthController.requirePermission('CREATE', 'ANY', 'SUBJECT', SubjectModel),
     SubjectController.createSubject,
   );
 

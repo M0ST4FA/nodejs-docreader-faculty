@@ -2,11 +2,7 @@ import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
 import SubjectController from '../controllers/SubjectController';
 import LectureController from '../controllers/LectureController';
-import {
-  PermissionAction,
-  PermissionResource,
-  PermissionScope,
-} from '@prisma/client';
+import SubjectModel from '../models/Subject';
 
 const router = Router({ mergeParams: true });
 
@@ -15,15 +11,15 @@ router.use(AuthController.protect);
 router
   .route('/:id')
   .get(
-    AuthController.requirePermission('READ', 'OWN', 'SUBJECT'),
+    AuthController.requirePermission('READ', 'ANY', 'SUBJECT'),
     SubjectController.getSubject,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'SUBJECT'),
+    AuthController.requirePermission('UPDATE', 'OWN', 'SUBJECT', SubjectModel),
     SubjectController.updateSubject,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'ANY', 'SUBJECT'),
+    AuthController.requirePermission('DELETE', 'OWN', 'SUBJECT', SubjectModel),
     SubjectController.deleteSubject,
   );
 
@@ -31,15 +27,11 @@ router
 router
   .route('/:subjectId/lectures')
   .get(
-    AuthController.requirePermission('READ', 'ANY', PermissionResource.LECTURE),
+    AuthController.requirePermission('READ', 'ANY', 'LECTURE'),
     LectureController.getAllLectures,
   )
   .post(
-    AuthController.requirePermission(
-      'CREATE',
-      'ANY',
-      PermissionResource.LECTURE,
-    ),
+    AuthController.requirePermission('CREATE', 'ANY', 'LECTURE'),
     LectureController.createLecture,
   );
 
