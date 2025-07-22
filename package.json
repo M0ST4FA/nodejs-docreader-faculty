@@ -1,13 +1,12 @@
 {
-  "name": "nodejs-code-snippets",
-  "version": "1.0.0",
+  "name": "DRG Faculty System",
+  "version": "2.0.0",
   "module": "module",
-  "description": "SaaS - For Creating code snippets and organize them for you.",
-  "main": "src/index.js",
+  "description": "Backend service for DRG platform.",
+  "main": "./server.ts",
   "scripts": {
-    "compile": "tsc --watch",
-    "postinstall": "npx prisma generate",
-    "start:dev": "nodemon ./api/index.ts"
+    "start:dev": "nodemon --env-file=.env ./server.ts",
+    "start": "bun --env-file=.env ./server.ts"
   },
   "author": "abdulrahmansaber120@gmail.com",
   "license": "ISC",
