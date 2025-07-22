@@ -9,7 +9,11 @@
     "start": "bun --env-file=.env ./server.ts"
   },
   "author": "abdulrahmansaber120@gmail.com",
-  "license": "ISC",
+  "contributors": [
+    "dryosefbeder@gmail.com",
+    "mostafa2018a3s@gmail.com"
+  ],
+  "license": "LGPL-3.0-or-later",
   "baseUrl": "src",
   "paths": {
     "@/*": [
