@@ -1,5 +1,5 @@
 {
-  "name": "DRG Faculty System",
+  "name": "drg-faculty-system",
   "version": "2.0.0",
   "module": "module",
   "description": "Backend service for DRG platform.",
