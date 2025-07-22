@@ -1,5 +1,4 @@
-import { z, ZodObject, ZodRawShape, ZodOptional } from 'zod';
-import { paginationSchema } from './pagination.schema';
+import { z, ZodObject, ZodRawShape } from 'zod';
 
 export default function createModelSchema<
   T extends ZodRawShape,
@@ -13,19 +12,33 @@ export default function createModelSchema<
     optional?: readonly OK[];
   },
   update: readonly UK[],
+  queryConfig: {
+    defaultPage?: number;
+    defaultSize: number;
+    maxPageSize: number;
+    allowedFields: (keyof T)[];
+    sortableFields: (keyof T)[];
+  },
 ) {
-  // Normalize all keys as keyof T
+  // Extract query config
+  const {
+    defaultPage = 1,
+    defaultSize = 20,
+    maxPageSize: maxSize = 100,
+    allowedFields = Object.keys(fullSchema.shape) as (keyof T)[],
+    sortableFields = Object.keys(fullSchema.shape) as (keyof T)[],
+  } = queryConfig || {};
+
+  // Normalize key sets
   const requiredKeys = create.required as readonly (keyof T)[];
   const optionalKeys = (create.optional ?? []) as readonly (keyof T)[];
   const updateKeys = update as readonly (keyof T)[];
-
-  // Exclude overlap: only keep optional keys that aren't required
   const requiredSet = new Set(requiredKeys);
   const filteredOptionalKeys = optionalKeys.filter(
     key => !requiredSet.has(key),
   );
 
-  // --- Build CREATE schema ---
+  // --- CREATE schema ---
   const requiredObject = z
     .object(
       Object.fromEntries(
@@ -44,50 +57,85 @@ export default function createModelSchema<
 
   const createSchema = requiredObject.merge(optionalObject).strict();
 
-  // --- Build UPDATE schema ---
+  // --- UPDATE schema ---
   const updateShape = Object.fromEntries(
     updateKeys.map(key => [key, fullSchema.shape[key]]),
   ) as { [K in UK]: T[K] };
 
   const updateSchema = z.object(updateShape).partial().strict();
 
-  // --- Build SELECT and ORDERBY ---
-  const allKeys = Object.keys(fullSchema.shape) as (keyof T)[];
-
-  const select = z
-    .object(
-      Object.fromEntries(allKeys.map(k => [k, z.boolean().optional()])) as {
-        [K in keyof T]: ZodOptional<z.ZodBoolean>;
-      },
-    )
-    .strict();
-
-  const orderBy = z
-    .object(
-      Object.fromEntries(
-        allKeys.map(k => [k, z.enum(['asc', 'desc']).optional()]),
-      ) as {
-        [K in keyof T]: ZodOptional<z.ZodEnum<['asc', 'desc']>>;
-      },
-    )
-    .strict();
-
-  // --- Build FIND schema ---
-  const find = z
+  // --- QUERY object ---
+  const query = z
     .object({
-      where: fullSchema.partial().optional(),
-      select: select.optional(),
-      orderBy: orderBy.optional(),
-      pagination: paginationSchema.optional(),
-    })
-    .strict();
+      page: z
+        .string()
+        .optional()
+        .transform(v => (v ? parseInt(v) : defaultPage || 1))
+        .refine(v => v > 0, { message: 'Page must be greater than 0' }),
 
-  // --- Return all model schemas ---
+      size: z
+        .string()
+        .optional()
+        .transform(v => (v ? parseInt(v) : defaultSize || 10))
+        .refine(v => v > 0 && v <= maxSize, {
+          message: `Size must be between 1 and ${maxSize}`,
+        }),
+
+      fields: z
+        .union([z.string(), z.array(z.string())])
+        .optional()
+        .transform(val => (typeof val === 'string' ? val.split(',') : val))
+        .refine(
+          val => !val || val.every(f => allowedFields.includes(f as keyof T)),
+          {
+            message: `Invalid fields. Allowed: ${allowedFields.join(', ')}`,
+          },
+        ),
+
+      sort: z
+        .union([z.string(), z.array(z.string())])
+        .optional()
+        .transform(val => (typeof val === 'string' ? val.split(',') : val))
+        .refine(
+          val =>
+            !val ||
+            val.every(field => {
+              const key = field.startsWith('-') ? field.slice(1) : field;
+              return sortableFields.includes(key as keyof T);
+            }),
+          {
+            message: `Invalid sort fields. Allowed: ${sortableFields.join(
+              ', ',
+            )}`,
+          },
+        ),
+    })
+    .strict({ message: 'Unrecognized ' })
+    .transform(({ page, size, fields, sort }) => {
+      const skip = (page - 1) * size;
+      const take = size;
+
+      const select =
+        fields && fields.length > 0
+          ? Object.fromEntries(fields.map(f => [f, true]))
+          : Object.fromEntries(allowedFields.map(f => [f, true]));
+
+      const orderBy =
+        sort && sort.length > 0
+          ? sort.map(s => {
+              const desc = s.startsWith('-');
+              const field = desc ? s.slice(1) : s;
+              return { [field]: desc ? 'desc' : 'asc' };
+            })
+          : undefined;
+
+      return { skip, take, select, orderBy };
+    });
+
+  // --- Final output ---
   return {
     where: fullSchema.partial().strict(),
-    select,
-    orderBy,
-    find,
+    query,
     create: createSchema,
     update: updateSchema,
   };

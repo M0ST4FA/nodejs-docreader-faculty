@@ -11,6 +11,8 @@ import {
   PermissionScope,
   PrismaClient,
 } from '@prisma/client';
+import userSchema from '../schema/user.schema';
+import { create } from 'domain';
 
 declare global {
   namespace Express {
@@ -125,7 +127,7 @@ export default class AuthController {
     try {
       user = await UserModel.findOneByGoogleSubId(googleSubId);
     } catch (error) {
-      user = await UserModel.create({
+      const creationParameters = {
         googleSubId: jwtPayload.sub,
         givenName: jwtPayload.given_name || '',
         familyName: jwtPayload.family_name || '',
@@ -133,7 +135,17 @@ export default class AuthController {
         picture: jwtPayload.picture || '',
         roleId: 1, // User ID
         status: false,
-      });
+      };
+
+      const createInput = userSchema.create.safeParse(creationParameters);
+
+      if (createInput.error)
+        throw new AppError(
+          `Error when creating user. Creation parameters: ${creationParameters}`,
+          500,
+        );
+
+      user = await UserModel.create(createInput.data);
     }
 
     JWTService.createAndSendJWT(user.id, (await user.role()).name, res, 201, {

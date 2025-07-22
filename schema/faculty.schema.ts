@@ -29,9 +29,7 @@ const facultySchema = createModelSchema(
 
 // --- Type Exports ---
 export type FacultyWhereInput = z.infer<typeof facultySchema.where>;
-export type FacultySelectInput = z.infer<typeof facultySchema.select>;
-export type FacultyOrderByInput = z.infer<typeof facultySchema.orderBy>;
-export type FacultyFindInput = z.infer<typeof facultySchema.find>;
+export type FacultyQueryParamInput = z.infer<typeof facultySchema.query>;
 export type FacultyUpdateInput = z.infer<typeof facultySchema.update>;
 export type FacultyCreateInput = z.infer<typeof facultySchema.create>;
 

@@ -1,16 +1,16 @@
 import db from '../prisma/db';
-import userSchema, {
+import {
   UserCreateInput,
-  UserFindInput,
-  UserSelectInput,
+  UserQueryParamInput,
   UserUpdateInput,
+  UserWhereInput,
 } from '../schema/user.schema';
 import { User as PrismaUser, Role as PrismaRole } from '@prisma/client';
 import AppError from '../utils/AppError';
 import RoleModel from './Role';
 
 type PartialUserWithRole = Partial<PrismaUser> & {
-  role?: PrismaRole;
+  role?: Partial<PrismaRole>;
 };
 
 class UserModel {
@@ -21,20 +21,23 @@ class UserModel {
   constructor(data: PartialUserWithRole) {
     this.data = data;
 
-    if (!this.data.id)
-      throw new AppError('Cannot create user without ID.', 400);
-
     if (this.data.role) {
       this.roleModel = new RoleModel(this.data.role);
     } // else left undefined, to be lazily fetched
   }
 
   get id(): number {
-    return this.data.id!;
+    if (!this.data.id)
+      throw new AppError('User id field undefined.', 500, false);
+
+    return this.data.id;
   }
 
   get roleId(): number {
-    return this.data.roleId!;
+    if (!this.data.roleId)
+      throw new AppError('User roleId field undefined.', 500);
+
+    return this.data.roleId;
   }
 
   async role(): Promise<RoleModel> {
@@ -45,21 +48,19 @@ class UserModel {
   }
 
   toJSON() {
-    return this.data;
+    const copy: any = {};
+
+    Object.assign(copy, this.data);
+
+    copy.googleSubId = undefined; // Should never be returned to front-end (very sensitive)
+
+    return copy;
   }
 
   static async create(user: UserCreateInput): Promise<UserModel> {
-    const parsedUser = userSchema.create.parse(user);
-
     const userData = await db.user.create({
       data: {
-        googleSubId: parsedUser.googleSubId,
-        email: parsedUser.email,
-        givenName: parsedUser.givenName,
-        familyName: parsedUser.familyName,
-        picture: parsedUser.picture,
-        status: parsedUser.status,
-        roleId: parsedUser.roleId,
+        ...user,
         devices: {
           create: [],
         },
@@ -115,21 +116,16 @@ class UserModel {
     return new UserModel(userData);
   }
 
-  static async findMany(queryObj: UserFindInput): Promise<Array<UserModel>> {
-    const query = userSchema.find.safeParse(queryObj);
-
-    if (!query.success)
-      throw new AppError(
-        `Invalid query object: ${JSON.stringify(query.error.issues, null, 2)}`,
-        400,
-      );
-
+  static async findMany(
+    where: UserWhereInput,
+    queryParams?: UserQueryParamInput,
+  ): Promise<Array<UserModel>> {
     const users = await db.user.findMany({
-      where: query.data.where,
-      select: query.data.select,
-      orderBy: query.data.orderBy,
-      skip: query.data.pagination?.skip,
-      take: query.data.pagination?.take,
+      where,
+      select: queryParams?.select,
+      orderBy: queryParams?.orderBy,
+      skip: queryParams?.skip,
+      take: queryParams?.take,
     });
 
     if (users.length === 0)
@@ -144,27 +140,14 @@ class UserModel {
   static async updateOne(
     id: number,
     updateInput: UserUpdateInput,
-    select?: UserSelectInput,
+    queryParams?: UserQueryParamInput,
   ) {
-    const validated = userSchema.update.safeParse(updateInput);
-    const parsedSelect = select ? userSchema.update.parse(select) : undefined;
-
-    if (!validated.success)
-      throw new AppError(
-        `Invalid update input: ${JSON.stringify(
-          validated.error.issues,
-          null,
-          2,
-        )}`,
-        400,
-      );
-
     const updatedUser = await db.user.update({
       where: {
         id,
       },
-      select: parsedSelect,
-      data: validated.data,
+      data: updateInput,
+      select: queryParams?.select,
     });
 
     if (!updatedUser) {
@@ -174,11 +157,16 @@ class UserModel {
     return new UserModel(updatedUser);
   }
 
-  static async updateRole(userId: number, roleId: number): Promise<UserModel> {
+  static async updateRole(
+    userId: number,
+    roleId: number,
+    queryParams?: UserQueryParamInput,
+  ): Promise<UserModel> {
     const updatedUser = await db.user.update({
       where: {
         id: userId,
       },
+      select: queryParams?.select,
       data: {
         roleId: roleId,
       },

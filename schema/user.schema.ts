@@ -39,13 +39,30 @@ const userSchema = createModelSchema(
     optional: [],
   },
   ['status', 'facultyId', 'yearId'],
+  {
+    defaultPage: 0,
+    defaultSize: 10,
+    maxPageSize: 100,
+    allowedFields: [
+      // Personal info
+      'id',
+      'roleId',
+      'email',
+      'givenName',
+      'familyName',
+      'picture',
+
+      // Scholar info
+      'yearId',
+      'facultyId',
+    ],
+    sortableFields: ['givenName', 'email', 'createdAt', 'updatedAt'],
+  },
 );
 
 // --- Type Exports ---
 export type UserWhereInput = z.infer<typeof userSchema.where>;
-export type UserSelectInput = z.infer<typeof userSchema.select>;
-export type UserOrderByInput = z.infer<typeof userSchema.orderBy>;
-export type UserFindInput = z.infer<typeof userSchema.find>;
+export type UserQueryParamInput = z.infer<typeof userSchema.query>;
 export type UserUpdateInput = z.infer<typeof userSchema.update>;
 export type UserCreateInput = z.infer<typeof userSchema.create>;
 
