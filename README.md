@@ -11,7 +11,6 @@ It is built using Node.js, Express and Prisma.
 
 ### Prerequisites
 
-- `Node.js` >= 18.x or `bun` >=1.x
 - `npm` >= 9.x
 - `postgresql` running locally or remotely
 
@@ -21,10 +20,30 @@ It is built using Node.js, Express and Prisma.
 git clone https://github.com/asaber3030/nodejs-docreader-faculty
 cd nodejs-docreader-faculty
 npm install
-npm run start:dev
-# or
-bun ./api/index.ts
 ```
+
+### Set Up
+
+Before running the service, you must first create the .env file and populate the necessary environment variables. Refer to [this section](#environment-variables) for details.
+
+You must also make sure that you have a postgresql deployment running.
+
+Run the following command to migrate the Prisma schema to it (after populating 'DATABASE_URL` environment variable):
+
+```
+npx prisma generate
+npx prisma migrate dev
+```
+
+### Running
+
+```
+npm run start
+```
+
+### Long-term Considerations
+
+Consider creating a service script (for whatever init system your server distro uses) for the daemon, for better integration and management.
 
 ---
 
@@ -33,10 +52,31 @@ bun ./api/index.ts
 Create a `.env` file in the root directory and configure the following:
 
 ```env
-APP_PORT=tcp_port
-APP_USER_SECRET=secret_for_encrypting_JWTs
-PASSCODE=passcode_for_creating_of_new_admins
-DATABASE_DEPLOY=database_url
+
+# Used to enable or disable debugging output
+NODE_ENV='production'||'development' # defaults to 'production'
+
+# Connection variables
+PORT=tcp_port
+
+# TLS variables
+TLS_ENABLED='True'||'False' # defaults to 'False'
+TLS_KEY_PATH=path_to_tls_private_key_pem_file
+TLS_CERT_PATH=path_to_tls_certificate_chain
+
+# Database variables
+DATABASE_URL=database_url
+
+# JWT variables
+JWT_SECRET=secret(private_key)_for_signing_JWTs
+JWT_COOKIE_EXPIRES_IN_DAYS=n_days_until_jwt_expires
+
+# Google API client variables. Obtain and configure them from your GCP dashboard.
+GOOGLE_CLIENT_ID=google_client_id
+GOOGLE_CLIENT_SECRET=google_client_secret
+GOOGLE_REDIRECT_URI=google_redirect_uri_for_oauth2_callback
+
+# Firbase variables (used for notification system)
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=firebase_project_id
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=firebase_storage_bucket
 FIREBASE_PRIVATE_KEY=firebase_private_key
