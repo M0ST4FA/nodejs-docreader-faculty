@@ -128,12 +128,6 @@ class UserModel {
       take: queryParams?.take,
     });
 
-    if (users.length === 0)
-      throw new AppError(
-        `Couldn't find any users based on provided criteria.`,
-        404,
-      );
-
     return users.map(user => new UserModel(user));
   }
 

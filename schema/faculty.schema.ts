@@ -25,6 +25,13 @@ const facultySchema = createModelSchema(
   fullSchema,
   { required: ['name', 'city', 'creatorId'] },
   ['name', 'city'],
+  {
+    defaultPage: 0,
+    defaultSize: 10,
+    maxPageSize: 100,
+    allowedFields: ['id', 'name', 'city', 'creatorId'],
+    sortableFields: ['name', 'city'],
+  },
 );
 
 // --- Type Exports ---

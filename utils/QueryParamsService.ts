@@ -19,6 +19,8 @@ export class QueryParamsService {
       sorting: false,
     },
   ): ReturnT {
+    console.log(queryParams);
+
     // Step 1: Error checking for req.query for unsupported features
     if (!features.pagination) {
       if (queryParams.page)

@@ -24,10 +24,11 @@ export default class FacultyController {
     res: Response,
     next: NextFunction,
   ) {
-    const faculties = await FacultyModel.findMany({});
+    const faculties = await FacultyModel.findMany({}, req.query);
 
     res.status(200).json({
       status: 'success',
+      totalCount: faculties.length,
       data: {
         faculties,
       },
@@ -41,7 +42,7 @@ export default class FacultyController {
   ) {
     const id = Number.parseInt(req.params.id);
 
-    const faculty = await FacultyModel.findOneById(id);
+    const faculty = await FacultyModel.findOneById(id, req.query);
 
     res.status(200).json({
       status: 'success',
@@ -58,7 +59,11 @@ export default class FacultyController {
   ) {
     const id = Number.parseInt(req.params.id);
 
-    const updatedFaculty = await FacultyModel.updateOne(id, req.body);
+    const updatedFaculty = await FacultyModel.updateOne(
+      id,
+      req.body,
+      req.query,
+    );
 
     res.status(200).json({
       status: 'success',

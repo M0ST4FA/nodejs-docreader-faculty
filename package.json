@@ -5,7 +5,7 @@
   "description": "Backend service for DRG platform.",
   "main": "./server.ts",
   "scripts": {
-    "start:dev": "nodemon --env-file=.env ./server.ts",
+    "start:dev": "nodemon --exec npx bun --env-file=.env ./server.ts",
     "start": "npx bun --env-file=.env ./server.ts"
   },
   "author": "abdulrahmansaber120@gmail.com",

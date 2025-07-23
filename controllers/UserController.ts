@@ -61,6 +61,7 @@ export default class UserController {
 
     res.status(200).json({
       status: 'success',
+      totalCount: users.length,
       data: {
         users,
       },

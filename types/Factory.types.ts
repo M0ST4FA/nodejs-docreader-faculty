@@ -1,22 +1,42 @@
 // models/Factory.types.ts
 
-import { ZodObject, ZodSchema } from 'zod';
+import { ZodSchema } from 'zod';
 
 /**
  * Schema container that holds validation schemas used by factory functions.
  */
 export interface FactorySchema<
   TWhere = any,
-  TSelect = any,
-  TOrderBy = any,
+  TQuery = any,
   TUpdate = any,
   TCreate = any,
 > {
-  where?: ZodSchema<TWhere>;
-  select?: ZodSchema<TSelect>;
-  orderBy?: ZodSchema<TOrderBy>;
+  where: ZodSchema<TWhere>;
+  query: ZodSchema<TQuery>;
   update: ZodSchema<TUpdate>;
   create: ZodSchema<TCreate>;
+}
+
+/**
+ * Prisma findMany function type for a given model.
+ */
+export interface PrismaFindManyModel<TFindResult> {
+  findMany(args: {
+    where: any;
+    select?: any;
+    orderBy?: any;
+    skip?: any;
+    take?: any;
+  }): Promise<TFindResult[]>;
+}
+/**
+ * Prisma findUnique function type for a given model.
+ */
+export interface PrismaFindUniqueModel<TFindResult> {
+  findUnique(args: {
+    where: { id: number };
+    select?: any;
+  }): Promise<TFindResult | null>;
 }
 
 /**
