@@ -7,3 +7,4 @@ prisma/migrations
 auth_secret.json
 *.pem
 test.js
+seed.ts

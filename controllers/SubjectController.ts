@@ -24,7 +24,7 @@ export default class SubjectController {
   }
 
   private static extractSubjectID(req: Request): number {
-    const id = Number.parseInt(req.params.id);
+    const id = Number.parseInt(req.params.roleId);
 
     if (Number.isNaN(id))
       throw new AppError(

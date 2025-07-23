@@ -27,8 +27,7 @@ class UserModel {
   }
 
   get id(): number {
-    if (!this.data.id)
-      throw new AppError('User id field undefined.', 500, false);
+    if (!this.data.id) throw new AppError('User id field undefined.', 500);
 
     return this.data.id;
   }
@@ -42,7 +41,9 @@ class UserModel {
 
   async role(): Promise<RoleModel> {
     if (!this.roleModel)
-      this.roleModel = new RoleModel(await RoleModel.findById(this.roleId));
+      this.roleModel = new RoleModel(
+        await RoleModel.findOneById(this.roleId, {}),
+      );
 
     return this.roleModel;
   }

@@ -7,6 +7,11 @@ import {
   PermissionResource,
 } from '@prisma/client';
 import AppError from '../utils/AppError';
+import { ModelFactory } from './ModelFactory';
+import roleSchema, {
+  PermissionArrayInput,
+  permissionArrayInputSchema,
+} from '../schema/role.schema';
 
 type PartialPermission = {
   id: number;
@@ -18,8 +23,55 @@ type PartialPermission = {
 export default class RoleModel {
   private data: Partial<PrismaRole>;
 
+  private static wrapper(data: PrismaRole): RoleModel {
+    return new RoleModel(data);
+  }
+
   public static rolePermissionMap: Record<string, Set<PartialPermission>> =
     Object.create(null);
+
+  public async addPermissions(permissionIds: PermissionArrayInput) {
+    if (permissionIds.length === 0) return;
+
+    const validatedArray = permissionArrayInputSchema.safeParse(permissionIds);
+
+    if (validatedArray.error)
+      throw new AppError(
+        `Invalid input: ${JSON.stringify(validatedArray.error.issues)}`,
+        400,
+      );
+
+    await db.rolePermission.createMany({
+      data: validatedArray.data.map(permId => ({
+        permissionId: permId,
+        roleId: this.id,
+      })),
+      // skipDuplicates: true, // So that it does not err on duplicates (simply ignores it)
+    });
+
+    await RoleModel.refreshPermissionCache();
+  }
+
+  public async removePermissions(permissionIds: PermissionArrayInput) {
+    if (permissionIds.length === 0) return;
+
+    const validatedArray = permissionArrayInputSchema.safeParse(permissionIds);
+
+    if (validatedArray.error)
+      throw new AppError(
+        `Invalid input: ${JSON.stringify(validatedArray.error.issues)}`,
+        400,
+      );
+
+    await db.rolePermission.deleteMany({
+      where: {
+        roleId: this.id,
+        permissionId: { in: validatedArray.data },
+      },
+    });
+
+    await RoleModel.refreshPermissionCache();
+  }
 
   public hasPermission(
     action: PermissionAction,
@@ -88,35 +140,48 @@ export default class RoleModel {
 
   constructor(data: Partial<PrismaRole>) {
     this.data = data;
-
-    if (this.data.id === undefined)
-      throw new AppError('Cannot create role without ID.', 500);
-
-    if (this.data.name === undefined)
-      throw new AppError('Cannot create role without name.', 500);
   }
 
   get id(): number {
+    if (this.data.id === undefined)
+      throw new AppError('Role id field undefined.', 500);
+
     return this.data.id!;
   }
 
   get name(): string {
-    return this.data.name!;
+    return this.data.name || '';
   }
 
   toJSON() {
     return this.data;
   }
 
-  static async findById(id: number): Promise<RoleModel> {
-    const roleData = await db.role.findUnique({
-      where: {
-        id,
-      },
-    });
+  static createOne = ModelFactory.createOne(
+    db.role,
+    roleSchema,
+    RoleModel.wrapper,
+  );
 
-    if (!roleData) throw new AppError(`Couldn't find role with ID ${id}`, 404);
+  static findMany = ModelFactory.findMany(
+    db.role,
+    roleSchema,
+    RoleModel.wrapper,
+  );
 
-    return new RoleModel(roleData);
-  }
+  static findOneById = ModelFactory.findOneById(
+    db.role,
+    roleSchema,
+    RoleModel.wrapper,
+  );
+
+  static findCreatorIdById = ModelFactory.findCreatorIdById(db.role);
+
+  static updateOne = ModelFactory.updateOne(
+    db.role,
+    roleSchema,
+    RoleModel.wrapper,
+  );
+
+  static deleteOne = ModelFactory.deleteOne(db.role, RoleModel.wrapper);
 }

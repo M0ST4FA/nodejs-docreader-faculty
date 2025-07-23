@@ -5,6 +5,8 @@ import morgan = require('morgan');
 import globalErrorHandler from './controllers/ErrorController';
 import authRouter from './routes/authRouter';
 import userRouter from './routes/userRouter';
+import roleRouter from './routes/roleRouter';
+import permissionRouter from './routes/permissionRouter';
 import facultyRouter from './routes/facultyRouter';
 import moduleRouter from './routes/moduleRouter';
 import yearRouter from './routes/yearRouter';
@@ -21,6 +23,8 @@ app.use(express.json());
 
 app.use('/api/v2/', authRouter);
 app.use('/api/v2/users', userRouter);
+app.use('/api/v2/roles', roleRouter);
+app.use('/api/v2/permissions', permissionRouter);
 app.use('/api/v2/faculties', facultyRouter);
 app.use('/api/v2/years', yearRouter);
 app.use('/api/v2/modules', moduleRouter);

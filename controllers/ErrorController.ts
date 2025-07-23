@@ -32,12 +32,29 @@ class ErrorController {
   static #handlePrismaClientKnownRequestError(
     error: PrismaClientKnownRequestError,
   ) {
+    const errorMeta = error?.meta;
+
     switch (error.code) {
+      case 'P2002':
+        if (errorMeta?.modelName === 'RolePermission')
+          if ((errorMeta?.target as any[])?.length === 2)
+            // Not the best condition, but works 🥸
+            return new AppError(
+              `Every (roleId, permissionId) pair must be unique. It seems you're adding a permission a second time for the same role.`,
+              400,
+            );
+
+        break;
+
       case 'P2003':
-        if (error?.meta?.constraint === 'User_yearId_fkey')
+        if (errorMeta?.constraint === 'User_yearId_fkey')
           return new AppError(`Year with given ID not found.`, 404);
-        else if (error?.meta?.constraint === 'User_facultyId_fkey')
+        else if (errorMeta?.constraint === 'User_facultyId_fkey')
           return new AppError(`Faculty with given ID not found.`, 404);
+        else if (errorMeta?.constraint === 'RolePermission_roleId_fkey')
+          return new AppError(`Role with given ID not found.`, 404);
+        else if (errorMeta?.constraint === 'RolePermission_permissionId_fkey')
+          return new AppError(`Permission with given ID not found.`, 404);
         break;
 
       case 'P2025':

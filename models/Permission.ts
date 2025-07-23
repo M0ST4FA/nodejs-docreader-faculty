@@ -1,33 +1,59 @@
-import db from '../prisma/db';
-import Model from './Model';
+import permissionSchema from '../schema/permission.schema';
 import { Permission as PrismaPermission } from '@prisma/client';
-import AppError from '../utils/AppError';
+import db from '../prisma/db';
+import { ModelFactory } from './ModelFactory';
+import { QueryParamsService } from '../utils/QueryParamsService';
 
-export default class PermissionModel implements Model {
-  private data: PrismaPermission;
+export default class PermissionModel {
+  private data: Partial<PrismaPermission>;
 
-  constructor(data: PrismaPermission) {
+  private static wrapper(data: PrismaPermission): PermissionModel {
+    return new PermissionModel(data);
+  }
+
+  constructor(data: Partial<PrismaPermission>) {
     this.data = data;
   }
 
-  get id() {
-    return this.data.id;
+  toJSON() {
+    return this.data;
   }
 
-  get name() {
-    return this.data.name;
-  }
+  static findMany = ModelFactory.findMany(
+    db.permission,
+    permissionSchema,
+    PermissionModel.wrapper,
+  );
 
-  static async findById(id: number): Promise<PermissionModel> {
-    const permissionData = await db.role.findUnique({
+  static findOneById = ModelFactory.findOneById(
+    db.permission,
+    permissionSchema,
+    PermissionModel.wrapper,
+  );
+
+  static async findPermissionsForRole(
+    roleId: number,
+    queryParams: unknown,
+  ): Promise<PermissionModel[]> {
+    const validatedQueryParams: any = QueryParamsService.parse(
+      permissionSchema,
+      queryParams,
+      { projection: true },
+    );
+
+    const rolePermissions = await db.rolePermission.findMany({
       where: {
-        id: id,
+        roleId,
+      },
+      include: {
+        permission: {
+          select: validatedQueryParams.select,
+        },
       },
     });
 
-    if (!permissionData)
-      throw new AppError(`Couldn't find permission with ID ${id}`, 404);
-
-    return new PermissionModel(permissionData);
+    return rolePermissions.map(
+      rolePermission => new PermissionModel(rolePermission.permission),
+    );
   }
 }
