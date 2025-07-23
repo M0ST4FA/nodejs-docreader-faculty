@@ -61,14 +61,16 @@ export default class LectureController {
   ) {
     const subjectId = LectureController.extractSubjectID(req);
 
-    const lectures = await LectureModel.findMany({
-      where: {
+    const lectures = await LectureModel.findMany(
+      {
         subjectId,
       },
-    });
+      req.query,
+    );
 
     res.status(200).json({
       status: 'success',
+      totalCount: lectures.length,
       data: {
         lectures,
       },
@@ -82,7 +84,7 @@ export default class LectureController {
   ) {
     const id = LectureController.extractLectureID(req);
 
-    const lecture = await LectureModel.findOneById(id!);
+    const lecture = await LectureModel.findOneById(id, req.query);
 
     res.status(200).json({
       status: 'success',
@@ -99,7 +101,11 @@ export default class LectureController {
   ) {
     const id = LectureController.extractLectureID(req);
 
-    const updatedLecture = await LectureModel.updateOne(id, req.body);
+    const updatedLecture = await LectureModel.updateOne(
+      id,
+      req.body,
+      req.query,
+    );
 
     res.status(200).json({
       status: 'success',

@@ -1,7 +1,6 @@
 import moduleSchema from '../schema/module.schema';
 import { Module as PrismaModule } from '@prisma/client';
 import db from '../prisma/db';
-import AppError from '../utils/AppError';
 import { ModelFactory } from './ModelFactory';
 
 export default class ModuleModel {

@@ -37,13 +37,26 @@ const lectureSchema = createModelSchema(
     optional: ['subTitle'],
   },
   ['title', 'subTitle', 'subjectId', 'date', 'type'],
+  {
+    defaultPage: 1,
+    defaultSize: 10,
+    maxPageSize: 100,
+    allowedFields: [
+      'id',
+      'type',
+      'title',
+      'subTitle',
+      'subjectId',
+      'date',
+      'creatorId',
+    ],
+    sortableFields: ['title', 'subTitle', 'date', 'createdAt', 'updatedAt'],
+  },
 );
 
 // --- Type Exports ---
 export type LectureWhereInput = z.infer<typeof lectureSchema.where>;
-export type LectureSelectInput = z.infer<typeof lectureSchema.select>;
-export type LectureOrderByInput = z.infer<typeof lectureSchema.orderBy>;
-export type LectureFindInput = z.infer<typeof lectureSchema.find>;
+export type LectureQueryInput = z.infer<typeof lectureSchema.query>;
 export type LectureUpdateInput = z.infer<typeof lectureSchema.update>;
 export type LectureCreateInput = z.infer<typeof lectureSchema.create>;
 
