@@ -21,13 +21,18 @@ const yearSchema = createModelSchema(
   fullSchema,
   { required: ['id', 'title', 'facultyId', 'creatorId'], optional: [] },
   ['title', 'facultyId'],
+  {
+    defaultPage: 1,
+    defaultSize: 10,
+    maxPageSize: 100,
+    allowedFields: ['id', 'title', 'facultyId', 'creatorId'],
+    sortableFields: ['title', 'createdAt', 'updatedAt'],
+  },
 );
 
 // --- Type Exports ---
 export type YearWhereInput = z.infer<typeof yearSchema.where>;
-export type YearSelectInput = z.infer<typeof yearSchema.select>;
-export type YearOrderByInput = z.infer<typeof yearSchema.orderBy>;
-export type YearFindInput = z.infer<typeof yearSchema.find>;
+export type YearQueryInput = z.infer<typeof yearSchema.query>;
 export type YearUpdateInput = z.infer<typeof yearSchema.update>;
 export type YearCreateInput = z.infer<typeof yearSchema.create>;
 

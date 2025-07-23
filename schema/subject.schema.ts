@@ -22,13 +22,18 @@ const subjectSchema = createModelSchema(
   fullSchema,
   { required: ['name', 'icon', 'moduleId', 'creatorId'], optional: [] },
   ['name', 'icon', 'moduleId'],
+  {
+    defaultPage: 1,
+    defaultSize: 10,
+    maxPageSize: 100,
+    allowedFields: ['id', 'name', 'icon', 'moduleId', 'creatorId'],
+    sortableFields: ['name', 'createdAt', 'updatedAt'],
+  },
 );
 
 // --- Type Exports ---
 export type SubjectWhereInput = z.infer<typeof subjectSchema.where>;
-export type SubjectSelectInput = z.infer<typeof subjectSchema.select>;
-export type SubjectOrderByInput = z.infer<typeof subjectSchema.orderBy>;
-export type SubjectFindInput = z.infer<typeof subjectSchema.find>;
+export type SubjectQueryInput = z.infer<typeof subjectSchema.query>;
 export type SubjectUpdateInput = z.infer<typeof subjectSchema.update>;
 export type SubjectCreateInput = z.infer<typeof subjectSchema.create>;
 

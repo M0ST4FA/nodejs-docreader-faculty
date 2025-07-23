@@ -30,7 +30,7 @@ const facultySchema = createModelSchema(
     defaultSize: 10,
     maxPageSize: 100,
     allowedFields: ['id', 'name', 'city', 'creatorId'],
-    sortableFields: ['name', 'city'],
+    sortableFields: ['name', 'city', 'createdAt', 'updatedAt'],
   },
 );
 
