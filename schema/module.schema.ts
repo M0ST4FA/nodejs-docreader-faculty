@@ -30,13 +30,25 @@ const moduleSchema = createModelSchema(
     optional: [],
   },
   ['name', 'semesterName', 'yearId', 'icon'],
+  {
+    defaultPage: 1,
+    defaultSize: 10,
+    maxPageSize: 100,
+    allowedFields: [
+      'id',
+      'name',
+      'semesterName',
+      'yearId',
+      'icon',
+      'creatorId',
+    ],
+    sortableFields: ['name', 'createdAt', 'updatedAt'],
+  },
 );
 
 // --- Type Exports ---
 export type ModuleWhereInput = z.infer<typeof moduleSchema.where>;
-export type ModuleSelectInput = z.infer<typeof moduleSchema.select>;
-export type ModuleOrderByInput = z.infer<typeof moduleSchema.orderBy>;
-export type ModuleFindInput = z.infer<typeof moduleSchema.find>;
+export type ModuleQueryInput = z.infer<typeof moduleSchema.query>;
 export type ModuleUpdateInput = z.infer<typeof moduleSchema.update>;
 export type ModuleCreateInput = z.infer<typeof moduleSchema.create>;
 

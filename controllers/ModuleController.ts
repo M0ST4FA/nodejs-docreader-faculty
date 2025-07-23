@@ -58,14 +58,16 @@ export default class ModuleController {
   ) {
     const yearId = ModuleController.extractYearID(req);
 
-    const modules = await ModuleModel.findMany({
-      where: {
+    const modules = await ModuleModel.findMany(
+      {
         yearId,
       },
-    });
+      req.query,
+    );
 
     res.status(200).json({
       status: 'success',
+      totalCount: modules.length,
       data: {
         modules,
       },
@@ -79,7 +81,7 @@ export default class ModuleController {
   ) {
     const id = ModuleController.extractModuleID(req);
 
-    const module = await ModuleModel.findOneById(id);
+    const module = await ModuleModel.findOneById(id, req.query);
 
     res.status(200).json({
       status: 'success',
@@ -96,7 +98,7 @@ export default class ModuleController {
   ) {
     const id = ModuleController.extractModuleID(req);
 
-    const updateModule = await ModuleModel.updateOne(id, req.body);
+    const updateModule = await ModuleModel.updateOne(id, req.body, req.query);
 
     res.status(200).json({
       status: 'success',
