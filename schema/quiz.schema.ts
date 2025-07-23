@@ -22,13 +22,18 @@ const quizSchema = createModelSchema(
   fullSchema,
   { required: ['lectureId', 'title', 'creatorId'], optional: [] },
   ['lectureId', 'title', 'notifiable'],
+  {
+    defaultPage: 1,
+    defaultSize: 10,
+    maxPageSize: 100,
+    allowedFields: ['id', 'lectureId', 'title', 'notifiable', 'creatorId'],
+    sortableFields: ['title', 'createdAt', 'updatedAt'],
+  },
 );
 
 // --- Type Exports ---
 export type QuizWhereInput = z.infer<typeof quizSchema.where>;
-export type QuizSelectInput = z.infer<typeof quizSchema.select>;
-export type QuizOrderByInput = z.infer<typeof quizSchema.orderBy>;
-export type QuizFindInput = z.infer<typeof quizSchema.find>;
+export type QuizQueryInput = z.infer<typeof quizSchema.query>;
 export type QuizUpdateInput = z.infer<typeof quizSchema.update>;
 export type QuizCreateInput = z.infer<typeof quizSchema.create>;
 

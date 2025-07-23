@@ -59,14 +59,16 @@ export default class QuizController {
   ) {
     const lectureId = QuizController.extractLectureID(req);
 
-    const quizzes = await QuizModel.findMany({
-      where: {
+    const quizzes = await QuizModel.findMany(
+      {
         lectureId,
       },
-    });
+      req.query,
+    );
 
     res.status(200).json({
       status: 'success',
+      totalCount: quizzes.length,
       data: {
         quizzes,
       },
@@ -80,7 +82,7 @@ export default class QuizController {
   ) {
     const id = QuizController.extractQuizID(req);
 
-    const quiz = await QuizModel.findOneById(id!);
+    const quiz = await QuizModel.findOneById(id, req.query);
 
     res.status(200).json({
       status: 'success',
@@ -97,7 +99,7 @@ export default class QuizController {
   ) {
     const id = QuizController.extractQuizID(req);
 
-    const updatedQuiz = await QuizModel.updateOne(id, req.body);
+    const updatedQuiz = await QuizModel.updateOne(id, req.body, req.query);
 
     res.status(200).json({
       status: 'success',
