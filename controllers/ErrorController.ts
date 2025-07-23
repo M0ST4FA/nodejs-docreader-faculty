@@ -14,7 +14,7 @@ class ErrorController {
 
   static #sendProdErrors(err: any, res: Response) {
     // Operational, trusted errors: send message to client
-    if (err instanceof AppError && err.isOperational) {
+    if (err.name === 'AppError' && err.isOperational) {
       res.status(err.statusCode).json({
         status: err.status,
         message: err.message,

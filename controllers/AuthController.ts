@@ -162,7 +162,7 @@ export default class AuthController {
     const jwt = JWTService.extractJWT(req);
 
     // 2) Verify the token
-    const payload = JWTService.verifyJWT(jwt);
+    const payload: any = JWTService.verifyJWT(jwt);
 
     // 3) Verify the user exists
     const user = await UserModel.findOneById(payload.id);
