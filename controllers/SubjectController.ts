@@ -62,14 +62,16 @@ export default class SubjectController {
   ) {
     const moduleId = SubjectController.extractModuleID(req);
 
-    const subjects = await SubjectModel.findMany({
-      where: {
+    const subjects = await SubjectModel.findMany(
+      {
         moduleId,
       },
-    });
+      req.query,
+    );
 
     res.status(200).json({
       status: 'success',
+      totalCount: subjects.length,
       data: {
         subjects,
       },
@@ -83,7 +85,7 @@ export default class SubjectController {
   ) {
     const id = SubjectController.extractSubjectID(req);
 
-    const subject = await SubjectModel.findOneById(id!);
+    const subject = await SubjectModel.findOneById(id, req.query);
 
     res.status(200).json({
       status: 'success',
@@ -100,7 +102,11 @@ export default class SubjectController {
   ) {
     const id = SubjectController.extractSubjectID(req);
 
-    const updatedSubject = await SubjectModel.updateOne(id, req.body);
+    const updatedSubject = await SubjectModel.updateOne(
+      id,
+      req.body,
+      req.query,
+    );
 
     res.status(200).json({
       status: 'success',

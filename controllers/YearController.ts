@@ -59,14 +59,16 @@ export default class YearController {
     const facultyId = YearController.extractFacultyID(req);
     req.body.facultyId = facultyId;
 
-    const years = await YearModel.findMany({
-      where: {
+    const years = await YearModel.findMany(
+      {
         facultyId,
       },
-    });
+      req.query,
+    );
 
     res.status(200).json({
       status: 'success',
+      totalCount: years.length,
       data: {
         years,
       },
@@ -80,7 +82,7 @@ export default class YearController {
   ) {
     const id = YearController.extractYearID(req);
 
-    const year = await YearModel.findOneById(id);
+    const year = await YearModel.findOneById(id, req.query);
 
     res.status(200).json({
       status: 'success',
@@ -97,7 +99,7 @@ export default class YearController {
   ) {
     const id = YearController.extractYearID(req);
 
-    const updatedYear = await YearModel.updateOne(id, req.body);
+    const updatedYear = await YearModel.updateOne(id, req.body, req.query);
 
     res.status(200).json({
       status: 'success',

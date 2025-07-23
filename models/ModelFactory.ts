@@ -160,7 +160,7 @@ export class ModelFactory {
 
       const validatedQueryParams: any = QueryParamsService.parse<
         typeof schema.query
-      >(schema, queryParams, {}); // Both parses and validates
+      >(schema, queryParams, { projection: true }); // Both parses and validates
 
       const updated = await prismaModel.update({
         where: { id },
