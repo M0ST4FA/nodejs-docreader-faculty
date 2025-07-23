@@ -31,8 +31,8 @@ export default class AuthController {
   private static GOOGLE_REDIRECT_URI: string = process.env.GOOGLE_REDIRECT_URI!;
 
   private static oauth2Client: OAuth2Client = new OAuth2Client({
-    client_id: this.GOOGLE_CLIENT_ID,
-    client_secret: this.GOOGLE_CLIENT_SECRET,
+    clientId: this.GOOGLE_CLIENT_ID,
+    clientSecret: this.GOOGLE_CLIENT_SECRET,
     redirectUri: this.GOOGLE_REDIRECT_URI,
   });
 

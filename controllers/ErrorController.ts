@@ -49,6 +49,11 @@ class ErrorController {
       case 'P2003':
         if (errorMeta?.constraint === 'User_yearId_fkey')
           return new AppError(`Year with given ID not found.`, 404);
+        if (errorMeta?.constraint === 'User_roleId_fkey')
+          return new AppError(
+            `Role with given ID not found. If you're creating a new user, make sure the role already exists.`,
+            404,
+          );
         else if (errorMeta?.constraint === 'User_facultyId_fkey')
           return new AppError(`Faculty with given ID not found.`, 404);
         else if (errorMeta?.constraint === 'RolePermission_roleId_fkey')
