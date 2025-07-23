@@ -61,14 +61,16 @@ export default class LinkController {
   ) {
     const lectureId = LinkController.extractLectureID(req);
 
-    const links = await LinkModel.findMany({
-      where: {
+    const links = await LinkModel.findMany(
+      {
         lectureId,
       },
-    });
+      req.query,
+    );
 
     res.status(200).json({
       status: 'success',
+      totalCount: links.length,
       data: {
         links,
       },
@@ -82,7 +84,7 @@ export default class LinkController {
   ) {
     const id = LinkController.extractLinkID(req);
 
-    const link = await LinkModel.findOneById(id!);
+    const link = await LinkModel.findOneById(id, req.query);
 
     res.status(200).json({
       status: 'success',
@@ -99,7 +101,7 @@ export default class LinkController {
   ) {
     const id = LinkController.extractLinkID(req);
 
-    const updatedLink = await LinkModel.updateOne(id, req.body);
+    const updatedLink = await LinkModel.updateOne(id, req.body, req.query);
 
     res.status(200).json({
       status: 'success',

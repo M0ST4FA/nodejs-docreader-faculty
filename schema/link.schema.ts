@@ -40,13 +40,28 @@ const linkSchema = createModelSchema(
     optional: [],
   },
   ['title', 'subTitle', 'url', 'category', 'type', 'lectureId'],
+  {
+    defaultPage: 1,
+    defaultSize: 10,
+    maxPageSize: 100,
+    allowedFields: [
+      'id',
+      'type',
+      'category',
+      'notifiable',
+      'title',
+      'subTitle',
+      'url',
+      'lectureId',
+      'creatorId',
+    ],
+    sortableFields: ['title', 'subTitle', 'createdAt', 'updatedAt'],
+  },
 );
 
 // --- Type Exports ---
 export type LinkWhereInput = z.infer<typeof linkSchema.where>;
-export type LinkSelectInput = z.infer<typeof linkSchema.select>;
-export type LinkOrderByInput = z.infer<typeof linkSchema.orderBy>;
-export type LinkFindInput = z.infer<typeof linkSchema.find>;
+export type LinkQueryInput = z.infer<typeof linkSchema.query>;
 export type LinkUpdateInput = z.infer<typeof linkSchema.update>;
 export type LinkCreateInput = z.infer<typeof linkSchema.create>;
 
