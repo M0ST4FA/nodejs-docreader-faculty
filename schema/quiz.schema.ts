@@ -26,7 +26,16 @@ const quizSchema = createModelSchema(
     defaultPage: 1,
     defaultSize: 10,
     maxPageSize: 100,
-    allowedFields: ['id', 'lectureId', 'title', 'notifiable', 'creatorId'],
+    allowedFields: [
+      'id',
+      'lectureId',
+      'title',
+      'notifiable',
+      'creatorId',
+      'updatedAt',
+      'createdAt',
+    ],
+    defaultFields: ['id', 'lectureId', 'title', 'notifiable', 'creatorId'],
     sortableFields: ['title', 'createdAt', 'updatedAt'],
   },
 );

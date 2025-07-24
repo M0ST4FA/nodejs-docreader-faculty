@@ -1,6 +1,4 @@
 import { z } from 'zod';
-import { deviceSchema } from './device.schema';
-import { paginationSchema } from './pagination.schema';
 import createModelSchema from './schema';
 
 const fullSchema = z.object({
@@ -43,6 +41,19 @@ const userSchema = createModelSchema(
     defaultPage: 0,
     defaultSize: 10,
     maxPageSize: 100,
+    defaultFields: [
+      // Personal info
+      'id',
+      'roleId',
+      'email',
+      'givenName',
+      'familyName',
+      'picture',
+
+      // Scholar info
+      'yearId',
+      'facultyId',
+    ],
     allowedFields: [
       // Personal info
       'id',
@@ -55,6 +66,10 @@ const userSchema = createModelSchema(
       // Scholar info
       'yearId',
       'facultyId',
+
+      // Dates
+      'updatedAt',
+      'createdAt',
     ],
     sortableFields: ['givenName', 'email', 'createdAt', 'updatedAt'],
   },

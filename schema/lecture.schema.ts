@@ -49,6 +49,18 @@ const lectureSchema = createModelSchema(
       'subjectId',
       'date',
       'creatorId',
+      // Dates
+      'updatedAt',
+      'createdAt',
+    ],
+    defaultFields: [
+      'id',
+      'type',
+      'title',
+      'subTitle',
+      'subjectId',
+      'date',
+      'creatorId',
     ],
     sortableFields: ['title', 'subTitle', 'date', 'createdAt', 'updatedAt'],
   },

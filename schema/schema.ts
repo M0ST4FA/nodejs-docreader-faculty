@@ -14,8 +14,9 @@ export default function createModelSchema<
   update: readonly UK[],
   queryConfig: {
     defaultPage?: number;
-    defaultSize: number;
-    maxPageSize: number;
+    defaultSize?: number;
+    maxPageSize?: number;
+    defaultFields?: (keyof T)[];
     allowedFields: (keyof T)[];
     sortableFields: (keyof T)[];
   },
@@ -23,8 +24,9 @@ export default function createModelSchema<
   // Extract query config
   const {
     defaultPage = 1,
-    defaultSize = 20,
+    defaultSize = 10,
     maxPageSize: maxSize = 100,
+    defaultFields = queryConfig.allowedFields,
     allowedFields = Object.keys(fullSchema.shape) as (keyof T)[],
     sortableFields = Object.keys(fullSchema.shape) as (keyof T)[],
   } = queryConfig || {};
@@ -65,6 +67,7 @@ export default function createModelSchema<
   const updateSchema = z.object(updateShape).partial().strict();
 
   // --- QUERY object ---
+
   const query = z
     .object({
       page: z
@@ -118,7 +121,7 @@ export default function createModelSchema<
       const select =
         fields && fields.length > 0
           ? Object.fromEntries(fields.map(f => [f, true]))
-          : Object.fromEntries(allowedFields.map(f => [f, true]));
+          : Object.fromEntries(defaultFields.map(f => [f, true]));
 
       const orderBy =
         sort && sort.length > 0

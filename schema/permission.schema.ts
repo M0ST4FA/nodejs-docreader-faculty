@@ -39,7 +39,16 @@ const permissionSchema = createModelSchema(
     defaultPage: 1,
     defaultSize: 10,
     maxPageSize: 100,
-    allowedFields: ['id', 'description', 'action', 'scope', 'resource'],
+    allowedFields: [
+      'id',
+      'description',
+      'action',
+      'scope',
+      'resource',
+      'updatedAt',
+      'createdAt',
+    ],
+    defaultFields: ['id', 'description', 'action', 'scope', 'resource'],
     sortableFields: ['action'],
   },
 );

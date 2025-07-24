@@ -25,7 +25,15 @@ const yearSchema = createModelSchema(
     defaultPage: 1,
     defaultSize: 10,
     maxPageSize: 100,
-    allowedFields: ['id', 'title', 'facultyId', 'creatorId'],
+    allowedFields: [
+      'id',
+      'title',
+      'facultyId',
+      'creatorId',
+      'updatedAt',
+      'createdAt',
+    ],
+    defaultFields: ['id', 'title', 'facultyId', 'creatorId'],
     sortableFields: ['title', 'createdAt', 'updatedAt'],
   },
 );

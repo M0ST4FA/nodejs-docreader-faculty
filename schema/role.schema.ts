@@ -31,7 +31,15 @@ const roleSchema = createModelSchema(
     defaultPage: 1,
     defaultSize: 10,
     maxPageSize: 100,
-    allowedFields: ['id', 'name', 'description', 'creatorId'],
+    allowedFields: [
+      'id',
+      'name',
+      'description',
+      'creatorId',
+      'updatedAt',
+      'createdAt',
+    ],
+    defaultFields: ['id', 'name', 'description', 'creatorId'],
     sortableFields: ['name', 'createdAt', 'updatedAt'],
   },
 );

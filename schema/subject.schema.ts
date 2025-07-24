@@ -26,7 +26,16 @@ const subjectSchema = createModelSchema(
     defaultPage: 1,
     defaultSize: 10,
     maxPageSize: 100,
-    allowedFields: ['id', 'name', 'icon', 'moduleId', 'creatorId'],
+    allowedFields: [
+      'id',
+      'name',
+      'icon',
+      'moduleId',
+      'creatorId',
+      'updatedAt',
+      'createdAt',
+    ],
+    defaultFields: ['id', 'name', 'icon', 'moduleId', 'creatorId'],
     sortableFields: ['name', 'createdAt', 'updatedAt'],
   },
 );

@@ -70,6 +70,10 @@ class ErrorController {
     }
   }
 
+  static #handleJsonWebTokenError(error: any) {
+    return new AppError(error.message, 400);
+  }
+
   static #sendAPIErrors(err: any, res: Response) {
     let error = { ...err };
 
@@ -83,6 +87,9 @@ class ErrorController {
     } else {
       if (error.name === 'PrismaClientKnownRequestError')
         error = this.#handlePrismaClientKnownRequestError(error);
+
+      if (error.name === 'JsonWebTokenError')
+        error = this.#handleJsonWebTokenError(error);
 
       error = ErrorController.#sendProdErrors(error, res);
     }
