@@ -9,7 +9,7 @@ export default class FacultyController {
   ) {
     req.body.creatorId = req.user.id;
 
-    const faculty = await FacultyModel.createOne(req.body);
+    const faculty = await FacultyModel.createOne(req.body, req.query);
 
     res.status(201).json({
       status: 'success',

@@ -12,16 +12,16 @@ class ErrorController {
     });
   }
 
-  static #sendProdErrors(err: any, res: Response) {
+  static #sendProdErrors(error: any, res: Response) {
     // Operational, trusted errors: send message to client
-    if (err.name === 'AppError' && err.isOperational) {
-      res.status(err.statusCode).json({
-        status: err.status,
-        message: err.message,
+    if (error?.name === 'AppError' && error.isOperational) {
+      res.status(error.statusCode).json({
+        status: error.status,
+        message: error.message,
       });
     } else {
       // Programming or unknown error
-      console.error('UNEXPECTED ERROR 💥', err);
+      console.error('UNEXPECTED ERROR 💥', error);
       res.status(500).json({
         status: 'error',
         message: 'Something went wrong on the server.',
@@ -36,11 +36,17 @@ class ErrorController {
 
     switch (error.code) {
       case 'P2002':
-        if (errorMeta?.modelName === 'RolePermission')
+        if (errorMeta?.modelName === 'RolePermission') {
           if ((errorMeta?.target as any[])?.length === 2)
             // Not the best condition, but works 🥸
             return new AppError(
               `Every (roleId, permissionId) pair must be unique. It seems you're adding a permission a second time for the same role.`,
+              400,
+            );
+        } else if (errorMeta?.modelName === 'Device')
+          if ((errorMeta?.target as string[])?.includes('token'))
+            return new AppError(
+              `Duplicate token! A token with this ID already exists.`,
               400,
             );
 
@@ -63,7 +69,10 @@ class ErrorController {
         break;
 
       case 'P2025':
-        return new AppError(`Database record not found for an update.`, 404);
+        return new AppError(
+          `Database record not found for an update or delete.`,
+          404,
+        );
 
       default:
         return error;

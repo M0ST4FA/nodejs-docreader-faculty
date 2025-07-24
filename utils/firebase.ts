@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+import admin from 'firebase-admin';
 
 interface FirebaseAdminAppParams {
   projectId: string;
@@ -8,7 +8,7 @@ interface FirebaseAdminAppParams {
 }
 
 function formatPrivateKey(key: string) {
-  return key.replace(/\\n/g, "\n");
+  return key.replace(/\\n/g, '\n');
 }
 
 export function createFirebaseAdminApp(params: FirebaseAdminAppParams) {
@@ -42,5 +42,5 @@ export function initAdmin() {
   return createFirebaseAdminApp(params);
 }
 
-const app = initAdmin();
-export const messaging = app.messaging();
+const firebaseAdminSDK = initAdmin();
+export const notificationMessaging = firebaseAdminSDK.messaging();

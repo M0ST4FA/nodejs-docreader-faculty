@@ -44,7 +44,7 @@ export default class LinkController {
     req.body.lectureId = lectureId;
     req.body.creatorId = req.user.id;
 
-    const link = await LinkModel.createOne(req.body);
+    const link = await LinkModel.createOne(req.body, req.query);
 
     res.status(201).json({
       status: 'success',

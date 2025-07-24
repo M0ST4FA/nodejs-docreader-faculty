@@ -14,24 +14,27 @@ import subjectRouter from './routes/subjectRouter';
 import lectureRouter from './routes/lectureRouter';
 import quizRouter from './routes/quizRouter';
 import linkRouter from './routes/linkRouter';
+import notificationRouter from './routes/notificationRouter';
 
 const app = express();
+const apiRoutesBase = '/api/v2';
 
 app.use(morgan('dev')); // logs to console in development
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/v2/', authRouter);
-app.use('/api/v2/users', userRouter);
-app.use('/api/v2/roles', roleRouter);
-app.use('/api/v2/permissions', permissionRouter);
-app.use('/api/v2/faculties', facultyRouter);
-app.use('/api/v2/years', yearRouter);
-app.use('/api/v2/modules', moduleRouter);
-app.use('/api/v2/subjects', subjectRouter);
-app.use('/api/v2/lectures', lectureRouter);
-app.use('/api/v2/quizzes', quizRouter);
-app.use('/api/v2/links', linkRouter);
+app.use(`${apiRoutesBase}/`, authRouter);
+app.use(`${apiRoutesBase}/users`, userRouter);
+app.use(`${apiRoutesBase}/roles`, roleRouter);
+app.use(`${apiRoutesBase}/permissions`, permissionRouter);
+app.use(`${apiRoutesBase}/faculties`, facultyRouter);
+app.use(`${apiRoutesBase}/years`, yearRouter);
+app.use(`${apiRoutesBase}/modules`, moduleRouter);
+app.use(`${apiRoutesBase}/subjects`, subjectRouter);
+app.use(`${apiRoutesBase}/lectures`, lectureRouter);
+app.use(`${apiRoutesBase}/quizzes`, quizRouter);
+app.use(`${apiRoutesBase}/links`, linkRouter);
+app.use(`${apiRoutesBase}/notifications`, notificationRouter);
 
 app.use(globalErrorHandler);
 

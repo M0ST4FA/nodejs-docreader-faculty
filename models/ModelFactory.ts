@@ -5,18 +5,20 @@ import {
   PrismaDeleteModel,
   PrismaFindManyModel,
   PrismaFindUniqueModel,
+  PrismaCreateModel,
 } from '../types/Factory.types';
 import { QueryParamsService } from '../utils/QueryParamsService';
 
 export class ModelFactory {
   static createOne<TCreateInput, TCreateResult, TInstance>(
-    prismaModel: {
-      create(args: { data: TCreateInput }): Promise<TCreateResult>;
-    },
+    prismaModel: PrismaCreateModel<TCreateResult>,
     schema: FactorySchema<any, any, any, TCreateInput>,
     wrap?: (data: TCreateResult) => TInstance,
   ) {
-    return async (data: TCreateInput): Promise<TInstance | TCreateResult> => {
+    return async (
+      data: TCreateInput,
+      queryParams: any,
+    ): Promise<TInstance | TCreateResult> => {
       const validated = schema.create.safeParse(data);
 
       if (!validated.success) {
@@ -30,8 +32,15 @@ export class ModelFactory {
         );
       }
 
+      const validatedQueryParams: any = QueryParamsService.parse<
+        typeof schema.query
+      >(schema, queryParams, {
+        projection: true,
+      });
+
       const created = await prismaModel.create({
         data,
+        select: validatedQueryParams.select,
       });
 
       return wrap ? wrap(created) : created;

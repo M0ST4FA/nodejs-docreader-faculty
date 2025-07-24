@@ -62,9 +62,15 @@ class UserModel {
     const userData = await db.user.create({
       data: {
         ...user,
-        devices: {
-          create: [],
-        },
+      },
+      select: {
+        id: true,
+        givenName: true,
+        familyName: true,
+        email: true,
+        picture: true,
+        facultyId: true, // Null initially
+        yearId: true, // Null initially
       },
     });
 
@@ -97,14 +103,14 @@ class UserModel {
       where: {
         googleSubId: sub,
       },
-      include: {
-        role: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-          },
-        },
+      select: {
+        id: true,
+        givenName: true,
+        familyName: true,
+        email: true,
+        picture: true,
+        facultyId: true,
+        yearId: true,
       },
     });
 

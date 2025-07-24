@@ -44,7 +44,7 @@ export default class LectureController {
     req.body.subjectId = subjectId;
     req.body.creatorId = req.user.id;
 
-    const lecture = await LectureModel.createOne(req.body);
+    const lecture = await LectureModel.createOne(req.body, req.query);
 
     res.status(201).json({
       status: 'success',

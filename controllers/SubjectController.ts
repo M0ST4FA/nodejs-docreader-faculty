@@ -45,7 +45,7 @@ export default class SubjectController {
     req.body.moduleId = moduleId;
     req.body.creatorId = req.user.id;
 
-    const subject = await SubjectModel.createOne(req.body);
+    const subject = await SubjectModel.createOne(req.body, req.query);
 
     res.status(201).json({
       status: 'success',

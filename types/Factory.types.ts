@@ -17,6 +17,10 @@ export interface FactorySchema<
   create: ZodSchema<TCreate>;
 }
 
+export interface PrismaCreateModel<TCreateResult> {
+  create(args: { data: any; select?: any }): Promise<TCreateResult>;
+}
+
 /**
  * Prisma findMany function type for a given model.
  */

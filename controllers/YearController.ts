@@ -41,7 +41,7 @@ export default class YearController {
     req.body.facultyId = facultyId;
     req.body.creatorId = req.user.id;
 
-    const year = await YearModel.createOne(req.body);
+    const year = await YearModel.createOne(req.body, req.query);
 
     res.status(201).json({
       status: 'success',

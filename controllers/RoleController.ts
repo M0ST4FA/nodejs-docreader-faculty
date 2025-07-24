@@ -21,7 +21,7 @@ export default class RoleController {
   ) {
     req.body.creatorId = req.user.id;
 
-    const role = await RoleModel.createOne(req.body);
+    const role = await RoleModel.createOne(req.body, req.query);
 
     res.status(201).json({
       status: 'success',

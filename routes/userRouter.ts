@@ -1,15 +1,34 @@
 import { Router } from 'express';
 import UserController from '../controllers/UserController';
 import AuthController from '../controllers/AuthController';
+import DeviceController from '../controllers/DeviceController';
+import DeviceModel from '../models/Device';
 
 const router = Router();
 
 router.use(AuthController.protect);
 
 // ME ROUTES
-router.get('/me', UserController.getMe, UserController.getUser);
-router.patch('/updateMe', UserController.getMe, UserController.updateUser);
-router.delete('/deleteMe', UserController.getMe, UserController.deleteUser); // Deletion doesn't require a permission to not lock the user in the app
+router
+  .route('/me')
+  .get(UserController.getMe, UserController.getUser)
+  .patch(UserController.getMe, UserController.updateUser)
+  .delete(UserController.getMe, UserController.deleteUser);
+
+// DEVICE ROUTES
+router
+  .route('/me/devices')
+  .get(DeviceController.getDevices)
+  .post(
+    AuthController.requirePermission('CREATE', 'ANY', 'DEVICE'),
+    DeviceController.createDevice,
+  );
+
+router.delete(
+  '/me/devices/:id',
+  AuthController.requirePermission('DELETE', 'OWN', 'DEVICE', DeviceModel),
+  DeviceController.deleteDevice,
+);
 
 // USER ROUTES
 router

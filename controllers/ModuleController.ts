@@ -41,7 +41,7 @@ export default class ModuleController {
     req.body.yearId = yearId;
     req.body.creatorId = req.user.id;
 
-    const module = await ModuleModel.createOne(req.body);
+    const module = await ModuleModel.createOne(req.body, req.query);
 
     res.status(201).json({
       status: 'success',

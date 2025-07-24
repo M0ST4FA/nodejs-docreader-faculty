@@ -42,7 +42,7 @@ export default class QuizController {
     req.body.lectureId = lectureId;
     req.body.creatorId = req.user.id;
 
-    const quiz = await QuizModel.createOne(req.body);
+    const quiz = await QuizModel.createOne(req.body, req.query);
 
     res.status(201).json({
       status: 'success',
