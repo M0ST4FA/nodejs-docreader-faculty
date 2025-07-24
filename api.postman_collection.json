@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "5dbba3de-2692-4863-b2fb-362379f3df87",
 		"name": "DRG Backend",
-		"description": "## 📘 API Conventions\n\n### Query Parameters\n\nMany endpoints follow consistent conventions for query parameters, pagination, sorting, and field projection.\n\nIn general, queries that return a collection have all of the parameters. Queries that return or update a single item (which also return the updated item) have the projection query parameter only (this is because they return a single item, and thus, sorting and pagination make no sense).\n\nAlso note that projectable and sortable fields differ by resource. These will documented in their respective resource page.\n\n| Parameter | Type | Description |\n| --- | --- | --- |\n| `sort` | `string[]` | List of fields to sort by. Prefix with `-` for descending order. |\n| `fields` | `string[]` | List of fields to include in the response. |\n| `page` | `integer` | Page number (1-indexed). |\n| `size` | `integer` | Number of items per page. |\n\n##### Example\n\n``` http\nGET /users?sort=-createdAt,name&fields=id,name,email&page=2&size=20 HTTP/1.1\n\n ```\n\n---\n\n### HTTP Status Codes\n\n| Status | Usage |\n| --- | --- |\n| `200` | Success for `GET`, `PUT`. |\n| `201` | Resource created. |\n| `204` | Resource deleted, no body. |\n| `400` | Bad input. |\n| `404` | Resource not found. |\n| `500` | Internal server error. |\n\n---\n\n### Structure of Returned Result\n\nThe structure of returned result depends on:\n\n1. Whether the request was successfull or not.\n    \n2. Whether the endpoint returns a single result or a collection.\n    \n\n#### Success Result for Single Resource\n\n| **Field** | **Type** | **Value** |\n| --- | --- | --- |\n| `status` | `enum/string` | `success` |\n| `data` | `object` | Object containing a single field (named after the resource) whose value is the single result resource. |\n\n##### Example:\n\n``` json\n{\n    \"status\": \"success\",\n    \"data\": {\n        \"year\": {\n            \"id\": 4,\n            \"title\": \"الثانية\",\n            \"facultyId\": 4,\n            \"creatorId\": null\n        }\n    }\n}\n\n ```\n\n#### Success Result for Resource Collection\n\n| **Field** | **Type** | **Value** |\n| --- | --- | --- |\n| `status` | `enum/string` | `success` |\n| `totalCount` | `number` | Number of resources in the collection. |\n| `data` | `object` | Object containing an array of resources. |\n\n##### Example:\n\n``` json\n{\n    \"status\": \"success\",\n    \"totalCount\": 5,\n    \"data\": {\n        \"years\": [\n            {\n                \"facultyId\": 4,\n                \"title\": \"Fala7 year\"\n            },\n            {\n                \"facultyId\": 4,\n                \"title\": \"Fala7 year patched\"\n            },\n            {\n                \"facultyId\": 4,\n                \"title\": \"الأولى\"\n            },\n            {\n                \"facultyId\": 4,\n                \"title\": \"الثانية\"\n            }\n        ]\n    }\n}\n\n ```\n\n#### Failure Result\n\n| **Field** | **Type** | **Value** |\n| --- | --- | --- |\n| `status` | `enum` | One of: `fail`(for client errors), `error` (for server errors) |\n| `message` | `string` | Error message. |\n\n##### Example:\n\n``` json\n{\n  \"status\": \"fail\",\n  \"message\": \"Invalid ID. Must be an integer.\"\n}\n\n ```",
+		"description": "## 📘 API Conventions\n\n### Nested Routes\n\nRoutes are nested when a clear resource dependency is eminent, without limiting flexibility. NO resource has ALL of its routes nested. They are distribuited in a sensible manner, between nesting and flatting.\n\n**IMPORTANT**: In most nested routes, (for performance reasons) no checks happen for the parent resource. This has the consquence that, if the parent resource doesn't exist, it will return normally. The return will be a failure for single resources or a success with an empty collection for resource collections. Note that some of them are checked by database due to foriegn constraints (like in the case of roles and permissions).\n\n### Query Parameters\n\nMany endpoints follow consistent conventions for query parameters, pagination, sorting, and field projection.\n\nIn general, queries that return a collection have all of the parameters. Queries that return or update a single item (which also return the updated item) have the projection query parameter only (this is because they return a single item, and thus, sorting and pagination make no sense).\n\nAlso note that projectable and sortable fields differ by resource. These will documented in their respective resource page.\n\n| Parameter | Type | Description |\n| --- | --- | --- |\n| `sort` | `string[]` | List of fields to sort by. Prefix with `-` for descending order. |\n| `fields` | `string[]` | List of fields to include in the response. |\n| `page` | `integer` | Page number (1-indexed). |\n| `size` | `integer` | Number of items per page. |\n\n##### Example\n\n``` http\nGET /users?sort=-createdAt,name&fields=id,name,email&page=2&size=20 HTTP/1.1\n\n ```\n\n---\n\n### HTTP Status Codes\n\n| Status | Usage |\n| --- | --- |\n| `200` | Success for `GET`, `PUT`. |\n| `201` | Resource created. |\n| `204` | Resource deleted, no body. |\n| `400` | Bad input. |\n| `404` | Resource not found. |\n| `500` | Internal server error. |\n\n---\n\n### Structure of Returned Result\n\nThe structure of returned result depends on:\n\n1. Whether the request was successfull or not.\n    \n2. Whether the endpoint returns a single result or a collection.\n    \n\n#### Success Result for Single Resource\n\n| **Field** | **Type** | **Value** |\n| --- | --- | --- |\n| `status` | `enum/string` | `success` |\n| `data` | `object` | Object containing a single field (named after the resource) whose value is the single result resource. |\n\n##### Example:\n\n``` json\n{\n    \"status\": \"success\",\n    \"data\": {\n        \"year\": {\n            \"id\": 4,\n            \"title\": \"الثانية\",\n            \"facultyId\": 4,\n            \"creatorId\": null\n        }\n    }\n}\n\n ```\n\n#### Success Result for Resource Collection\n\n| **Field** | **Type** | **Value** |\n| --- | --- | --- |\n| `status` | `enum/string` | `success` |\n| `totalCount` | `number` | Number of resources in the collection. |\n| `data` | `object` | Object containing an array of resources. |\n\n##### Example:\n\n``` json\n{\n    \"status\": \"success\",\n    \"totalCount\": 5,\n    \"data\": {\n        \"years\": [\n            {\n                \"facultyId\": 4,\n                \"title\": \"Fala7 year\"\n            },\n            {\n                \"facultyId\": 4,\n                \"title\": \"Fala7 year patched\"\n            },\n            {\n                \"facultyId\": 4,\n                \"title\": \"الأولى\"\n            },\n            {\n                \"facultyId\": 4,\n                \"title\": \"الثانية\"\n            }\n        ]\n    }\n}\n\n ```\n\n#### Failure Result\n\n| **Field** | **Type** | **Value** |\n| --- | --- | --- |\n| `status` | `enum` | One of: `fail`(for client errors), `error` (for server errors) |\n| `message` | `string` | Error message. |\n\n##### Example:\n\n``` json\n{\n  \"status\": \"fail\",\n  \"message\": \"Invalid ID. Must be an integer.\"\n}\n\n ```",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "37635789"
 	},
@@ -128,7 +128,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{JWT_USER}}",
+									"value": "{{JWT}}",
 									"type": "string"
 								}
 							]
@@ -177,13 +177,13 @@
 							]
 						},
 						"url": {
-							"raw": "{{url}}/users/7",
+							"raw": "{{url}}/users/5",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"users",
-								"7"
+								"5"
 							]
 						}
 					},
@@ -387,14 +387,256 @@
 			"name": "Role",
 			"item": [
 				{
-					"name": "Role",
+					"name": "Permission",
+					"item": [
+						{
+							"name": "All Permissions",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/roles/6/permissions",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"roles",
+										"6",
+										"permissions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Permission",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"permissions\": [1, 2, 3, 10, 20, 30]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/roles/6/permissions",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"roles",
+										"6",
+										"permissions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Permission",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"permissions\": [1, 2, 3, 10, 20, 30, 40]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/roles/6/permissions",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"roles",
+										"6",
+										"permissions"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "All Roles",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "{{url}}/roles",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Role [ID]",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/roles/5?fields=id,name",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"roles",
+								"5"
+							],
+							"query": [
+								{
+									"key": "fields",
+									"value": "id,name"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Role",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"TestRole5\",\n    \"description\": \"A role for testing role creation. Expect a ton of these to fill the database 🥸\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/roles",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Role [ID]",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated name\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/roles/6",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"roles",
+								"6"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Role [ID]",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/roles/5",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"roles",
+								"5"
+							]
+						}
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `name`\n    \n- `description`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `name`\n    \n- `createdAt`\n    \n- `updatedAt`"
+		},
+		{
+			"name": "Permission",
+			"item": [
+				{
+					"name": "All Permissions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/permissions?size=100",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"permissions"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "100"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Permission [ID]",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/permissions/50",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"permissions",
+								"50"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `description`\n    \n- `action`\n    \n- `scope`\n    \n- `resource`\n    \n\n#### 🔄 Sortable Fields\n\n- `action`"
 		},
 		{
 			"name": "Faculties",
@@ -484,7 +726,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{JWT_USER}}",
+									"value": "{{JWT}}",
 									"type": "string"
 								}
 							]
@@ -1685,7 +1927,7 @@
 		},
 		{
 			"key": "JWT",
-			"value": "",
+			"value": "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9.eyJpZCI6Niwicm9sZSI6IlVzZXIiLCJpYXQiOjE3NTIyNzIzNDcsImV4cCI6MTc2MDA0ODM0N30.gsQ-CVEgr71IJCUPDTG1vw5ftTYaFNXqGr2Yipn8_woCQkNdlqb90wEdmyD49Ex3-9muDsFxgaAKjV7Y14tYm0Ncyftjjerb81GavqX4buDq-UQzJJGjUWcFnG8c-2gQ",
 			"type": "default"
 		},
 		{
