@@ -75,13 +75,13 @@ export default class UserController {
   ) {
     const id = UserController.extractAndValidateId(req);
 
-    const updateInput = userSchema.update.safeParse(req.body);
+    const validatedUpdateInput = userSchema.update.safeParse(req.body);
 
-    if (updateInput.error)
+    if (validatedUpdateInput.error)
       throw new AppError(
-        `Invalid update object. Issues: ${JSON.stringify(
-          updateInput.error.issues,
-        )}`,
+        `Invalid update object. Issues: [ ${validatedUpdateInput.error.issues.map(
+          issue => issue.message,
+        )} ]`,
         400,
       );
 
@@ -95,7 +95,7 @@ export default class UserController {
 
     const updatedUser = await UserModel.updateOne(
       id,
-      updateInput.data,
+      validatedUpdateInput.data,
       queryParams,
     );
 

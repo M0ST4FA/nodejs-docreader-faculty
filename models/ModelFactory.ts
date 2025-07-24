@@ -19,15 +19,13 @@ export class ModelFactory {
       data: TCreateInput,
       queryParams: any,
     ): Promise<TInstance | TCreateResult> => {
-      const validated = schema.create.safeParse(data);
+      const validatedCreationBody = schema.create.safeParse(data);
 
-      if (!validated.success) {
+      if (!validatedCreationBody.success) {
         throw new AppError(
-          `Invalid create input: ${JSON.stringify(
-            validated.error.issues,
-            null,
-            2,
-          )}`,
+          `Invalid create input: [ ${validatedCreationBody.error.issues.map(
+            issue => issue.message,
+          )} ]}`,
           400,
         );
       }
@@ -60,9 +58,9 @@ export class ModelFactory {
 
       if (validatedWhere.error)
         throw new AppError(
-          `Invalid filter object. Issues: ${JSON.stringify(
-            validatedWhere.error.issues,
-          )}`,
+          `Invalid filter object. Issues: [ ${validatedWhere.error.issues.map(
+            issue => issue.message,
+          )} ]`,
           400,
         );
 
@@ -94,7 +92,7 @@ export class ModelFactory {
           take: validatedQueryParams.take,
         });
 
-      return wrap ? objects.map(object => wrap(object)) : objects;
+      return wrap ? objects.map((object: any) => wrap(object)) : objects;
     };
   }
 
@@ -180,11 +178,9 @@ export class ModelFactory {
 
       if (!validatedUpdate.success) {
         throw new AppError(
-          `Invalid update input: ${JSON.stringify(
-            validatedUpdate.error.issues,
-            null,
-            2,
-          )}`,
+          `Invalid update input: [ ${validatedUpdate.error.issues.map(
+            issue => issue.message,
+          )} ]`,
           400,
         );
       }

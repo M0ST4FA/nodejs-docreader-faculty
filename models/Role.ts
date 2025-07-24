@@ -33,16 +33,19 @@ export default class RoleModel {
   public async addPermissions(permissionIds: PermissionArrayInput) {
     if (permissionIds.length === 0) return;
 
-    const validatedArray = permissionArrayInputSchema.safeParse(permissionIds);
+    const validatedPermissionIdArray =
+      permissionArrayInputSchema.safeParse(permissionIds);
 
-    if (validatedArray.error)
+    if (validatedPermissionIdArray.error)
       throw new AppError(
-        `Invalid input: ${JSON.stringify(validatedArray.error.issues)}`,
+        `Invalid input: $[ ${validatedPermissionIdArray.error.issues.map(
+          issue => issue.message,
+        )} ]`,
         400,
       );
 
     await db.rolePermission.createMany({
-      data: validatedArray.data.map(permId => ({
+      data: validatedPermissionIdArray.data.map(permId => ({
         permissionId: permId,
         roleId: this.id,
       })),
@@ -55,18 +58,21 @@ export default class RoleModel {
   public async removePermissions(permissionIds: PermissionArrayInput) {
     if (permissionIds.length === 0) return;
 
-    const validatedArray = permissionArrayInputSchema.safeParse(permissionIds);
+    const validatedPermissionIdArray =
+      permissionArrayInputSchema.safeParse(permissionIds);
 
-    if (validatedArray.error)
+    if (validatedPermissionIdArray.error)
       throw new AppError(
-        `Invalid input: ${JSON.stringify(validatedArray.error.issues)}`,
+        `Invalid input: [ ${validatedPermissionIdArray.error.issues.map(
+          issue => issue.message,
+        )} ]`,
         400,
       );
 
     await db.rolePermission.deleteMany({
       where: {
         roleId: this.id,
-        permissionId: { in: validatedArray.data },
+        permissionId: { in: validatedPermissionIdArray.data },
       },
     });
 

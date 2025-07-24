@@ -69,9 +69,9 @@ export class QueryParamsService {
 
     if (parsed.error)
       throw new AppError(
-        `Invalid query parameters object. Issues: ${JSON.stringify(
-          parsed.error.issues,
-        )}`,
+        `Invalid query parameters object. Issues: [ ${parsed.error.issues.map(
+          (issue: any) => issue.message,
+        )} ]`,
         400,
       );
 

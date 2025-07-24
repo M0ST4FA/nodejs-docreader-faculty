@@ -50,7 +50,7 @@ export default class NotificationController {
 
     const response = await notificationMessaging.sendEachForMulticast(
       {
-        tokens: devices.map(device => device.token),
+        tokens: devices.map((device: any) => device.token),
         notification: validatedNotificationBody.data.notification,
         data: validatedNotificationBody.data.data,
       },
