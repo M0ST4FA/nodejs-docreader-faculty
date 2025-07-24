@@ -82,3 +82,11 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=firebase_storage_bucket
 FIREBASE_PRIVATE_KEY=firebase_private_key
 FIREBASE_CLIENT_EMAIL=firebase_client_email
 ```
+
+## Database Migration Scripts
+
+The `scripts` directory has some useful migration and seeding scripts. Here's a description of each one:
+
+1. `migrateDBV1ToV2.js`: Copies data from v1 database to v2 database. It needs a `.env` file that contains URL of both databases as well path to old and new compiled Prisma schemata.
+2. `seedPermissions.js`: Seeds permissions for all action, scope and resource combinations.
+3. `seedRoles.js`: Seeds the two default roles (`SuperAdmin` at id 0 and `User` at id 1) with expected (hard-coded) ids and appropriate permissions.
