@@ -29,7 +29,7 @@ const facultySchema = createModelSchema(
     defaultPage: 0,
     defaultSize: 10,
     maxPageSize: 100,
-    allowedFields: [
+    projectableFields: [
       'id',
       'name',
       'city',

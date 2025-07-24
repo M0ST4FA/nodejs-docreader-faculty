@@ -17,7 +17,7 @@ export default function createModelSchema<
     defaultSize?: number;
     maxPageSize?: number;
     defaultFields?: (keyof T)[];
-    allowedFields: (keyof T)[];
+    projectableFields: (keyof T)[];
     sortableFields: (keyof T)[];
   },
 ) {
@@ -26,8 +26,10 @@ export default function createModelSchema<
     defaultPage = 1,
     defaultSize = 10,
     maxPageSize: maxSize = 100,
-    defaultFields = queryConfig.allowedFields,
-    allowedFields = Object.keys(fullSchema.shape) as (keyof T)[],
+    defaultFields = queryConfig.projectableFields,
+    projectableFields: allowedFields = Object.keys(
+      fullSchema.shape,
+    ) as (keyof T)[],
     sortableFields = Object.keys(fullSchema.shape) as (keyof T)[],
   } = queryConfig || {};
 

@@ -25,7 +25,7 @@ const yearSchema = createModelSchema(
     defaultPage: 1,
     defaultSize: 10,
     maxPageSize: 100,
-    allowedFields: [
+    projectableFields: [
       'id',
       'title',
       'facultyId',

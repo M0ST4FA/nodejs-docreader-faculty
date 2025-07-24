@@ -54,7 +54,7 @@ const userSchema = createModelSchema(
       'yearId',
       'facultyId',
     ],
-    allowedFields: [
+    projectableFields: [
       // Personal info
       'id',
       'roleId',
