@@ -36,10 +36,17 @@ const roleSchema = createModelSchema(
   },
 );
 
+export const permissionArrayInputSchema = z.array(
+  z.number({ message: 'Permission IDs must be integers.' }),
+  { message: 'Permissions to add or remove must be an array.' },
+);
+
 // --- Type Exports ---
 export type RoleWhereInput = z.infer<typeof roleSchema.where>;
 export type RoleQueryInput = z.infer<typeof roleSchema.query>;
 export type RoleUpdateInput = z.infer<typeof roleSchema.update>;
 export type RoleCreateInput = z.infer<typeof roleSchema.create>;
+
+export type PermissionArrayInput = z.infer<typeof permissionArrayInputSchema>;
 
 export default roleSchema;
