@@ -37,6 +37,11 @@ const quizSchema = createModelSchema(
     ],
     defaultFields: ['id', 'lectureId', 'title', 'notifiable', 'creatorId'],
     sortableFields: ['title', 'createdAt', 'updatedAt'],
+    includableFields: [
+      'lectureData',
+      'lectureData.subject',
+      'lectureData.subject.module',
+    ],
   },
 );
 

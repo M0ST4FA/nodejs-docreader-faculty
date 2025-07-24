@@ -63,15 +63,27 @@ export class ModelFactory {
         pagination: true,
         projection: true,
         sorting: true,
+        joining: true,
       });
 
-      const objects: any = await prismaModel.findMany({
-        where: validatedWhere.data,
-        select: validatedQueryParams.select,
-        orderBy: validatedQueryParams.orderBy,
-        skip: validatedQueryParams.skip,
-        take: validatedQueryParams.take,
-      });
+      let objects: any = {};
+
+      if (validatedQueryParams.include)
+        objects = await prismaModel.findMany({
+          where: validatedWhere.data,
+          include: validatedQueryParams.include,
+          orderBy: validatedQueryParams.orderBy,
+          skip: validatedQueryParams.skip,
+          take: validatedQueryParams.take,
+        });
+      else
+        objects = await prismaModel.findMany({
+          where: validatedWhere.data,
+          select: validatedQueryParams.select,
+          orderBy: validatedQueryParams.orderBy,
+          skip: validatedQueryParams.skip,
+          take: validatedQueryParams.take,
+        });
 
       return wrap ? objects.map(object => wrap(object)) : objects;
     };
@@ -91,14 +103,24 @@ export class ModelFactory {
 
       const validatedQueryParams: any = QueryParamsService.parse<
         typeof schema.query
-      >(schema, queryParams, { projection: true });
+      >(schema, queryParams, { projection: true, joining: true });
 
-      const object = await prismaModel.findUnique({
-        where: {
-          id,
-        },
-        select: validatedQueryParams.select,
-      });
+      let object: any = {};
+
+      if (validatedQueryParams.include)
+        object = await prismaModel.findUnique({
+          where: {
+            id,
+          },
+          include: validatedQueryParams.include,
+        });
+      else
+        object = await prismaModel.findUnique({
+          where: {
+            id,
+          },
+          select: validatedQueryParams.select,
+        });
 
       if (!object)
         throw new AppError(`Couldn't find resource with ID ${id}.`, 404);

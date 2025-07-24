@@ -27,6 +27,7 @@ export interface PrismaFindManyModel<TFindResult> {
     orderBy?: any;
     skip?: any;
     take?: any;
+    include?: any;
   }): Promise<TFindResult[]>;
 }
 /**
@@ -36,6 +37,7 @@ export interface PrismaFindUniqueModel<TFindResult> {
   findUnique(args: {
     where: { id: number };
     select?: any;
+    include?: any;
   }): Promise<TFindResult | null>;
 }
 

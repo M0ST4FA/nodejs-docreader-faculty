@@ -5,6 +5,7 @@ export type QueryFeatureSet = {
   pagination?: boolean;
   projection?: boolean;
   sorting?: boolean;
+  joining?: boolean;
 };
 
 export class QueryParamsService {
@@ -17,6 +18,7 @@ export class QueryParamsService {
       pagination: false,
       projection: false,
       sorting: false,
+      joining: false,
     },
   ): ReturnT {
     // Step 1: Error checking for req.query for unsupported features
@@ -45,6 +47,20 @@ export class QueryParamsService {
       if (queryParams.sort)
         throw new AppError(
           `Invalid query parameter: 'sort'. Sorting is not permitted in this endpoint.`,
+          400,
+        );
+
+    if (!features.joining)
+      if (queryParams.include)
+        throw new AppError(
+          `Invalid query parameter: 'include'. Joining is not permitted in this endpoint.`,
+          400,
+        );
+
+    if (features.joining && features.projection)
+      if (queryParams.include && queryParams.fields)
+        throw new AppError(
+          `Invalid query parameter combination: 'fields' and 'include'. You cannot project and join at the same time.`,
           400,
         );
 

@@ -19,6 +19,7 @@ export default function createModelSchema<
     defaultFields?: (keyof T)[];
     projectableFields: (keyof T)[];
     sortableFields: (keyof T)[];
+    includableFields?: string[];
   },
 ) {
   // Extract query config
@@ -27,10 +28,9 @@ export default function createModelSchema<
     defaultSize = 10,
     maxPageSize: maxSize = 100,
     defaultFields = queryConfig.projectableFields,
-    projectableFields: allowedFields = Object.keys(
-      fullSchema.shape,
-    ) as (keyof T)[],
+    projectableFields = Object.keys(fullSchema.shape) as (keyof T)[],
     sortableFields = Object.keys(fullSchema.shape) as (keyof T)[],
+    includableFields = [],
   } = queryConfig || {};
 
   // Normalize key sets
@@ -91,9 +91,10 @@ export default function createModelSchema<
         .optional()
         .transform(val => (typeof val === 'string' ? val.split(',') : val))
         .refine(
-          val => !val || val.every(f => allowedFields.includes(f as keyof T)),
+          val =>
+            !val || val.every(f => projectableFields.includes(f as keyof T)),
           {
-            message: `Invalid fields. Allowed: ${allowedFields.join(', ')}`,
+            message: `Invalid fields. Allowed: ${projectableFields.join(', ')}`,
           },
         ),
 
@@ -114,9 +115,22 @@ export default function createModelSchema<
             )}`,
           },
         ),
+      include: z
+        .string()
+        .refine(val => includableFields.includes(val), {
+          message: `Field used in join is not permitted.`,
+        })
+        .optional(),
     })
     .strict({ message: 'Unrecognized ' })
-    .transform(({ page, size, fields, sort }) => {
+    .transform(({ page, size, fields, sort, include }, ctx) => {
+      if (include && fields)
+        return ctx.addIssue({
+          code: 'custom',
+          message: 'Cannot project and joint at the same time.',
+          fatal: true,
+        });
+
       const skip = (page - 1) * size;
       const take = size;
 
@@ -134,7 +148,19 @@ export default function createModelSchema<
             })
           : undefined;
 
-      return { skip, take, select, orderBy };
+      const splitInclude = include?.split('.') || [];
+      let join = {};
+
+      if (splitInclude.length > 0)
+        join = splitInclude.reduceRight(
+          (acc, curr, i) => ({
+            [curr]: Object.entries(acc).length === 0 ? true : { include: acc },
+          }),
+          {} as any,
+        );
+      else join = false;
+
+      return { skip, take, select, orderBy, include: join };
     });
 
   // --- Final output ---
