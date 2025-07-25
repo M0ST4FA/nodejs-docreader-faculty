@@ -2,6 +2,7 @@ import catchAsync from '../utils/catchAsync';
 import { Request, Response, NextFunction } from 'express';
 import DeviceModel from '../models/Device';
 import AppError from '../utils/AppError';
+import { notificationMessaging } from '../utils/firebase';
 
 export default class DeviceController {
   private static extractDeviceId(req: Request): number {
@@ -23,7 +24,10 @@ export default class DeviceController {
   ) {
     req.body.userId = req.user.id;
 
-    const device = await DeviceModel.createOne(req.body, req.query);
+    const device = (await DeviceModel.createOne(
+      req.body,
+      req.query,
+    )) as DeviceModel;
 
     res.status(201).json({
       status: 'success',

@@ -42,5 +42,5 @@ export function initAdmin() {
   return createFirebaseAdminApp(params);
 }
 
-const firebaseAdminSDK = initAdmin();
+export const firebaseAdminSDK = initAdmin();
 export const notificationMessaging = firebaseAdminSDK.messaging();

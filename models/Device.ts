@@ -15,6 +15,10 @@ export default class DeviceModel {
     this.data = data;
   }
 
+  get token() {
+    return this.data.token;
+  }
+
   toJSON() {
     return this.data;
   }

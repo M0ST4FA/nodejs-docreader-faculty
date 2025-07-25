@@ -72,6 +72,7 @@ const userSchema = createModelSchema(
       'createdAt',
     ],
     sortableFields: ['givenName', 'email', 'createdAt', 'updatedAt'],
+    includableFields: ['role'],
   },
 );
 

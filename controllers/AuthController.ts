@@ -145,7 +145,7 @@ export default class AuthController {
           500,
         );
 
-      user = await UserModel.create(createInput.data);
+      user = (await UserModel.create(createInput.data, req.query)) as UserModel;
     }
 
     JWTService.createAndSendJWT(user.id, (await user.role()).name, res, 201, {
@@ -165,7 +165,7 @@ export default class AuthController {
     const payload: any = JWTService.verifyJWT(jwt);
 
     // 3) Verify the user exists
-    const user = await UserModel.findOneById(payload.id);
+    const user = (await UserModel.findOneById(payload.id, {})) as UserModel;
 
     if (!(user && payload))
       return next(

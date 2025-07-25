@@ -1,5 +1,5 @@
 import db from '../prisma/db';
-import {
+import userSchema, {
   UserCreateInput,
   UserQueryParamInput,
   UserUpdateInput,
@@ -8,6 +8,7 @@ import {
 import { User as PrismaUser, Role as PrismaRole } from '@prisma/client';
 import AppError from '../utils/AppError';
 import RoleModel from './Role';
+import { ModelFactory } from './ModelFactory';
 
 type PartialUserWithRole = Partial<PrismaUser> & {
   role?: Partial<PrismaRole>;
@@ -17,6 +18,10 @@ class UserModel {
   private data: Partial<PartialUserWithRole>;
 
   private roleModel?: RoleModel;
+
+  private static wrapper(data: PrismaUser): UserModel {
+    return new UserModel(data);
+  }
 
   constructor(data: PartialUserWithRole) {
     this.data = data;
@@ -33,7 +38,7 @@ class UserModel {
   }
 
   get roleId(): number {
-    if (!this.data.roleId)
+    if (this.data.roleId === undefined)
       throw new AppError('User roleId field undefined.', 500);
 
     return this.data.roleId;
@@ -58,46 +63,17 @@ class UserModel {
     return copy;
   }
 
-  static async create(user: UserCreateInput): Promise<UserModel> {
-    const userData = await db.user.create({
-      data: {
-        ...user,
-      },
-      select: {
-        id: true,
-        givenName: true,
-        familyName: true,
-        email: true,
-        picture: true,
-        facultyId: true, // Null initially
-        yearId: true, // Null initially
-      },
-    });
+  static create = ModelFactory.createOne(
+    db.user,
+    userSchema,
+    UserModel.wrapper,
+  );
 
-    return new UserModel(userData);
-  }
-
-  static async findOneById(id: number): Promise<UserModel> {
-    const userData = await db.user.findUnique({
-      where: {
-        id: id,
-      },
-      include: {
-        role: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-          },
-        },
-      },
-    });
-
-    if (!userData) throw new AppError(`Couldn't find user with ID ${id}`, 404);
-
-    return new UserModel(userData);
-  }
-
+  static findOneById = ModelFactory.findOneById(
+    db.user,
+    userSchema,
+    UserModel.wrapper,
+  );
   static async findOneByGoogleSubId(sub: string): Promise<UserModel> {
     const userData = await db.user.findUnique({
       where: {
@@ -123,40 +99,17 @@ class UserModel {
     return new UserModel(userData);
   }
 
-  static async findMany(
-    where: UserWhereInput,
-    queryParams?: UserQueryParamInput,
-  ): Promise<Array<UserModel>> {
-    const users = await db.user.findMany({
-      where,
-      select: queryParams?.select,
-      orderBy: queryParams?.orderBy,
-      skip: queryParams?.skip,
-      take: queryParams?.take,
-    });
+  static findMany = ModelFactory.findMany(
+    db.user,
+    userSchema,
+    UserModel.wrapper,
+  );
 
-    return users.map(user => new UserModel(user));
-  }
-
-  static async updateOne(
-    id: number,
-    updateInput: UserUpdateInput,
-    queryParams?: UserQueryParamInput,
-  ) {
-    const updatedUser = await db.user.update({
-      where: {
-        id,
-      },
-      data: updateInput,
-      select: queryParams?.select,
-    });
-
-    if (!updatedUser) {
-      throw new AppError(`User with ID ${id} not found.`, 404);
-    }
-
-    return new UserModel(updatedUser);
-  }
+  static updateOne = ModelFactory.updateOne(
+    db.user,
+    userSchema,
+    UserModel.wrapper,
+  );
 
   static async updateRole(
     userId: number,
@@ -176,15 +129,7 @@ class UserModel {
     return new UserModel(updatedUser);
   }
 
-  static async deleteOne(id: number): Promise<UserModel> {
-    const user = await db.user.delete({
-      where: {
-        id,
-      },
-    });
-
-    return new UserModel(user);
-  }
+  static deleteOne = ModelFactory.deleteOne(db.user);
 }
 
 export default UserModel;

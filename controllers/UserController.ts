@@ -32,7 +32,7 @@ export default class UserController {
   ) {
     const id = UserController.extractAndValidateId(req);
 
-    const user = await UserModel.findOneById(id);
+    const user = await UserModel.findOneById(id, req.query);
 
     res.status(200).json({
       status: 'success',
@@ -47,17 +47,7 @@ export default class UserController {
     res: Response,
     next: NextFunction,
   ) {
-    const queryParams = QueryParamsService.parse<UserQueryParamInput>(
-      userSchema,
-      req.query,
-      {
-        pagination: true,
-        projection: true,
-        sorting: true,
-      },
-    );
-
-    const users = await UserModel.findMany({}, queryParams);
+    const users = await UserModel.findMany({}, req.query);
 
     res.status(200).json({
       status: 'success',
@@ -75,29 +65,7 @@ export default class UserController {
   ) {
     const id = UserController.extractAndValidateId(req);
 
-    const validatedUpdateInput = userSchema.update.safeParse(req.body);
-
-    if (validatedUpdateInput.error)
-      throw new AppError(
-        `Invalid update object. Issues: [ ${validatedUpdateInput.error.issues.map(
-          issue => issue.message,
-        )} ]`,
-        400,
-      );
-
-    const queryParams = QueryParamsService.parse<UserQueryParamInput>(
-      userSchema,
-      req.query,
-      {
-        projection: true,
-      },
-    );
-
-    const updatedUser = await UserModel.updateOne(
-      id,
-      validatedUpdateInput.data,
-      queryParams,
-    );
+    const updatedUser = await UserModel.updateOne(id, req.body, req.query);
 
     res.status(200).json({
       status: 'success',
