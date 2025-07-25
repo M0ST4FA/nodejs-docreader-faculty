@@ -19,10 +19,24 @@ import notificationRouter from './routes/notificationRouter';
 const app = express();
 const apiRoutesBase = '/api/v2';
 
-app.use(morgan('dev')); // logs to console in development
+// Morgan logging settings
+morgan.token('user-id', req => {
+  // Assuming you've already attached req.user in middleware
+  return (req.user as any)?.id || 'anonymous';
+});
+
+const formatWithUser =
+  '[:date[iso]] user.id=:user-id raddr=:remote-addr :method :url :status - rtime=:response-time ms referrer=":referrer" uagent=":user-agent"';
+
+app.use(morgan(formatWithUser));
+
+// Security
 app.use(cors());
+
+// Essential middleware
 app.use(express.json());
 
+// Routes
 app.use(`${apiRoutesBase}/`, authRouter);
 app.use(`${apiRoutesBase}/users`, userRouter);
 app.use(`${apiRoutesBase}/roles`, roleRouter);
@@ -36,6 +50,7 @@ app.use(`${apiRoutesBase}/quizzes`, quizRouter);
 app.use(`${apiRoutesBase}/links`, linkRouter);
 app.use(`${apiRoutesBase}/notifications`, notificationRouter);
 
+// Error handling
 app.use(globalErrorHandler);
 
 export default app;
