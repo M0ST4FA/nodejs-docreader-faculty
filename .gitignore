@@ -3,3 +3,8 @@ node_modules/
 .env
 .env.dev
 db/
+prisma/migrations
+auth_secret.json
+*.pem
+test.js
+seed.ts

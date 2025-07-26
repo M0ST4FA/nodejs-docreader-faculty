@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_DEPLOY")
+  url      = env("DATABASE_URL")
 }
 
 enum DataType {
@@ -27,10 +27,31 @@ enum LectureType {
   FinalRevision
 }
 
-enum UserRole {
-  Admin
-  User
-  Editor
+enum PermissionAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+}
+
+enum PermissionScope {
+  OWN
+  ANY
+}
+
+enum PermissionResource {
+  USER
+  ROLE
+  FACULTY
+  YEAR
+  MODULE
+  SUBJECT
+  LECTURE
+  LINK
+  DEVICE
+  QUIZ
+  QUESTION
+  MARKED_QUESTION
 }
 
 model Faculty {
@@ -38,28 +59,88 @@ model Faculty {
   name String
   city String
 
-  createdAt DateTime? @db.Timestamp()
+  creator   User? @relation(name: "FacultyCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creatorId Int?
+  createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
 
-  users User[]
+  users User[] @relation(name: "UserFaculty")
   years StudyingYear[]
 }
 
 model User {
   id              Int              @id @default(autoincrement())
-  name            String
-  email           String           @unique
-  password        String
+  googleSubId     String           @unique
+  givenName       String
+  familyName      String
+  email           String
+  picture         String
   status          Boolean          @default(false)
-  role            UserRole         @default(User)
-  facultyId       Int
-  yearId          Int              @default(1)
-  faculty         Faculty          @relation(fields: [facultyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  year            StudyingYear     @relation(fields: [yearId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  role            Role             @relation(fields: [roleId], references: [id])
+  roleId          Int              @default(1)
+
+  facultyId       Int?
+  yearId          Int?
+
+  faculty         Faculty?         @relation(name: "UserFaculty", fields: [facultyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  year            StudyingYear?    @relation(fields: [yearId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
   devices         Device[]
-  createdAt       DateTime?        @db.Timestamp()
-  updatedAt       DateTime?        @updatedAt @db.Timestamp()
+
   markedQuestions MarkedQuestion[]
+
+  createdAt       DateTime?        @default(now()) @db.Timestamp()
+  updatedAt       DateTime?        @updatedAt @db.Timestamp()
+
+  createdFaculties Faculty[]       @relation(name: "FacultyCreator")
+  createdRoles      Role[]         @relation(name: "RoleCreator")
+  createdYears      StudyingYear[] @relation(name: "YearCreator")
+  createdModules    Module[]       @relation(name: "ModuleCreator")
+  createdSubjects   Subject[]      @relation(name: "SubjectCreator")
+  createdLectures   Lecture[]      @relation(name: "LectureCreator")
+  createdLinks      LectureLink[]  @relation(name: "LinkCreator")
+  createdQuizzes    Quiz[]         @relation(name: "QuizCreator")
+  createdQuestions  Question[]     @relation(name: "QuestionCreator")
+}
+
+model Role {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  description String?
+  users       User[]
+  permissions RolePermission[]
+
+  creator   User? @relation(name: "RoleCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creatorId Int?
+  createdAt DateTime? @default(now()) @db.Timestamp()
+  updatedAt DateTime? @updatedAt @db.Timestamp()
+}
+
+model Permission {
+  id          Int              @id @default(autoincrement())
+  action      PermissionAction
+  scope       PermissionScope
+  resource    PermissionResource
+  description String?
+  roles       RolePermission[]
+
+  createdAt DateTime? @default(now()) @db.Timestamp()
+  updatedAt DateTime? @updatedAt @db.Timestamp()
+
+  @@unique([action, scope, resource])
+}
+
+model RolePermission {
+  id           Int         @id @default(autoincrement())
+  role         Role        @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  roleId       Int
+  permission   Permission  @relation(fields: [permissionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  permissionId Int
+
+  createdAt DateTime? @default(now()) @db.Timestamp()
+  updatedAt DateTime? @updatedAt @db.Timestamp()
+
+  @@unique([roleId, permissionId])
 }
 
 model StudyingYear {
@@ -67,7 +148,11 @@ model StudyingYear {
   title     String
   facultyId Int
   faculty   Faculty   @relation(fields: [facultyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  createdAt DateTime? @db.Timestamp()
+
+  creator   User?      @relation(name: "YearCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creatorId Int?
+
+  createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
   modules   Module[]
   users     User[]
@@ -81,9 +166,13 @@ model Module {
   icon         String
 
   year     StudyingYear @relation(fields: [yearId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  creator   User?   @relation(name: "ModuleCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creatorId Int?
+
   subjects Subject[]
 
-  createdAt DateTime? @db.Timestamp()
+  createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
 }
 
@@ -95,23 +184,29 @@ model Subject {
   moduleId Int
   module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
+  creator   User? @relation(name: "SubjectCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creatorId Int?
+
   lectures Lecture[]
 
-  createdAt DateTime? @db.Timestamp()
+  createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
 }
 
 model Lecture {
   id        Int         @id @default(autoincrement())
   title     String
-  subTitle  String
+  subTitle  String?
   subjectId Int
-  type      LectureType @default(Normal) // Lecture, Final Revision, Practical
+  type      LectureType @default(Normal)
   subject   Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   date      DateTime?   @db.Date
 
-  createdAt DateTime?     @db.Timestamp()
-  updatedAt DateTime?     @updatedAt @db.Timestamp()
+  creator   User? @relation(name: "LectureCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creatorId Int?
+
+  createdAt DateTime? @default(now()) @db.Timestamp()
+  updatedAt DateTime? @updatedAt @db.Timestamp()
   links     LectureLink[]
   quizzes   Quiz[]
 }
@@ -119,15 +214,19 @@ model Lecture {
 model LectureLink {
   id          Int          @id @default(autoincrement())
   title       String
-  subTitle    String
+  subTitle    String?
   url         String
   type        DataType     @default(PDF)
   category    CategoryType @default(Data)
   lectureId   Int
   lectureData Lecture      @relation(fields: [lectureId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   notifiable  Boolean      @default(true)
-  createdAt   DateTime?    @db.Timestamp()
-  updatedAt   DateTime?    @updatedAt @db.Timestamp()
+
+  creator   User? @relation(name: "LinkCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creatorId Int?
+
+  createdAt DateTime? @default(now()) @db.Timestamp()
+  updatedAt DateTime? @updatedAt @db.Timestamp()
 }
 
 model Device {
@@ -135,6 +234,9 @@ model Device {
   token  String @unique
   userId Int
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime? @default(now()) @db.Timestamp()
+  updatedAt DateTime? @updatedAt @db.Timestamp()
 }
 
 model Quiz {
@@ -144,8 +246,12 @@ model Quiz {
   title       String
   questions   Question[]
   notifiable  Boolean      @default(true)
-  createdAt   DateTime?  @db.Timestamp()
-  updatedAt   DateTime?  @updatedAt @db.Timestamp()
+
+  creator   User? @relation(name: "QuizCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creatorId Int?
+
+  createdAt DateTime? @default(now()) @db.Timestamp()
+  updatedAt DateTime? @updatedAt @db.Timestamp()
 }
 
 model Question {
@@ -157,9 +263,13 @@ model Question {
   text               String
   options            String[]
   correctOptionIndex Int
-  createdAt          DateTime?        @db.Timestamp()
-  updatedAt          DateTime?        @updatedAt @db.Timestamp()
   markedBy           MarkedQuestion[]
+
+  creator   User? @relation(name: "QuestionCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creatorId Int?
+
+  createdAt DateTime? @default(now()) @db.Timestamp()
+  updatedAt DateTime? @updatedAt @db.Timestamp()
 }
 
 model MarkedQuestion {
@@ -168,6 +278,7 @@ model MarkedQuestion {
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   questionId Int
   question   Question  @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  createdAt  DateTime? @db.Timestamp()
-  updatedAt  DateTime? @updatedAt @db.Timestamp()
+
+  createdAt DateTime? @default(now()) @db.Timestamp()
+  updatedAt DateTime? @updatedAt @db.Timestamp()
 }
