@@ -17,22 +17,28 @@ async function main() {
   console.log(`Seeding default roles...`);
 
   // Insert the two most basic roles
-  prisma.role.upsert({
+  await prisma.role.upsert({
     create: {
       id: 0,
       name: 'SuperAdmin',
       description: 'Top system administrator',
     },
-    where: {},
+    where: {
+      name: 'SuperAdmin',
+    },
+    update: {},
   });
 
-  prisma.role.upsert({
+  await prisma.role.upsert({
     create: {
       id: 1,
       name: 'User',
       description: 'Default user role',
     },
-    where: {},
+    where: {
+      name: 'User',
+    },
+    update: {},
   });
 
   console.log('✅ Seeded default roles successfully.');

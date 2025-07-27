@@ -145,6 +145,12 @@ export default class AuthController {
           500,
         );
 
+      // These query params are not recognized by the QueryParamService and will lead to an error when parsing req.query if not deleted
+      delete req.query.code;
+      delete req.query.scope;
+      delete req.query.authuser;
+      delete req.query.prompt;
+
       user = (await UserModel.create(createInput.data, req.query)) as UserModel;
     }
 
