@@ -20,9 +20,9 @@ const app = express();
 const apiRoutesBase = '/api/v2';
 
 // Morgan logging settings
-morgan.token('user-id', req => {
+morgan.token('user-id', (req: any) => {
   // Assuming you've already attached req.user in middleware
-  return (req.user as any)?.id || 'anonymous';
+  return req.user?.id || 'anonymous';
 });
 
 const formatWithUser =

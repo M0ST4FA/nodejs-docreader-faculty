@@ -3,6 +3,7 @@ import UserController from '../controllers/UserController';
 import AuthController from '../controllers/AuthController';
 import DeviceController from '../controllers/DeviceController';
 import DeviceModel from '../models/Device';
+import TopicController from '../controllers/TopicController';
 
 const router = Router();
 
@@ -29,6 +30,14 @@ router.delete(
   AuthController.requirePermission('DELETE', 'OWN', 'DEVICE', DeviceModel),
   DeviceController.deleteDevice,
 );
+
+// TOPIC ROUTES
+router.get('/me/topics', TopicController.getUserDevicesTopics);
+
+router
+  .route('/me/topics/:name')
+  .post(TopicController.subscribeUserDevicesToTopic)
+  .delete(TopicController.unsubscribeUserDevicesFromTopic);
 
 // USER ROUTES
 router

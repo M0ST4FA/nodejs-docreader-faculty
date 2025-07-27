@@ -19,6 +19,13 @@ export default class DeviceModel {
     return this.data.token;
   }
 
+  get id(): number {
+    if (this.data.id === undefined)
+      throw new AppError('Device id field is undefined.', 500);
+
+    return this.data.id;
+  }
+
   toJSON() {
     return this.data;
   }
