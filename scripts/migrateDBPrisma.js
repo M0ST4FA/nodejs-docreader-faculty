@@ -5,7 +5,7 @@
 // - COMPILED_SCHEMA_PATH
 // - OLD_COMPILED_SCHEMA_PATH
 
-import { PrismaClient as OldPrismaClient } from process.env.COMPILED_SCHEMA_PATH;
+import { PrismaClient as OldPrismaClient } from process.env.NEW_COMPILED_SCHEMA_PATH;
 import { PrismaClient as NewPrismaClient } from process.env.OLD_COMPILED_SCHEMA_PATH;
 
 const oldDb = new OldPrismaClient();
