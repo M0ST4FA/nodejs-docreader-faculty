@@ -68,12 +68,13 @@ class ErrorController {
           return new AppError(`Permission with given ID not found.`, 404);
         break;
 
-      case 'P2025':
-        return new AppError(
-          `Database record not found for an update or delete.`,
-          404,
-        );
+      case 'P2025': {
+        const modelName = errorMeta?.modelName || 'Model';
+        const message =
+          errorMeta?.cause || 'No record was found for an update or delete.';
 
+        return new AppError(`${modelName}: ${message}`, 404);
+      }
       default:
         return error;
     }
@@ -81,6 +82,13 @@ class ErrorController {
 
   static #handleJsonWebTokenError(error: any) {
     return new AppError(error.message, 400);
+  }
+
+  static #handleFCMError(error: any) {
+    return new AppError(
+      `${error.errorInfo.code}: ${error.errorInfo.message}.`,
+      400,
+    );
   }
 
   static #sendAPIErrors(err: any, res: Response) {
@@ -94,11 +102,14 @@ class ErrorController {
     if (process.env.NODE_ENV === 'development') {
       ErrorController.#sendDevErrors(error, res);
     } else {
-      if (error.name === 'PrismaClientKnownRequestError')
+      if (error?.name === 'PrismaClientKnownRequestError')
         error = this.#handlePrismaClientKnownRequestError(error);
 
-      if (error.name === 'JsonWebTokenError')
+      if (error?.name === 'JsonWebTokenError')
         error = this.#handleJsonWebTokenError(error);
+
+      if (error?.codePrefix === 'messaging')
+        error = this.#handleFCMError(error);
 
       error = ErrorController.#sendProdErrors(error, res);
     }

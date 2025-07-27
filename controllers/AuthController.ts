@@ -170,17 +170,18 @@ export default class AuthController {
     // 2) Verify the token
     const payload: any = JWTService.verifyJWT(jwt);
 
+    if (!payload) throw new AppError('JWT payload is empty.', 401);
+
     // 3) Verify the user exists
-    const user = (await UserModel.findOneById(payload.id, {})) as UserModel;
+    try {
+      const user = (await UserModel.findOneById(payload.id, {})) as UserModel;
 
-    if (!(user && payload))
-      return next(
-        new AppError('The user owning this token no longer exists.', 401),
-      );
-
-    // GRANT ACCESS TO USER
-    req.user = user;
-    res.locals.user = user;
+      // GRANT ACCESS TO USER
+      req.user = user;
+      res.locals.user = user;
+    } catch (error) {
+      throw new AppError(`Couldn't find logged in user.`, 401);
+    }
 
     next();
   });

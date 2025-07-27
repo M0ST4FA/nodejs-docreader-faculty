@@ -4,7 +4,7 @@ import db from '../prisma/db';
 import { ModelFactory } from './ModelFactory';
 import AppError from '../utils/AppError';
 import { QueryParamsService } from '../utils/QueryParamsService';
-import { notificationMessaging } from '../utils/firebase';
+import fcmService from '../utils/FCMService';
 
 export default class TopicModel {
   private data: Partial<PrismaTopic>;
@@ -19,19 +19,17 @@ export default class TopicModel {
       include: { device: { select: { token: true } } },
     });
 
-    const response = await notificationMessaging.unsubscribeFromTopic(
-      devicesSubscribedToTopic.map(device => device.device.token),
-      name,
+    if (devicesSubscribedToTopic.length === 0)
+      return {
+        failedTokens: [],
+        successfulTokens: [],
+      };
+
+    const deviceTokens = devicesSubscribedToTopic.map(
+      device => device.device.token,
     );
 
-    if (response.failureCount === 0) return;
-    else
-      throw new AppError(
-        `Error(s) while unsubscribing user devices from topic ${name} in order to prepare the topic for deletion: [ ${response.errors.map(
-          error => error.error.message,
-        )} ]`,
-        500,
-      );
+    return await fcmService.unsubscribeDevicesFromTopic(deviceTokens, name);
   }
 
   constructor(data: Partial<PrismaTopic>) {
@@ -106,7 +104,7 @@ export default class TopicModel {
       });
 
     if (!object)
-      throw new AppError(`Couldn't find topic with name ${name}.`, 404);
+      throw new AppError(`Couldn't find a topic with name '${name}'.`, 404);
 
     return new TopicModel(object);
   }
@@ -149,12 +147,17 @@ export default class TopicModel {
   }
 
   static async deleteOne(name: string) {
-    await TopicModel.unsubscribeAllDevicesFromTopic(name);
+    const { failedTokens, successfulTokens } =
+      await TopicModel.unsubscribeAllDevicesFromTopic(name);
 
     const result = await db.topic.delete({
       where: { name },
     });
 
-    return new TopicModel(result);
+    return {
+      deletedTopic: new TopicModel(result),
+      failedTokens,
+      successfulTokens,
+    };
   }
 }

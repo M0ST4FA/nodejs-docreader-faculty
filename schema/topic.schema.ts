@@ -14,6 +14,7 @@ const fullSchema = z
       .trim()
       .min(1, { message: 'Description is required.' })
       .max(255, { message: 'Cannot be greater than 255 characters.' }),
+    creatorId: z.number().int({ message: 'creatorId must be integer.' }),
     createdAt: z.date(),
     updatedAt: z.date(),
   })
@@ -22,7 +23,7 @@ const fullSchema = z
 const topicSchema = createModelSchema(
   fullSchema,
   {
-    required: ['name'],
+    required: ['name', 'creatorId'],
     optional: ['description'],
   },
   ['description'],
@@ -30,8 +31,15 @@ const topicSchema = createModelSchema(
     defaultPage: 1,
     defaultSize: 10,
     maxPageSize: 100,
-    projectableFields: ['id', 'name', 'description', 'createdAt', 'updatedAt'],
-    defaultFields: ['id', 'name', 'description'],
+    projectableFields: [
+      'id',
+      'name',
+      'description',
+      'creatorId',
+      'createdAt',
+      'updatedAt',
+    ],
+    defaultFields: ['id', 'name', 'creatorId', 'description'],
     sortableFields: ['name', 'createdAt', 'updatedAt'],
   },
 );

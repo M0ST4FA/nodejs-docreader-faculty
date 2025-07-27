@@ -1,9 +1,10 @@
 import catchAsync from '../utils/catchAsync';
 import { Request, Response, NextFunction } from 'express';
-import { firebaseAdminSDK, notificationMessaging } from '../utils/firebase';
+import fcmService from '../utils/FCMService';
 import AppError from '../utils/AppError';
 import DeviceModel from '../models/Device';
 import notificationBodySchema from '../schema/notification.schema';
+import TopicModel from '../models/Topic';
 
 type NotificationBody = {
   notification: {
@@ -15,6 +16,18 @@ type NotificationBody = {
 };
 
 export default class NotificationController {
+  private static extractTopicName(req: Request): string {
+    const name = req.params.name;
+
+    if (name === undefined)
+      throw new AppError(
+        'Invalid topic name: topic name must be a string.',
+        400,
+      );
+
+    return name;
+  }
+
   private static async extractCurrentUserDevices(
     req: Request,
   ): Promise<Partial<DeviceModel[]>> {
@@ -50,36 +63,42 @@ export default class NotificationController {
     return validatedNotificationBody.data;
   }
 
-  private static async multicastNotification(
-    devices: Partial<DeviceModel>[],
-    notificationBody: NotificationBody,
-  ) {
-    const response = await notificationMessaging.sendEachForMulticast(
-      {
-        tokens: devices.map((device: any) => device.token),
-        notification: notificationBody.notification,
-        data: notificationBody.data,
-      },
-      true,
-    );
-
-    console.log(response);
-  }
-
-  static broadcastToTopic = catchAsync(function (
-    req: Request,
-    res: Response,
-  ) {});
-
-  static broadcast = catchAsync(function (
+  static setGlobalTopic = catchAsync(async function (
     req: Request,
     res: Response,
     next: NextFunction,
   ) {
-    notificationMessaging.sendEachForMulticast({
-      tokens: [],
-      notification: {},
-      data: {},
+    req.params.name = 'global_announcements';
+
+    next();
+  });
+
+  static broadcastToTopic = catchAsync(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    // Extract topic name
+    const topicName = NotificationController.extractTopicName(req);
+
+    // Check whether the topic already exists (an exception is thrown if it doesn't)
+    const topic = await TopicModel.findOneByName(topicName, {});
+
+    // Extract and validate notification body
+    const notificationBody =
+      await NotificationController.validateNotificationBody(req.body);
+
+    // Broadcast notification to all topic subscribers
+    const messageId = await fcmService.broadcastNotificationToTopic(
+      notificationBody,
+      topic.name,
+    );
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        messageId,
+      },
     });
   });
 
@@ -94,14 +113,14 @@ export default class NotificationController {
     const notificationBody =
       await NotificationController.validateNotificationBody(req.body);
 
-    await NotificationController.multicastNotification(
-      devices,
+    const result = await fcmService.multicastNotification(
       notificationBody,
+      devices.map(device => device.token!),
     );
 
-    res.status(204).json({
-      status: 'success',
-      data: null,
+    res.status(207).json({
+      status: 'partial',
+      data: result,
     });
   });
 }

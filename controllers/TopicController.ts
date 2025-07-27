@@ -2,10 +2,15 @@ import catchAsync from '../utils/catchAsync';
 import { Request, Response, NextFunction } from 'express';
 import TopicModel from '../models/Topic';
 import AppError from '../utils/AppError';
-import { notificationMessaging } from '../utils/firebase';
+import fcmService from '../utils/FCMService';
 import DeviceModel from '../models/Device';
 import db from '../prisma/db';
-import { MessagingTopicManagementResponse } from 'firebase-admin/lib/messaging/messaging-api';
+
+interface FailedTokenDetails {
+  token: string | null;
+  message: string;
+  errorCode?: string;
+}
 
 export default class TopicController {
   private static extractTopicName(req: Request): string {
@@ -20,21 +25,67 @@ export default class TopicController {
     return name;
   }
 
-  private static splitFCMResults(
-    deviceTokens: string[],
-    response: MessagingTopicManagementResponse,
-  ) {
-    const failedIndices = new Set(response.errors.map(e => e.index));
-    const successfulTokens = deviceTokens.filter(
-      (_, i) => !failedIndices.has(i),
+  private static async extractDataForTokenOperation(req: Request) {
+    // Fetch user devices
+    const userId = req.user.id;
+    const topicName = TopicController.extractTopicName(req);
+    const devices = await DeviceModel.findMany(
+      { userId },
+      { fields: 'token,id' },
     );
 
-    const failedTokens = response.errors.map(e => ({
-      token: e.index !== undefined ? deviceTokens[e.index] : null,
-      message: e.error?.message || 'Unknown FCM error',
-    }));
+    // If the user has at least one device
+    const deviceTokens = devices.map(device => device.token) as string[];
+    const tokenToDeviceId = new Map(
+      devices.map(device => [device.token, device.id]),
+    ) as Map<string, number>;
 
-    return { successfulTokens, failedTokens };
+    return { topicName, deviceTokens, tokenToDeviceId };
+  }
+
+  private static async cleanUpInvalidDevices(
+    failedTokens: FailedTokenDetails[],
+    tokenToDeviceId: Map<string, number>,
+  ): Promise<number> {
+    const tokensToRemoveFromDb: string[] = [];
+
+    failedTokens.forEach(failed => {
+      // Identify tokens that should be removed from your database based on FCM error codes
+      if (
+        failed.errorCode === 'messaging/invalid-argument' ||
+        failed.errorCode === 'messaging/registration-token-not-registered' ||
+        failed.errorCode === 'messaging/invalid-registration-token' ||
+        failed.errorCode === 'messaging/unregistered' // Older code, but good to include
+      ) {
+        if (failed.token) {
+          tokensToRemoveFromDb.push(failed.token);
+        }
+      }
+    });
+
+    if (tokensToRemoveFromDb.length > 0) {
+      const deviceIdsToRemove = tokensToRemoveFromDb
+        .map(token => tokenToDeviceId.get(token))
+        .filter((id): id is number => id !== undefined); // Filter out any undefined/null device IDs
+
+      if (deviceIdsToRemove.length > 0)
+        try {
+          await db.device.deleteMany({
+            where: {
+              id: {
+                in: deviceIdsToRemove,
+              },
+            },
+          });
+        } catch {
+          throw new AppError(
+            'Failed to remove invalid FCM devices from database.',
+            500,
+          );
+        }
+    }
+
+    return tokensToRemoveFromDb.length;
   }
 
   public static createTopic = catchAsync(async function (
@@ -42,7 +93,7 @@ export default class TopicController {
     res: Response,
     next: NextFunction,
   ) {
-    req.body.userId = req.user.id;
+    req.body.creatorId = req.user.id;
 
     const topic = (await TopicModel.createOne(
       req.body,
@@ -115,9 +166,9 @@ export default class TopicController {
     res: Response,
     next: NextFunction,
   ) {
-    const id = TopicController.extractTopicName(req);
+    const name = TopicController.extractTopicName(req);
 
-    const updatedTopic = await TopicModel.updateOne(id, req.body, req.query);
+    const updatedTopic = await TopicModel.updateOne(name, req.body, req.query);
 
     res.status(200).json({
       status: 'success',
@@ -134,11 +185,15 @@ export default class TopicController {
   ) {
     const name = TopicController.extractTopicName(req);
 
-    await TopicModel.deleteOne(name);
+    const { failedTokens, successfulTokens } = await TopicModel.deleteOne(name);
 
-    res.status(204).json({
-      status: 'success',
-      data: null,
+    res.status(207).json({
+      status: 'partial',
+      totalDeletedTokens: failedTokens.length + successfulTokens.length,
+      data: {
+        successfulTokens,
+        failedTokens,
+      },
     });
   });
 
@@ -147,40 +202,25 @@ export default class TopicController {
     res: Response,
     next: NextFunction,
   ) {
-    // Fetch user devices
-    const userId = req.user.id;
-    const topicName = TopicController.extractTopicName(req);
-    const devices = await DeviceModel.findMany(
-      { userId },
-      { fields: 'token,id' },
-    );
+    const { topicName, deviceTokens, tokenToDeviceId } =
+      await TopicController.extractDataForTokenOperation(req);
 
     // If the user has no devices
-    if (devices.length === 0)
-      return res.status(204).json({
-        status: 'success',
-        message: 'No devices to subscribe to topic.',
-      });
-
-    // If the user has at least one device
-    const deviceTokens = devices.map(device => device.token) as string[];
-    const tokenToDeviceId = new Map(
-      devices.map(device => [device.token, device.id]),
-    );
-
-    const response = await notificationMessaging.subscribeToTopic(
-      deviceTokens,
-      topicName,
-    );
+    if (deviceTokens.length === 0) return res.status(204);
 
     // Group successes and failures
-    const { failedTokens, successfulTokens } = TopicController.splitFCMResults(
-      deviceTokens,
-      response,
-    );
+    const { failedTokens, successfulTokens } =
+      await fcmService.subscribeDevicesToTopic(deviceTokens, topicName);
 
     // Note: All of their errors will be handled by global error handler
     const topic = await TopicModel.findOneByName(topicName, {});
+
+    // Remove any invalid token
+    const removedInvalidTokensCount =
+      await TopicController.cleanUpInvalidDevices(
+        failedTokens,
+        tokenToDeviceId,
+      );
 
     await db.deviceTopic.createMany({
       data: successfulTokens.map(token => ({
@@ -190,18 +230,13 @@ export default class TopicController {
       skipDuplicates: true,
     });
 
-    if (failedTokens.length === 0)
-      return res.status(204).json({
-        status: 'success',
-        data: null,
-      });
-
     res.status(207).json({
       status: 'partial',
       totalCount: deviceTokens.length,
       data: {
         successes: successfulTokens,
         failures: failedTokens,
+        removedInvalidTokensCount: removedInvalidTokensCount,
       },
     });
   });
@@ -211,36 +246,25 @@ export default class TopicController {
     res: Response,
     next: NextFunction,
   ) {
-    // Fetch user devices
-    const userId = req.user.id;
-    const topicName = TopicController.extractTopicName(req);
-    const devices = await DeviceModel.findMany(
-      { userId },
-      { fields: 'token,id' },
-    );
+    const { topicName, deviceTokens, tokenToDeviceId } =
+      await TopicController.extractDataForTokenOperation(req);
 
     // If the user has no devices
-    if (devices.length === 0) return;
-
-    // If the user has at least one device
-    const deviceTokens = devices.map(device => device.token) as string[];
-    const tokenToDeviceId = new Map(
-      devices.map(device => [device.token, device.id]),
-    );
-
-    const response = await notificationMessaging.unsubscribeFromTopic(
-      deviceTokens,
-      topicName,
-    );
+    if (deviceTokens.length === 0) return res.status(204).send();
 
     // Group response into successes and failures
-    const { failedTokens, successfulTokens } = TopicController.splitFCMResults(
-      deviceTokens,
-      response,
-    );
+    const { failedTokens, successfulTokens } =
+      await fcmService.unsubscribeDevicesFromTopic(deviceTokens, topicName);
 
     // Note: All of their errors will be handled by global error handler
     const topic = await TopicModel.findOneByName(topicName, {});
+
+    // Remove any invalid token
+    const removedInvalidTokensCount =
+      await TopicController.cleanUpInvalidDevices(
+        failedTokens,
+        tokenToDeviceId,
+      );
 
     await db.deviceTopic.deleteMany({
       where: {
@@ -251,27 +275,14 @@ export default class TopicController {
       },
     });
 
-    if (failedTokens.length === 0)
-      return res.status(204).json({
-        status: 'success',
-        data: null,
-      });
-
     res.status(207).json({
       status: 'partial',
       totalCount: deviceTokens.length,
       data: {
         successes: successfulTokens,
         failures: failedTokens,
+        removedInvalidTokensCount: removedInvalidTokensCount,
       },
     });
-  });
-
-  public static broadcast = catchAsync(async function (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) {
-    const name = TopicController.extractTopicName(req);
   });
 }

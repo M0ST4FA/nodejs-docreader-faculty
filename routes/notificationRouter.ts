@@ -8,16 +8,24 @@ const router = Router({ mergeParams: true });
 router.use(AuthController.protect);
 
 // Notification endpoints
-router.route('/').post(NotificationController.broadcast);
+router
+  .route('/')
+  .post(
+    NotificationController.setGlobalTopic,
+    NotificationController.broadcastToTopic,
+  );
 router.route('/test').post(NotificationController.test);
 
 // Topic endpoints
 router
   .route('/topics')
   .get(TopicController.getAllTopics)
-  .post(TopicController.createTopic)
-  .patch(TopicController.updateTopic);
+  .post(TopicController.createTopic);
 
-router.post('/topics/:id', TopicController.broadcast);
+router
+  .route('/topics/:name')
+  .patch(TopicController.updateTopic)
+  .post(NotificationController.broadcastToTopic)
+  .delete(TopicController.deleteTopic);
 
 export default router;
