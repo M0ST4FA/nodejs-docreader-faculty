@@ -70,6 +70,8 @@ DATABASE_URL=database_url
 # JWT variables
 JWT_SECRET=secret(private_key)_for_signing_JWTs
 JWT_COOKIE_EXPIRES_IN_DAYS=n_days_until_jwt_expires
+JWT_PRIVATE_KEY_PATH=path_to_JWT_public_key
+JWT_PUBLIC_KEY_PATH=path_to_JWT_private_key
 
 # Google API client variables. Obtain and configure them from your GCP dashboard.
 GOOGLE_CLIENT_ID=google_client_id

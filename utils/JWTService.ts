@@ -4,12 +4,8 @@ import fs from 'fs';
 import AppError from './AppError';
 
 class JWTService {
-  static JWT_PRIVATE_KEY = fs.readFileSync(
-    `${import.meta.dirname}/../private.pem`,
-  );
-  static JWT_PUBLIC_KEY = fs.readFileSync(
-    `${import.meta.dirname}/../public.pem`,
-  );
+  static JWT_PRIVATE_KEY = fs.readFileSync(process.env.JWT_PRIVATE_KEY_PATH!);
+  static JWT_PUBLIC_KEY = fs.readFileSync(process.env.JWT_PUBLIC_KEY_PATH!);
   static JWT_COOKIE_EXPIRES_IN_DAYS = Number.parseInt(
     process.env.JWT_COOKIE_EXPIRES_IN_DAYS!,
   );
