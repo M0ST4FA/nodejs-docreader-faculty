@@ -9,7 +9,6 @@ import {
   PermissionAction,
   PermissionResource,
   PermissionScope,
-  PrismaClient,
 } from '@prisma/client';
 import userSchema from '../schema/user.schema';
 import RoleModel from '../models/Role';
@@ -141,7 +140,7 @@ export default class AuthController {
         familyName: jwtPayload.family_name || '',
         email: jwtPayload.email || '',
         picture: jwtPayload.picture || '',
-        roleId: 1, // User ID
+        roleId: 3, // User ID
       };
 
       const createInput = userSchema.create.safeParse(creationParameters);
@@ -158,7 +157,7 @@ export default class AuthController {
       delete req.query.authuser;
       delete req.query.prompt;
 
-      if (!req.query.fields) {
+      if (req.query.fields !== undefined) {
         const arr = (req.query.fields as string).split(',');
         arr.push('roleId');
         req.query.fields = arr.join(',');
@@ -167,7 +166,7 @@ export default class AuthController {
       user = (await UserModel.create(createInput.data, req.query)) as UserModel;
     }
 
-    JWTService.createAndSendJWT(user.id, (await user.role()).name, res, 201, {
+    JWTService.createAndSendJWT(user.id, user.roleId, res, 201, {
       user,
     });
   });

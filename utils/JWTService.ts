@@ -10,8 +10,8 @@ class JWTService {
     process.env.JWT_COOKIE_EXPIRES_IN_DAYS!,
   );
 
-  static createJWT(id: number, role: string) {
-    return jwt.sign({ id, role }, this.JWT_PRIVATE_KEY, {
+  static createJWT(id: number, roleId: number) {
+    return jwt.sign({ id, roleId }, this.JWT_PRIVATE_KEY, {
       algorithm: 'ES384',
       expiresIn: `${this.JWT_COOKIE_EXPIRES_IN_DAYS}d`,
     });
@@ -19,13 +19,13 @@ class JWTService {
 
   static createAndSendJWT(
     id: number,
-    role: string,
+    roleId: number,
     res: Response,
     statusCode: number,
     responseBody: Object,
   ) {
     // 1) Create the token
-    const token = this.createJWT(id, role);
+    const token = this.createJWT(id, roleId);
 
     // 2) Set the cookie on the response
 

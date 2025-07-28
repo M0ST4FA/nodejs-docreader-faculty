@@ -54,20 +54,20 @@ class ErrorController {
 
       case 'P2003':
         if (errorMeta?.constraint === 'User_yearId_fkey')
-          return new AppError(`Year with given ID not found.`, 404);
+          return new AppError(`Year with given ID not found.`, 400);
         if (errorMeta?.constraint === 'User_roleId_fkey')
           return new AppError(
             `Role with given ID not found. If you're creating a new user, make sure the role already exists.`,
-            404,
+            400,
           );
         else if (errorMeta?.constraint === 'User_facultyId_fkey')
-          return new AppError(`Faculty with given ID not found.`, 404);
+          return new AppError(`Faculty with given ID not found.`, 400);
         else if (errorMeta?.constraint === 'RolePermission_roleId_fkey')
-          return new AppError(`Role with given ID not found.`, 404);
+          return new AppError(`Role with given ID not found.`, 400);
         else if (errorMeta?.constraint === 'RolePermission_permissionId_fkey')
-          return new AppError(`Permission with given ID not found.`, 404);
-        break;
+          return new AppError(`Permission with given ID not found.`, 400);
 
+        break;
       case 'P2025': {
         const modelName = errorMeta?.modelName || 'Model';
         const message =

@@ -4,6 +4,7 @@ import UserModel from '../models/User';
 import AppError from '../utils/AppError';
 import userSchema, { UserQueryParamInput } from '../schema/user.schema';
 import { QueryParamsService } from '../utils/QueryParamsService';
+import JWTService from '../utils/JWTService';
 
 export default class UserController {
   private static extractAndValidateId(req: Request): number {
@@ -96,11 +97,8 @@ export default class UserController {
 
     const updatedUser = await UserModel.updateRole(userId, roleId, queryParams);
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        user: updatedUser,
-      },
+    JWTService.createAndSendJWT(updatedUser.id, updatedUser.roleId, res, 200, {
+      user: updatedUser,
     });
   });
 

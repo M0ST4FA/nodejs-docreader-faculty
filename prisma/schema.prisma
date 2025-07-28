@@ -34,8 +34,10 @@ enum PermissionAction {
   DELETE
   ASSIGN
   SEND
+  SUBSCRIBE
 }
 
+// There's a hierarchy: RESTRICTED > ANY > OWN. Higher permission includes lower permission implicitly
 enum PermissionScope {
   // These are for use with resources for which "ownership" makes sense (which are most resources)
   OWN
@@ -46,8 +48,12 @@ enum PermissionScope {
 }
 
 enum PermissionResource {
+  // Users
   USER
+  PERMISSION
   ROLE
+
+  // Resources
   FACULTY
   YEAR
   MODULE
@@ -56,7 +62,8 @@ enum PermissionResource {
   LINK
   QUIZ
   QUESTION
-  MARKED_QUESTION
+
+  // Notifications
   DEVICE
   NOTIFICATION
   TOPIC
@@ -93,8 +100,6 @@ model User {
   year            StudyingYear?    @relation(fields: [yearId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   devices         Device[]
-
-  markedQuestions MarkedQuestion[]
 
   createdAt       DateTime?        @default(now()) @db.Timestamp()
   updatedAt       DateTime?        @updatedAt @db.Timestamp()
@@ -304,21 +309,9 @@ model Question {
   text               String
   options            String[]
   correctOptionIndex Int
-  markedBy           MarkedQuestion[]
 
   creator   User? @relation(name: "QuestionCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   creatorId Int?
-
-  createdAt DateTime? @default(now()) @db.Timestamp()
-  updatedAt DateTime? @updatedAt @db.Timestamp()
-}
-
-model MarkedQuestion {
-  id         Int       @id @default(autoincrement())
-  userId     Int
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  questionId Int
-  question   Question  @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
