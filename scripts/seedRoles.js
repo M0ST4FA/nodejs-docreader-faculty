@@ -72,6 +72,16 @@ async function main() {
       scope: PermissionScope.ANY,
       resource: PermissionResource.LECTURE,
     },
+    {
+      action: PermissionAction.READ,
+      scope: PermissionScope.ANY,
+      resource: PermissionResource.NOTIFICATION,
+    },
+    {
+      action: PermissionAction.READ,
+      scope: PermissionScope.ANY,
+      resource: PermissionResource.TOPIC,
+    },
 
     // Link: users can read all and create (e.g., sharing useful materials)
     {

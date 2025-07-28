@@ -113,7 +113,11 @@ export default class TopicController {
     res: Response,
     next: NextFunction,
   ) {
-    const topics = await TopicModel.findMany({}, req.query);
+    let topics: any[];
+
+    if (req.hasAccessToRestrictedResource)
+      topics = await TopicModel.findMany({}, req.query);
+    else topics = await TopicModel.findMany({ public: true }, req.query);
 
     res.status(200).json({
       status: 'success',

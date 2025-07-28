@@ -32,11 +32,17 @@ enum PermissionAction {
   READ
   UPDATE
   DELETE
+  ASSIGN
+  SEND
 }
 
 enum PermissionScope {
+  // These are for use with resources for which "ownership" makes sense (which are most resources)
   OWN
   ANY
+
+  // These are for use with resources that have no "ownership", but can be "for the public" or "for the admins", for example
+  RESTRICTED        // E.g., admin only. This is like ANY but stronger (naturally, if you have access to any resource, you also have access to restricted resources)
 }
 
 enum PermissionResource {
@@ -48,10 +54,12 @@ enum PermissionResource {
   SUBJECT
   LECTURE
   LINK
-  DEVICE
   QUIZ
   QUESTION
   MARKED_QUESTION
+  DEVICE
+  NOTIFICATION
+  TOPIC
 }
 
 model Faculty {
@@ -75,7 +83,6 @@ model User {
   familyName      String
   email           String
   picture         String
-  status          Boolean          @default(false)
   role            Role             @relation(fields: [roleId], references: [id])
   roleId          Int              @default(1)
 
@@ -246,6 +253,7 @@ model Topic {
   id          Int       @id @default(autoincrement())
   name        String    @unique
   description String?
+  public      Boolean   @default(true)
 
   devices     DeviceTopic[]
 

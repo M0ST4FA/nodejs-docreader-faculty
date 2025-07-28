@@ -14,6 +14,7 @@ const fullSchema = z
       .trim()
       .min(1, { message: 'Description is required.' })
       .max(255, { message: 'Cannot be greater than 255 characters.' }),
+    public: z.boolean({ message: 'Must be a boolean value.' }).default(true),
     creatorId: z.number().int({ message: 'creatorId must be integer.' }),
     createdAt: z.date(),
     updatedAt: z.date(),
@@ -24,7 +25,7 @@ const topicSchema = createModelSchema(
   fullSchema,
   {
     required: ['name', 'creatorId'],
-    optional: ['description'],
+    optional: ['description', 'public'],
   },
   ['description'],
   {
@@ -35,6 +36,7 @@ const topicSchema = createModelSchema(
       'id',
       'name',
       'description',
+      'public',
       'creatorId',
       'createdAt',
       'updatedAt',

@@ -41,6 +41,7 @@ const roleSchema = createModelSchema(
     ],
     defaultFields: ['id', 'name', 'description', 'creatorId'],
     sortableFields: ['name', 'createdAt', 'updatedAt'],
+    includableFields: ['permissions.permission'],
   },
 );
 

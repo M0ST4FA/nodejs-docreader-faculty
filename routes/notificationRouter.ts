@@ -11,21 +11,42 @@ router.use(AuthController.protect);
 router
   .route('/')
   .post(
+    AuthController.requirePermission('SEND', 'ANY', 'NOTIFICATION'),
     NotificationController.setGlobalTopic,
     NotificationController.broadcastToTopic,
   );
-router.route('/test').post(NotificationController.test);
+router
+  .route('/test')
+  .post(
+    AuthController.requirePermission('SEND', 'ANY', 'NOTIFICATION'),
+    NotificationController.test,
+  );
 
 // Topic endpoints
 router
   .route('/topics')
-  .get(TopicController.getAllTopics)
-  .post(TopicController.createTopic);
+  .get(
+    AuthController.requirePermission('READ', 'ANY', 'TOPIC'),
+    TopicController.getAllTopics,
+  )
+  .post(
+    AuthController.requirePermission('CREATE', 'ANY', 'TOPIC'),
+    TopicController.createTopic,
+  );
 
 router
   .route('/topics/:name')
-  .patch(TopicController.updateTopic)
-  .post(NotificationController.broadcastToTopic)
-  .delete(TopicController.deleteTopic);
+  .patch(
+    AuthController.requirePermission('UPDATE', 'OWN', 'TOPIC'),
+    TopicController.updateTopic,
+  )
+  .post(
+    AuthController.requirePermission('SEND', 'ANY', 'NOTIFICATION'),
+    NotificationController.broadcastToTopic,
+  )
+  .delete(
+    AuthController.requirePermission('DELETE', 'ANY', 'TOPIC'),
+    TopicController.deleteTopic,
+  );
 
 export default router;
