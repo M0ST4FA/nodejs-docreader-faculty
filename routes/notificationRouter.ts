@@ -45,7 +45,7 @@ router
     NotificationController.broadcastToTopic,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'ANY', 'TOPIC'),
+    AuthController.requirePermission('DELETE', 'OWN', 'TOPIC'),
     TopicController.deleteTopic,
   );
 

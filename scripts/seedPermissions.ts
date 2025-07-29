@@ -55,7 +55,13 @@ async function main() {
     action: PermissionAction.SUBSCRIBE,
     scope: PermissionScope.RESTRICTED,
     resource: PermissionResource.TOPIC,
-    description: 'SUBSCRIBE restricted TOPIC',
+    description: 'SUBSCRIBE restricted topic',
+  });
+  permissions.push({
+    action: PermissionAction.SUBSCRIBE,
+    scope: PermissionScope.ANY,
+    resource: PermissionResource.TOPIC,
+    description: 'SUBSCRIBE any topic',
   });
 
   console.log(`Seeding ${permissions.length} permissions...`);

@@ -120,7 +120,13 @@ export default class NotificationController {
 
     res.status(207).json({
       status: 'partial',
-      data: result,
+      totalCount: result.successCount + result.failureCount,
+      successCount: result.successCount,
+      failureCount: result.failureCount,
+      data: {
+        successfulTokens: result.successfulTokens,
+        failedTokens: result.failedTokens,
+      },
     });
   });
 }

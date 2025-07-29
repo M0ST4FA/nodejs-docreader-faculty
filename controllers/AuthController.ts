@@ -31,6 +31,11 @@ type ModelClass = {
   findOneByName?(name: string, queryParams: any): any;
 };
 
+type ScopeCheckResult = {
+  grantAccess: Boolean;
+  error?: AppError;
+};
+
 export default class AuthController {
   private static GOOGLE_CLIENT_ID: string = process.env.GOOGLE_CLIENT_ID!;
   private static GOOGLE_CLIENT_SECRET: string =
@@ -235,6 +240,8 @@ export default class AuthController {
         );
     }
 
+    console.log(creatorId);
+
     // To handle old resources (that didn't have creatorId), assume that everyone is their owner
     if (!creatorId || creatorId === 0) return true;
 
@@ -253,6 +260,7 @@ export default class AuthController {
   ): Promise<{
     canAccessRestrictedResource: Boolean;
     accessingSingleResource: Boolean;
+    singleResourceIsRestricted?: Boolean;
   }> {
     // Step 1: Calculate essential variables
     const resourceId = Number(req.params.id);
@@ -294,7 +302,9 @@ export default class AuthController {
 
     if (hasResourceId) {
       if (modelClass.findOneById)
-        resourceObject = await modelClass.findOneById(resourceId, {});
+        resourceObject = await modelClass.findOneById(resourceId, {
+          fields: 'id,name,public',
+        });
       else
         throw new AppError(
           `'findOneById() is not defined. Cannot continue with restricted resource checks.`,
@@ -302,7 +312,9 @@ export default class AuthController {
         );
     } else if (hasResourceName) {
       if (modelClass.findOneByName)
-        resourceObject = await modelClass.findOneByName(resourceName, {});
+        resourceObject = await modelClass.findOneByName(resourceName, {
+          fields: 'id,name,public',
+        });
       else
         throw new AppError(
           `'findOneByName() is not defined. Cannot continue with restricted resource checks.`,
@@ -322,6 +334,7 @@ export default class AuthController {
       return {
         canAccessRestrictedResource: false, // User cannot access *this specific* restricted resource
         accessingSingleResource: true,
+        singleResourceIsRestricted: !resourceObject.public,
       };
     } else {
       // If the resource is NOT actually restricted (it's implicitly public, or public: true)
@@ -331,8 +344,58 @@ export default class AuthController {
       return {
         canAccessRestrictedResource: canAccessRestrictedResource, // Still false, meaning user's role doesn't grant universal restricted access
         accessingSingleResource: true,
+        singleResourceIsRestricted: false,
       };
     }
+  }
+
+  private static async checkResourceScope(
+    req: Request,
+    requestedScope: PermissionScope,
+    modelClass?: ModelClass,
+  ): Promise<ScopeCheckResult> {
+    switch (requestedScope) {
+      // You don't need to check for ownership for a user who can update any instance of a resource
+      case PermissionScope.RESTRICTED:
+      case PermissionScope.ANY:
+        return {
+          grantAccess: true,
+        };
+
+      case PermissionScope.OWN: {
+        // This is likely a bug (whenever scope is OWN, modelClass must be input)
+        if (!modelClass)
+          return {
+            grantAccess: false,
+            error: new AppError(
+              `For ${requestedScope} permission check, 'modelClass' must be provided!`,
+              500,
+            ),
+          };
+
+        const userIsResourceCreator =
+          await AuthController.checkUserIsResourceCreator(req, modelClass);
+
+        if (userIsResourceCreator) return { grantAccess: true };
+
+        // Make failure the default action
+        return {
+          grantAccess: false,
+          error: new AppError(
+            "You can't modify or delete a resource created by someone else!",
+            403,
+          ),
+        };
+      }
+    }
+
+    return {
+      grantAccess: false,
+      error: new AppError(
+        'Unkown error while checking for scope and relationship requirements. Access denied.',
+        500,
+      ),
+    };
   }
 
   static requirePermission = function (
@@ -365,17 +428,24 @@ export default class AuthController {
         // 2. HANDLE RESTRICTED RESOURCE CHECK
         // If the resource is restrictable (can be restricted for admins only), check whether the user has access to restrictable resources
         // Set the default to 'false' which is more
-        const { accessingSingleResource, canAccessRestrictedResource } =
-          await AuthController.checkAccessToRestrictedResource(
-            req,
-            role,
-            action,
-            resource,
-            modelClass,
-          );
+        const {
+          accessingSingleResource,
+          canAccessRestrictedResource,
+          singleResourceIsRestricted,
+        } = await AuthController.checkAccessToRestrictedResource(
+          req,
+          role,
+          action,
+          resource,
+          modelClass,
+        );
         req.hasAccessToRestrictedResource = canAccessRestrictedResource;
 
-        if (accessingSingleResource && !canAccessRestrictedResource)
+        if (
+          accessingSingleResource &&
+          !canAccessRestrictedResource &&
+          singleResourceIsRestricted
+        )
           return next(
             new AppError(
               `You don't have enough permissions to access this restricted resource!`,
@@ -383,36 +453,17 @@ export default class AuthController {
             ),
           );
 
-        // 3. HANDLE SPECIFIC RELATIONSHIPS
-        // You don't need to check for ownership for a user who can update any instance of a resource
-        if (
-          requestedScope === PermissionScope.RESTRICTED ||
-          requestedScope === PermissionScope.ANY
-        )
-          return next();
-
-        // This is likely a bug (whenever scope is OWN, modelClass must be input)
-        if (!modelClass)
-          return next(
-            new AppError(
-              `For ${requestedScope} permission check, 'modelClass' must be provided!`,
-              500,
-            ),
+        // 3. HANDLE SPECIFIC RELATIONSHIPS/SCOPES
+        const { grantAccess, error: scopeError } =
+          await AuthController.checkResourceScope(
+            req,
+            requestedScope,
+            modelClass,
           );
 
-        // If the scope is OWN, check if the user is the resource creator
-        const userIsResourceCreator =
-          await AuthController.checkUserIsResourceCreator(req, modelClass);
+        if (grantAccess) return next();
 
-        if (userIsResourceCreator) return next();
-
-        // Make failure the default action
-        return next(
-          new AppError(
-            "You can't modify or delete a resource created by someone else!",
-            403,
-          ),
-        );
+        return next(scopeError);
       },
     );
   };

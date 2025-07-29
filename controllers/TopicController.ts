@@ -194,6 +194,8 @@ export default class TopicController {
     res.status(207).json({
       status: 'partial',
       totalDeletedTokens: failedTokens.length + successfulTokens.length,
+      successCount: successfulTokens.length,
+      failureCount: failedTokens.length,
       data: {
         successfulTokens,
         failedTokens,
@@ -210,14 +212,18 @@ export default class TopicController {
       await TopicController.extractDataForTokenOperation(req);
 
     // If the user has no devices
-    if (deviceTokens.length === 0) return res.status(204);
+    if (deviceTokens.length === 0)
+      return res.status(200).json({
+        status: 'success',
+        message: "You don't have any devices to subscribe to any topic.",
+      });
+
+    // Note: All of their errors will be handled by global error handler
+    const topic = await TopicModel.findOneByName(topicName, {});
 
     // Group successes and failures
     const { failedTokens, successfulTokens } =
       await fcmService.subscribeDevicesToTopic(deviceTokens, topicName);
-
-    // Note: All of their errors will be handled by global error handler
-    const topic = await TopicModel.findOneByName(topicName, {});
 
     // Remove any invalid token
     const removedInvalidTokensCount =
@@ -237,6 +243,8 @@ export default class TopicController {
     res.status(207).json({
       status: 'partial',
       totalCount: deviceTokens.length,
+      successCount: successfulTokens.length,
+      failureCount: failedTokens.length,
       data: {
         successes: successfulTokens,
         failures: failedTokens,
@@ -254,7 +262,11 @@ export default class TopicController {
       await TopicController.extractDataForTokenOperation(req);
 
     // If the user has no devices
-    if (deviceTokens.length === 0) return res.status(204).send();
+    if (deviceTokens.length === 0)
+      return res.status(200).json({
+        status: 'success',
+        message: "You don't have any devices subscribed to this topic.",
+      });
 
     // Group response into successes and failures
     const { failedTokens, successfulTokens } =
@@ -282,6 +294,8 @@ export default class TopicController {
     res.status(207).json({
       status: 'partial',
       totalCount: deviceTokens.length,
+      successCount: successfulTokens.length,
+      failureCount: failedTokens.length,
       data: {
         successes: successfulTokens,
         failures: failedTokens,

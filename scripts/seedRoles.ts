@@ -249,11 +249,16 @@ const DEFAULT_ROLES: RoleDescription[] = [
         scope: PermissionScope.ANY,
         resource: PermissionResource.TOPIC,
       },
+      {
+        action: PermissionAction.SUBSCRIBE,
+        scope: PermissionScope.ANY,
+        resource: PermissionResource.TOPIC,
+      },
 
       // Device: users can register and manage their own devices
       {
         action: PermissionAction.CREATE,
-        scope: PermissionScope.OWN,
+        scope: PermissionScope.ANY,
         resource: PermissionResource.DEVICE,
       },
       {

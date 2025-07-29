@@ -45,16 +45,13 @@ export default class TopicModel {
 
   get id(): number {
     if (this.data.id === undefined)
-      throw new AppError('Topic id field is undefined.', 500);
+      throw new AppError(`Topic 'id' field is undefined.`, 500);
 
     return this.data.id;
   }
 
-  get public(): Boolean {
-    if (this.data.public === undefined)
-      throw new AppError('Topic id public is undefined.', 500);
-
-    return this.data.public;
+  get public(): Boolean | null {
+    return typeof this.data.public === 'boolean' ? this.data.public : null;
   }
 
   toJSON() {

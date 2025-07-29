@@ -4,6 +4,7 @@ import AuthController from '../controllers/AuthController';
 import DeviceController from '../controllers/DeviceController';
 import DeviceModel from '../models/Device';
 import TopicController from '../controllers/TopicController';
+import TopicModel from '../models/Topic';
 
 const router = Router();
 
@@ -32,12 +33,22 @@ router.delete(
 );
 
 // TOPIC ROUTES
-router.get('/me/topics', TopicController.getUserDevicesTopics);
+router.get(
+  '/me/topics',
+  AuthController.requirePermission('READ', 'ANY', 'TOPIC', TopicModel),
+  TopicController.getUserDevicesTopics,
+);
 
 router
   .route('/me/topics/:name')
-  .post(TopicController.subscribeUserDevicesToTopic)
-  .delete(TopicController.unsubscribeUserDevicesFromTopic);
+  .post(
+    AuthController.requirePermission('SUBSCRIBE', 'ANY', 'TOPIC', TopicModel),
+    TopicController.subscribeUserDevicesToTopic,
+  )
+  .delete(
+    AuthController.requirePermission('SUBSCRIBE', 'ANY', 'TOPIC', TopicModel),
+    TopicController.unsubscribeUserDevicesFromTopic,
+  );
 
 // USER ROUTES
 router
