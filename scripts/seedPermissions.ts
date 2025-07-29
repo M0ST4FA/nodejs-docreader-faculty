@@ -7,14 +7,24 @@ import {
 
 const prisma = new PrismaClient();
 
+type Permission = {
+  action: PermissionAction;
+  scope: PermissionScope;
+  resource: PermissionResource;
+  description?: string;
+};
+
 async function main() {
   const actions = Object.values(PermissionAction);
   const scopes = Object.values(PermissionScope);
   const resources = Object.values(PermissionResource);
 
-  const permissions = [];
+  const permissions: Permission[] = [];
 
   for (const action of actions) {
+    if (action === 'ASSIGN' || action === 'SEND' || action === 'SUBSCRIBE')
+      continue;
+
     for (const scope of scopes) {
       for (const resource of resources) {
         permissions.push({
@@ -28,6 +38,31 @@ async function main() {
       }
     }
   }
+
+  permissions.push({
+    action: PermissionAction.ASSIGN,
+    scope: PermissionScope.ANY,
+    resource: PermissionResource.ROLE,
+    description: 'ASSIGN any role',
+  });
+  permissions.push({
+    action: PermissionAction.SEND,
+    scope: PermissionScope.ANY,
+    resource: PermissionResource.NOTIFICATION,
+    description: 'SEND any notification',
+  });
+  permissions.push({
+    action: PermissionAction.SUBSCRIBE,
+    scope: PermissionScope.RESTRICTED,
+    resource: PermissionResource.TOPIC,
+    description: 'SUBSCRIBE restricted topic',
+  });
+  permissions.push({
+    action: PermissionAction.SUBSCRIBE,
+    scope: PermissionScope.ANY,
+    resource: PermissionResource.TOPIC,
+    description: 'SUBSCRIBE any topic',
+  });
 
   console.log(`Seeding ${permissions.length} permissions...`);
 

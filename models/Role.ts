@@ -81,27 +81,46 @@ export default class RoleModel {
 
   public hasPermission(
     action: PermissionAction,
-    scope: PermissionScope,
+    requestedScope: PermissionScope,
     resource: PermissionResource,
   ): boolean {
-    // Handle the SuperAdmin role case
+    // SuperAdmin always has all permissions
     if (this.id === 0) return true;
 
-    const perms = Array.from(RoleModel.rolePermissionMap[this.name]);
+    const permsOfThisRole = Array.from(RoleModel.rolePermissionMap[this.name]);
 
-    const hasPermissibleScope = function (perm: PartialPermission): Boolean {
-      // If user has scope ANY, it doesn't matter the required scope
-      if (perm.scope === PermissionScope.ANY) return true;
+    return permsOfThisRole.some(perm => {
+      // Check if action and resource match
+      if (perm.action !== action || perm.resource !== resource) {
+        return false;
+      }
 
-      return perm.scope === scope;
-    };
+      // Now, check the scope hierarchy
+      switch (perm.scope) {
+        case PermissionScope.RESTRICTED:
+          // If the role has RESTRICTED access, it implicitly covers ALL and OWN for this action/resource
+          // A permission with scope 'RESTRICTED' implies the ability to access all instances,
+          // including 'ANY' (All) and 'OWN'.
+          return true; // If role has RESTRICTED, it satisfies any requestedScope for this action/resource
 
-    return perms.some(
-      perm =>
-        perm.action === action &&
-        perm.resource === resource &&
-        hasPermissibleScope(perm),
-    );
+        case PermissionScope.ANY:
+          // If the role has ANY access, it implicitly covers OWN for this action/resource.
+          // It does NOT cover RESTRICTED.
+          return (
+            requestedScope === PermissionScope.ANY ||
+            requestedScope === PermissionScope.OWN
+          );
+
+        case PermissionScope.OWN:
+          // If the role has OWN access, it only covers OWN.
+          // It does NOT cover ANY or RESTRICTED.
+          return requestedScope === PermissionScope.OWN;
+
+        default:
+          // For any other specific scope, it must be an exact match
+          return perm.scope === requestedScope;
+      }
+    });
   }
 
   public getPermissions(): PartialPermission[] {

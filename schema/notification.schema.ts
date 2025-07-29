@@ -20,7 +20,7 @@ const fullSchema = z
             .url({ message: 'Invalid notification image URL.' })
             .optional(),
         },
-        { message: 'Notification object is required.' },
+        { message: 'Notification field is required.' },
       )
       .strict(),
     data: z.object({}).default({}).optional(),

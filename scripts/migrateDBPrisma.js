@@ -5,7 +5,7 @@
 // - COMPILED_SCHEMA_PATH
 // - OLD_COMPILED_SCHEMA_PATH
 
-import { PrismaClient as OldPrismaClient } from process.env.COMPILED_SCHEMA_PATH;
+import { PrismaClient as OldPrismaClient } from process.env.NEW_COMPILED_SCHEMA_PATH;
 import { PrismaClient as NewPrismaClient } from process.env.OLD_COMPILED_SCHEMA_PATH;
 
 const oldDb = new OldPrismaClient();
@@ -119,48 +119,6 @@ async function migrate() {
   }
 
   console.log('✅ Faculty tree migration complete.');
-
-  // Devices
-  const devices = await oldDb.device.findMany();
-  for (const device of devices) {
-    try {
-      await newDb.device.create({
-        data: {
-          token: device.token,
-          userId: device.userId,
-          createdAt: device.createdAt || new Date(),
-          updatedAt: device.updatedAt || new Date(),
-        },
-      });
-    } catch (err) {
-      console.warn(
-        `⚠️ Failed to import device for user ${device.userId}:`,
-        err.message,
-      );
-    }
-  }
-  console.log('✅ Devices migrated.');
-
-  // Marked Questions
-  const marked = await oldDb.markedQuestion.findMany();
-  for (const m of marked) {
-    try {
-      await newDb.markedQuestion.create({
-        data: {
-          userId: m.userId,
-          questionId: m.questionId,
-          createdAt: m.createdAt || new Date(),
-          updatedAt: m.updatedAt || new Date(),
-        },
-      });
-    } catch (err) {
-      console.warn(
-        `⚠️ Failed to import markedQuestion for user ${m.userId} and question ${m.questionId}:`,
-        err.message,
-      );
-    }
-  }
-  console.log('✅ Marked questions migrated.');
 
   await oldDb.$disconnect();
   await newDb.$disconnect();

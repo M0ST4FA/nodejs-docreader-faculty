@@ -24,11 +24,11 @@ npm install
 
 ### Set Up
 
-Before running the service, you must first create the .env file and populate the necessary environment variables. Refer to [this section](#environment-variables) for details.
+Before running the service, you must first create the `.env` file and populate the necessary environment variables. Refer to [this section](#environment-variables) for details.
 
 You must also make sure that you have a postgresql deployment running.
 
-Run the following command to migrate the Prisma schema to it (after populating 'DATABASE_URL` environment variable):
+Run the following command to migrate the Prisma schema to it (after populating `DATABASE_URL` environment variable):
 
 ```
 npx prisma generate
@@ -70,6 +70,8 @@ DATABASE_URL=database_url
 # JWT variables
 JWT_SECRET=secret(private_key)_for_signing_JWTs
 JWT_COOKIE_EXPIRES_IN_DAYS=n_days_until_jwt_expires
+JWT_PRIVATE_KEY_PATH=path_to_JWT_public_key
+JWT_PUBLIC_KEY_PATH=path_to_JWT_private_key
 
 # Google API client variables. Obtain and configure them from your GCP dashboard.
 GOOGLE_CLIENT_ID=google_client_id
@@ -79,7 +81,7 @@ GOOGLE_REDIRECT_URI=google_redirect_uri_for_oauth2_callback
 # Firbase variables (used for notification system)
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=firebase_project_id
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=firebase_storage_bucket
-FIREBASE_PRIVATE_KEY=firebase_private_key
+FIREBASE_PRIVATE_KEY_PATH=firebase_private_key_path
 FIREBASE_CLIENT_EMAIL=firebase_client_email
 ```
 
@@ -87,6 +89,7 @@ FIREBASE_CLIENT_EMAIL=firebase_client_email
 
 The `scripts` directory has some useful migration and seeding scripts. Here's a description of each one:
 
-1. `migrateDBV1ToV2.js`: Copies data from v1 database to v2 database. It needs a `.env` file that contains URL of both databases as well path to old and new compiled Prisma schemata.
-2. `seedPermissions.js`: Seeds permissions for all action, scope and resource combinations.
-3. `seedRoles.js`: Seeds the two default roles (`SuperAdmin` at id 0 and `User` at id 1) with expected (hard-coded) ids and appropriate permissions.
+1. `migrateDBPrisma.js`: Copies data from v1 database to v2 database using Prisma. It needs a `.env` file that `OLD_COMPILED_SCHEMA_PATH` and `NEW_COMPILED_SCHEMA_PATH` variables.
+2. `migrateDBPG.ts`: Copies data from v1 database to v2 database without Prisma dependency. It relies solely on `pg` (official postgres driver for nodejs) package. It is slower than the Prisma-dependent one, so that should be preferred. It needs a `.env` file with two environment variables: `OLD_DATABASE_URL` and `NEW_DATABASE_URL` variables.
+3. `seedPermissions.js`: Seeds permissions for all action, scope and resource combinations.
+4. `seedRoles.js`: Seeds the two default roles (`SuperAdmin` at id 0 and `User` at id 1) with expected (hard-coded) ids and appropriate permissions.

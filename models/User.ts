@@ -79,14 +79,14 @@ class UserModel {
       where: {
         googleSubId: sub,
       },
-      select: {
-        id: true,
-        givenName: true,
-        familyName: true,
-        email: true,
-        picture: true,
-        facultyId: true,
-        yearId: true,
+      include: {
+        role: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+          },
+        },
       },
     });
 

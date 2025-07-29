@@ -3,6 +3,8 @@ import UserController from '../controllers/UserController';
 import AuthController from '../controllers/AuthController';
 import DeviceController from '../controllers/DeviceController';
 import DeviceModel from '../models/Device';
+import TopicController from '../controllers/TopicController';
+import TopicModel from '../models/Topic';
 
 const router = Router();
 
@@ -30,6 +32,24 @@ router.delete(
   DeviceController.deleteDevice,
 );
 
+// TOPIC ROUTES
+router.get(
+  '/me/topics',
+  AuthController.requirePermission('READ', 'ANY', 'TOPIC', TopicModel),
+  TopicController.getUserDevicesTopics,
+);
+
+router
+  .route('/me/topics/:name')
+  .post(
+    AuthController.requirePermission('SUBSCRIBE', 'ANY', 'TOPIC', TopicModel),
+    TopicController.subscribeUserDevicesToTopic,
+  )
+  .delete(
+    AuthController.requirePermission('SUBSCRIBE', 'ANY', 'TOPIC', TopicModel),
+    TopicController.unsubscribeUserDevicesFromTopic,
+  );
+
 // USER ROUTES
 router
   .route('/')
@@ -53,9 +73,9 @@ router
     UserController.deleteUser,
   );
 
-router.route('/:id/assignRole').patch(
+router.route('/:id/assignRole').put(
   // You must be able to create roles to be able to assign them (there is no "assign" action, so that is an indirect permission)
-  AuthController.requirePermission('CREATE', 'ANY', 'ROLE'),
+  AuthController.requirePermission('ASSIGN', 'ANY', 'ROLE'),
   UserController.assignRole,
 );
 
