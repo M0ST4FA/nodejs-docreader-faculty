@@ -4,7 +4,6 @@ import UserModel from '../models/User';
 import AppError from '../utils/AppError';
 import userSchema, { UserQueryParamInput } from '../schema/user.schema';
 import { QueryParamsService } from '../utils/QueryParamsService';
-import JWTService from '../utils/JWTService';
 
 export default class UserController {
   private static extractAndValidateId(req: Request): number {

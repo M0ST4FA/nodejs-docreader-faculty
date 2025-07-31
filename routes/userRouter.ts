@@ -73,10 +73,17 @@ router
     UserController.deleteUser,
   );
 
+// ROLE ROUTES
 router.route('/:id/role').put(
   // You must be able to create roles to be able to assign them (there is no "assign" action, so that is an indirect permission)
   AuthController.requirePermission('ASSIGN', 'ANY', 'ROLE'),
   UserController.assignRole,
+);
+
+// STATISTICS ROUTES
+router.route(
+  '/:id/statistics/admin-statistics',
+  UserController.getAdminStatistics,
 );
 
 export default router;

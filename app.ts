@@ -1,8 +1,9 @@
 import express from 'express';
 import cors from 'cors';
-import morgan = require('morgan');
 
-import globalErrorHandler from './controllers/ErrorController';
+import ErrorController from './controllers/ErrorController';
+import LogController from './controllers/LogController';
+
 import authRouter from './routes/authRouter';
 import userRouter from './routes/userRouter';
 import roleRouter from './routes/roleRouter';
@@ -19,24 +20,20 @@ import notificationRouter from './routes/notificationRouter';
 const app = express();
 const apiRoutesBase = '/api/v2';
 
-// Morgan logging settings
-morgan.token('user-id', (req: any) => {
-  // Assuming you've already attached req.user in middleware
-  return req.user?.id || 'anonymous';
-});
+// LOGGING
+// Console logging in development only
+if (process.env.NODE_ENV === 'development') app.use(LogController.morgan());
 
-const formatWithUser =
-  '[:date[iso]] user.id=:user-id raddr=:remote-addr :method :url :status - rtime=:response-time ms referrer=":referrer" uagent=":user-agent"';
+// API logging to database
+app.use(LogController.logRequest);
 
-app.use(morgan(formatWithUser));
-
-// Security
+// SECURITY
 app.use(cors());
 
-// Essential middleware
+// ESSENTIAL MIDDLEWARE
 app.use(express.json());
 
-// Routes
+// ROUTES
 app.use(`${apiRoutesBase}/`, authRouter);
 app.use(`${apiRoutesBase}/users`, userRouter);
 app.use(`${apiRoutesBase}/roles`, roleRouter);
@@ -50,7 +47,7 @@ app.use(`${apiRoutesBase}/quizzes`, quizRouter);
 app.use(`${apiRoutesBase}/links`, linkRouter);
 app.use(`${apiRoutesBase}/notifications`, notificationRouter);
 
-// Error handling
-app.use(globalErrorHandler);
+// ERROR HANDLING
+app.use(ErrorController.globalErrorHandler);
 
 export default app;

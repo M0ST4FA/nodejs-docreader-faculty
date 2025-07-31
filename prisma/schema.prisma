@@ -114,6 +114,9 @@ model User {
   createdQuizzes    Quiz[]         @relation(name: "QuizCreator")
   createdQuestions  Question[]     @relation(name: "QuestionCreator")
   createdTopics     Topic[]        @relation(name: "TopicCreator")
+
+  UserActivity UserActivity[]
+  APIRequestLog APIRequestLog[]
 }
 
 model Role {
@@ -315,4 +318,63 @@ model Question {
 
   createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
+}
+
+// ANALYTICS
+model APIRequestLog {
+  id            Int      @id @default(autoincrement())
+
+  userId        Int?     // null for unauthenticated
+  
+  method        String
+  endpoint      String
+  resourceType  PermissionResource
+  resourceId    String?
+  
+  statusCode    Int?
+  errorMessage  String?
+
+  responseTime  Int
+
+  ip            String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+
+  user          User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId, endpoint])
+}
+
+enum UserActivityType {
+  VIEW_LECTURE
+  SUBMIT_QUIZ
+  ACCESS_LINK
+  SUBSCRIBE_TOPIC
+  UNSUBSCRIBE_TOPIC
+  COMPLETE_MODULE
+  UPDATE_PROFILE
+  ASSIGN_ROLE
+  CREATE_RESOURCE
+  UPDATE_RESOURCE
+  LOGIN
+}
+
+model UserActivity {
+  id            Int             @id @default(autoincrement())
+
+  userId        Int
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  activityType  UserActivityType
+  resourceId    Int?
+  resourceType  PermissionResource
+
+  details       Json?
+
+  createdAt DateTime? @default(now()) @db.Timestamp()
+  updatedAt DateTime? @updatedAt @db.Timestamp()
+
+  @@index([createdAt(sort: Desc)])
+  @@index([userId, activityType, createdAt(sort: Desc)])
+  @@index([resourceType, resourceId])
 }

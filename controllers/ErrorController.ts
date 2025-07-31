@@ -2,14 +2,16 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import AppError from '../utils/AppError';
 import { NextFunction, Request, Response } from 'express';
 
-class ErrorController {
-  static #sendDevErrors(err: any, res: Response) {
-    res.status(err.statusCode || 500).json({
-      status: err.status || 'error',
-      error: err,
-      message: err.message,
-      stack: err.stack,
+export default class ErrorController {
+  static #sendDevErrors(error: any, res: Response) {
+    res.status(error.statusCode || 500).json({
+      status: error.status || 'error',
+      error: error,
+      message: error.message,
+      stack: error.stack,
     });
+
+    res.locals.error = error;
   }
 
   static #sendProdErrors(error: any, res: Response) {
@@ -27,6 +29,8 @@ class ErrorController {
         message: 'Something went wrong on the server.',
       });
     }
+
+    res.locals.error = error;
   }
 
   static #handlePrismaClientKnownRequestError(
@@ -124,5 +128,3 @@ class ErrorController {
     ErrorController.#sendAPIErrors(err, res);
   }
 }
-
-export default ErrorController.globalErrorHandler;
