@@ -97,8 +97,11 @@ export default class UserController {
 
     const updatedUser = await UserModel.updateRole(userId, roleId, queryParams);
 
-    JWTService.createAndSendJWT(updatedUser.id, updatedUser.roleId, res, 200, {
-      user: updatedUser,
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: updatedUser,
+      },
     });
   });
 
