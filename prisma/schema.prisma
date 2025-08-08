@@ -27,6 +27,20 @@ enum LectureType {
   FinalRevision
 }
 
+enum UserActivityType {
+  VIEW_LECTURE
+  SUBMIT_QUIZ
+  ACCESS_LINK
+  SUBSCRIBE_TOPIC
+  UNSUBSCRIBE_TOPIC
+  COMPLETE_MODULE
+  UPDATE_PROFILE
+  ASSIGN_ROLE
+  CREATE_RESOURCE
+  UPDATE_RESOURCE
+  LOGIN
+}
+
 enum PermissionAction {
   CREATE
   READ
@@ -35,6 +49,11 @@ enum PermissionAction {
   ASSIGN
   SEND
   SUBSCRIBE
+}
+
+enum QuizAttemptStatus {
+  STARTED      // User has initiated the attempt
+  SUBMITTED    // User has finished and submitted the quiz
 }
 
 // There's a hierarchy: RESTRICTED > ANY > OWN. Higher permission includes lower permission implicitly
@@ -62,6 +81,8 @@ enum PermissionResource {
   LINK
   QUIZ
   QUESTION
+  QUIZ_ATTEMPT
+  QUESTION_ATTEMPT
 
   // Notifications
   DEVICE
@@ -117,6 +138,8 @@ model User {
 
   UserActivity UserActivity[]
   APIRequestLog APIRequestLog[]
+
+  QuizAttempt QuizAttempt[]
 }
 
 model Role {
@@ -301,6 +324,8 @@ model Quiz {
 
   createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
+
+  QuizAttempt QuizAttempt[]
 }
 
 model Question {
@@ -318,6 +343,8 @@ model Question {
 
   createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
+
+  QuizAttemptAnswer QuestionAttempt[]
 }
 
 // ANALYTICS
@@ -345,20 +372,6 @@ model APIRequestLog {
   @@index([userId, endpoint])
 }
 
-enum UserActivityType {
-  VIEW_LECTURE
-  SUBMIT_QUIZ
-  ACCESS_LINK
-  SUBSCRIBE_TOPIC
-  UNSUBSCRIBE_TOPIC
-  COMPLETE_MODULE
-  UPDATE_PROFILE
-  ASSIGN_ROLE
-  CREATE_RESOURCE
-  UPDATE_RESOURCE
-  LOGIN
-}
-
 model UserActivity {
   id            Int             @id @default(autoincrement())
 
@@ -377,4 +390,46 @@ model UserActivity {
   @@index([createdAt(sort: Desc)])
   @@index([userId, activityType, createdAt(sort: Desc)])
   @@index([resourceType, resourceId])
+}
+
+model QuizAttempt {
+  id                Int         @id @default(autoincrement())
+  status            QuizAttemptStatus @default(STARTED)
+  attemptNumber     Int         // Which attempt this was (1st, 2nd, etc.)
+  
+  userId            Int
+  user              User        @relation(fields: [userId], references: [id])
+  
+  quizId            Int
+  quiz              Quiz        @relation(fields: [quizId], references: [id])
+  
+  correctAnswerCount Int?       // Nullable until submitted
+  score             Float?      // Nullable until submitted
+
+  startedAt         DateTime    @default(now()) @db.Timestamp()
+  submittedAt       DateTime?   // Nullable until submitted
+
+  answers           QuestionAttempt[] // Relationship to store individual question answers
+
+  @@index([userId, quizId, submittedAt(sort: Desc)])
+  @@index([quizId, submittedAt(sort: Desc)])
+  @@index([userId, status]) // Important for finding in-progress quizzes
+}
+
+model QuestionAttempt {
+  id            Int         @id @default(autoincrement())
+  
+  quizAttemptId Int
+  quizAttempt   QuizAttempt @relation(fields: [quizAttemptId], references: [id], onDelete: Cascade)
+  
+  questionId    Int
+  question      Question    @relation(fields: [questionId], references: [id])
+
+  answerIndex    Int?   
+  
+  isCorrect     Boolean?    // Nullable until submitted/graded
+  
+  answeredAt    DateTime    @default(now()) @db.Timestamp() // When this specific question was answered
+
+  @@unique([quizAttemptId, questionId])
 }

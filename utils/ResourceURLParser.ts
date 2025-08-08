@@ -83,6 +83,11 @@ export default class ResourceURLParser {
         return 'NOTIFICATION';
       case 'topics':
         return 'TOPIC';
+      case 'answers':
+        return 'QUESTION_ATTEMPT';
+      case 'quiz-attempts':
+      case 'submit':
+        return 'QUIZ_ATTEMPT';
 
       default:
         // Throw an error for unknown resource types

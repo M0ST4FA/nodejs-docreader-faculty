@@ -37,6 +37,7 @@ const subjectSchema = createModelSchema(
     ],
     defaultFields: ['id', 'name', 'icon', 'moduleId', 'creatorId'],
     sortableFields: ['name', 'createdAt', 'updatedAt'],
+    includableFields: ['module', 'module.year'],
   },
 );
 

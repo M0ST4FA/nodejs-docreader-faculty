@@ -41,6 +41,7 @@ const quizSchema = createModelSchema(
       'lectureData',
       'lectureData.subject',
       'lectureData.subject.module',
+      'questions',
     ],
   },
 );

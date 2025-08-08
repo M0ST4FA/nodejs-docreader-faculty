@@ -14,6 +14,7 @@ import yearRouter from './routes/yearRouter';
 import subjectRouter from './routes/subjectRouter';
 import lectureRouter from './routes/lectureRouter';
 import quizRouter from './routes/quizRouter';
+import quizAttemptRouter from './routes/quizAttemptRouter';
 import linkRouter from './routes/linkRouter';
 import notificationRouter from './routes/notificationRouter';
 
@@ -44,6 +45,7 @@ app.use(`${apiRoutesBase}/modules`, moduleRouter);
 app.use(`${apiRoutesBase}/subjects`, subjectRouter);
 app.use(`${apiRoutesBase}/lectures`, lectureRouter);
 app.use(`${apiRoutesBase}/quizzes`, quizRouter);
+app.use(`${apiRoutesBase}/quiz-attempts`, quizAttemptRouter);
 app.use(`${apiRoutesBase}/links`, linkRouter);
 app.use(`${apiRoutesBase}/notifications`, notificationRouter);
 
