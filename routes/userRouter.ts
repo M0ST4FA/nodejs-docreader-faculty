@@ -3,8 +3,6 @@ import UserController from '../controllers/UserController';
 import AuthController from '../controllers/AuthController';
 import DeviceController from '../controllers/DeviceController';
 import DeviceModel from '../models/Device';
-import TopicController from '../controllers/TopicController';
-import TopicModel from '../models/Topic';
 
 const router = Router();
 
@@ -18,37 +16,16 @@ router
   .delete(UserController.getMe, UserController.deleteUser);
 
 // DEVICE ROUTES
-router
-  .route('/me/devices')
-  .get(DeviceController.getDevices)
-  .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'DEVICE'),
-    DeviceController.createDevice,
-  );
+router.route('/me/devices').get(DeviceController.getDevices).post(
+  // AuthController.requirePermission('CREATE', 'ANY', 'DEVICE'),
+  DeviceController.createDevice,
+);
 
 router.delete(
   '/me/devices/:id',
-  AuthController.requirePermission('DELETE', 'OWN', 'DEVICE', DeviceModel),
+  // AuthController.requirePermission('DELETE', 'OWN', 'DEVICE', DeviceModel),
   DeviceController.deleteDevice,
 );
-
-// TOPIC ROUTES
-router.get(
-  '/me/topics',
-  AuthController.requirePermission('READ', 'ANY', 'TOPIC', TopicModel),
-  TopicController.getUserDevicesTopics,
-);
-
-router
-  .route('/me/topics/:name')
-  .post(
-    AuthController.requirePermission('SUBSCRIBE', 'ANY', 'TOPIC', TopicModel),
-    TopicController.subscribeUserDevicesToTopic,
-  )
-  .delete(
-    AuthController.requirePermission('SUBSCRIBE', 'ANY', 'TOPIC', TopicModel),
-    TopicController.unsubscribeUserDevicesFromTopic,
-  );
 
 // USER ROUTES
 router

@@ -4,6 +4,7 @@ import db from '../prisma/db';
 import { ModelFactory } from './ModelFactory';
 
 export default class SubjectModel {
+  public static PATH_INCLUDE = 'module.id,module.semesterName,module.name';
   private data: Partial<PrismaSubject>;
 
   private static wrapper(data: PrismaSubject): SubjectModel {
@@ -16,6 +17,10 @@ export default class SubjectModel {
 
   toJSON() {
     return this.data;
+  }
+
+  get id(): number {
+    return this.data.id as number;
   }
 
   static createOne = ModelFactory.createOne(

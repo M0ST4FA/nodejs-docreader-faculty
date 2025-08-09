@@ -115,11 +115,11 @@ export default class ModuleController {
   ) {
     const id = ModuleController.extractModuleID(req);
 
-    await ModuleModel.deleteOne(id);
+    const module = await ModuleModel.deleteOne(id);
 
-    res.status(204).json({
+    res.status(200).json({
       status: 'success',
-      data: null,
+      data: { module },
     });
   });
 }

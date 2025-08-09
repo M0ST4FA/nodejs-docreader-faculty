@@ -2,8 +2,11 @@ import lectureSchema from '../schema/lecture.schema';
 import { Lecture as PrismaLecture } from '@prisma/client';
 import db from '../prisma/db';
 import { ModelFactory } from './ModelFactory';
+import AppError from '../utils/AppError';
 
 export default class LectureModel {
+  public static PATH_INCLUDE =
+    'subject.id,subject.name,subject.module.id,subject.module.semesterName,subject.module.name';
   private data: Partial<PrismaLecture>;
 
   private static wrapper(data: PrismaLecture): LectureModel {

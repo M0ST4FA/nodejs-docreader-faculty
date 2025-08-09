@@ -82,7 +82,10 @@ export default class QuizController {
   ) {
     const id = QuizController.extractQuizID(req);
 
-    const quiz = await QuizModel.findOneById(id, req.query);
+    const quiz = await QuizModel.findOneById(id, {
+      ...req.query,
+      include: 'questions,' + QuizModel.PATH_INCLUDE,
+    });
 
     res.status(200).json({
       status: 'success',
@@ -99,7 +102,11 @@ export default class QuizController {
   ) {
     const id = QuizController.extractQuizID(req);
 
-    const updatedQuiz = await QuizModel.updateOne(id, req.body, req.query);
+    const updatedQuiz = await QuizModel.updateOne(
+      id,
+      { ...req.body, notifiable: true },
+      req.query,
+    );
 
     res.status(200).json({
       status: 'success',

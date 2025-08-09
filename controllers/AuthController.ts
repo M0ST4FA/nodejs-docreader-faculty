@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { CookieOptions, NextFunction, Request, Response } from 'express';
 
 import UserModel from '../models/User';
 import { Credentials, OAuth2Client, TokenPayload } from 'google-auth-library';
@@ -48,58 +48,6 @@ export default class AuthController {
     redirectUri: this.GOOGLE_REDIRECT_URI,
   });
 
-  public static continueWithGoogle = catchAsync(async function (
-    req: Request,
-    res: Response,
-  ) {
-    const authUrl = AuthController.oauth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: ['profile', 'email', 'openid'],
-      prompt: 'consent', // Always ask for consent to get refresh_token
-    });
-
-    res.redirect(authUrl);
-  });
-
-  public static extractOAuth2Tokens = catchAsync(async function (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) {
-    const authCode: string = String(req.query.code);
-
-    if (!authCode)
-      return next(
-        new AppError(
-          'Invalid authorization code obtained from Google authorization server.',
-          500,
-        ),
-      );
-
-    // Exchange auth code for tokens
-    const { tokens } = await AuthController.oauth2Client.getToken(authCode);
-    AuthController.oauth2Client.setCredentials(tokens);
-
-    if (!tokens.access_token)
-      return next(
-        new AppError(
-          'Invalid access token received from Google authorization server.',
-          500,
-        ),
-      );
-
-    if (!tokens.refresh_token)
-      return next(
-        new AppError(
-          'Invalid refresh token received from Google authorization server.',
-          500,
-        ),
-      );
-
-    req.oauthTokens = tokens;
-    next();
-  });
-
   public static extractAndVerifyGoogleJWT = catchAsync(async function (
     req: Request,
     res: Response,
@@ -107,7 +55,7 @@ export default class AuthController {
   ) {
     // Verify ID token (JWT) and get user info
     const ticket = await AuthController.oauth2Client.verifyIdToken({
-      idToken: String(req.oauthTokens.id_token),
+      idToken: String(req.body.id_token),
       audience: AuthController.GOOGLE_CLIENT_ID,
     });
 
@@ -239,8 +187,6 @@ export default class AuthController {
           500,
         );
     }
-
-    console.log(creatorId);
 
     // To handle old resources (that didn't have creatorId), assume that everyone is their owner
     if (!creatorId || creatorId === 0) return true;
@@ -467,4 +413,26 @@ export default class AuthController {
       },
     );
   };
+
+  static logout = catchAsync(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    // 1) Clear the cookie
+    const cookieOptions: CookieOptions = {
+      maxAge: 0, // Set to 0 to delete the cookie
+      httpOnly: true,
+    };
+
+    if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+    res.cookie('jwt', '', cookieOptions);
+
+    // 2) Send the response
+    res.status(200).send({
+      status: 'success',
+      message: 'Logged out successfully.',
+    });
+  });
 }

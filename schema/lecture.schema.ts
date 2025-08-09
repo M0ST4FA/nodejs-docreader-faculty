@@ -63,6 +63,13 @@ const lectureSchema = createModelSchema(
       'creatorId',
     ],
     sortableFields: ['title', 'subTitle', 'date', 'createdAt', 'updatedAt'],
+    includableFields: [
+      'subject.id',
+      'subject.name',
+      'subject.module.id',
+      'subject.module.semesterName',
+      'subject.module.name',
+    ],
   },
 );
 

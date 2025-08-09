@@ -2,6 +2,7 @@ import catchAsync from '../utils/catchAsync';
 import { Request, Response, NextFunction } from 'express';
 import SubjectModel from '../models/Subject';
 import AppError from '../utils/AppError';
+import LectureModel from '../models/Lecture';
 
 export default class SubjectController {
   private static extractModuleID(req: Request): number {
@@ -24,7 +25,7 @@ export default class SubjectController {
   }
 
   private static extractSubjectID(req: Request): number {
-    const id = Number.parseInt(req.params.roleId);
+    const id = Number.parseInt(req.params.id);
 
     if (Number.isNaN(id))
       throw new AppError(
@@ -66,14 +67,22 @@ export default class SubjectController {
       {
         moduleId,
       },
-      req.query,
+      { ...req.query, include: 'lectures' },
     );
 
     res.status(200).json({
       status: 'success',
       totalCount: subjects.length,
       data: {
-        subjects,
+        subjects: subjects
+          .map(subject => (subject as SubjectModel).toJSON())
+          .map(({ lectures, ...subject }: any) => ({
+            ...subject,
+            _count: {
+              lectures: lectures.filter(({ type }: any) => type === 'Normal')
+                .length,
+            },
+          })),
       },
     });
   });
@@ -85,7 +94,10 @@ export default class SubjectController {
   ) {
     const id = SubjectController.extractSubjectID(req);
 
-    const subject = await SubjectModel.findOneById(id, req.query);
+    const subject = await SubjectModel.findOneById(id, {
+      ...req.query,
+      include: SubjectModel.PATH_INCLUDE,
+    });
 
     res.status(200).json({
       status: 'success',
@@ -123,11 +135,11 @@ export default class SubjectController {
   ) {
     const id = SubjectController.extractSubjectID(req);
 
-    await SubjectModel.deleteOne(id);
+    const subject = await SubjectModel.deleteOne(id);
 
-    res.status(204).json({
+    res.status(200).json({
       status: 'success',
-      data: null,
+      data: { subject },
     });
   });
 }

@@ -13,15 +13,15 @@ router.use(AuthController.protect);
 router
   .route('/:id')
   .get(
-    AuthController.requirePermission('READ', 'ANY', 'LECTURE'),
+    // AuthController.requirePermission('READ', 'ANY', 'LECTURE'),
     LectureController.getLecture,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'LECTURE', LectureModel),
+    // AuthController.requirePermission('UPDATE', 'OWN', 'LECTURE', LectureModel),
     LectureController.updateLecture,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'OWN', 'LECTURE', LectureModel),
+    // AuthController.requirePermission('DELETE', 'OWN', 'LECTURE', LectureModel),
     LectureController.deleteLecture,
   );
 
@@ -33,7 +33,7 @@ router
     QuizController.getAllQuizzes,
   )
   .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'QUIZ', QuizModel),
+    // AuthController.requirePermission('CREATE', 'ANY', 'QUIZ', QuizModel),
     QuizController.createQuiz,
   );
 
@@ -45,7 +45,7 @@ router
     LinkController.getAllLinks,
   )
   .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'LINK', LinkModel),
+    // AuthController.requirePermission('CREATE', 'ANY', 'LINK', LinkModel),
     LinkController.createLink,
   );
 

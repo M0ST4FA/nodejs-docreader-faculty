@@ -44,6 +44,13 @@ class UserModel {
     return this.data.roleId;
   }
 
+  get yearId(): number | null {
+    if (this.data.yearId === undefined)
+      throw new AppError('User yearId field undefined.', 500);
+
+    return this.data.yearId;
+  }
+
   async role(): Promise<RoleModel> {
     if (!this.roleModel)
       this.roleModel = new RoleModel(

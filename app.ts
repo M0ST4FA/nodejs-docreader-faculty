@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import morgan = require('morgan');
+import cookieParser from 'cookie-parser';
 
 import globalErrorHandler from './controllers/ErrorController';
 import authRouter from './routes/authRouter';
@@ -14,7 +15,6 @@ import subjectRouter from './routes/subjectRouter';
 import lectureRouter from './routes/lectureRouter';
 import quizRouter from './routes/quizRouter';
 import linkRouter from './routes/linkRouter';
-import notificationRouter from './routes/notificationRouter';
 
 const app = express();
 const apiRoutesBase = '/api/v2';
@@ -31,10 +31,22 @@ const formatWithUser =
 app.use(morgan(formatWithUser));
 
 // Security
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    allowedHeaders: [
+      'Access-Control-Allow-Origin',
+      'Content-Type',
+      'Authorization',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true,
+  }),
+);
 
 // Essential middleware
 app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 app.use(`${apiRoutesBase}/`, authRouter);
@@ -48,7 +60,6 @@ app.use(`${apiRoutesBase}/subjects`, subjectRouter);
 app.use(`${apiRoutesBase}/lectures`, lectureRouter);
 app.use(`${apiRoutesBase}/quizzes`, quizRouter);
 app.use(`${apiRoutesBase}/links`, linkRouter);
-app.use(`${apiRoutesBase}/notifications`, notificationRouter);
 
 // Error handling
 app.use(globalErrorHandler);

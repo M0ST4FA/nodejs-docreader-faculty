@@ -2,6 +2,7 @@ import catchAsync from '../utils/catchAsync';
 import { Request, Response, NextFunction } from 'express';
 import DeviceModel from '../models/Device';
 import AppError from '../utils/AppError';
+import { messaging } from '../utils/firebase';
 
 export default class DeviceController {
   private static extractDeviceId(req: Request): number {
@@ -27,6 +28,9 @@ export default class DeviceController {
       req.body,
       req.query,
     )) as DeviceModel;
+
+    if (req.user.yearId)
+      messaging.subscribeToTopic(device.token, req.user.yearId.toString());
 
     res.status(201).json({
       status: 'success',
@@ -99,11 +103,11 @@ export default class DeviceController {
   ) {
     const id = DeviceController.extractDeviceId(req);
 
-    await DeviceModel.deleteOne(id);
+    const device = await DeviceModel.deleteOne(id);
 
-    res.status(204).json({
+    res.status(200).json({
       status: 'success',
-      data: null,
+      data: { device },
     });
   });
 }

@@ -11,15 +11,15 @@ router.use(AuthController.protect);
 router
   .route('/:id')
   .get(
-    AuthController.requirePermission('READ', 'ANY', 'SUBJECT'),
+    // AuthController.requirePermission('READ', 'ANY', 'SUBJECT'),
     SubjectController.getSubject,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'SUBJECT', SubjectModel),
+    // AuthController.requirePermission('UPDATE', 'OWN', 'SUBJECT', SubjectModel),
     SubjectController.updateSubject,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'OWN', 'SUBJECT', SubjectModel),
+    // AuthController.requirePermission('DELETE', 'OWN', 'SUBJECT', SubjectModel),
     SubjectController.deleteSubject,
   );
 

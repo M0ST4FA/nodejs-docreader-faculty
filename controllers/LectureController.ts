@@ -84,7 +84,10 @@ export default class LectureController {
   ) {
     const id = LectureController.extractLectureID(req);
 
-    const lecture = await LectureModel.findOneById(id, req.query);
+    const lecture = await LectureModel.findOneById(id, {
+      ...req.query,
+      include: LectureModel.PATH_INCLUDE,
+    });
 
     res.status(200).json({
       status: 'success',
@@ -122,11 +125,11 @@ export default class LectureController {
   ) {
     const id = LectureController.extractLectureID(req);
 
-    await LectureModel.deleteOne(id);
+    const lecture = await LectureModel.deleteOne(id);
 
-    res.status(204).json({
+    res.status(200).json({
       status: 'success',
-      data: null,
+      data: { lecture },
     });
   });
 }
