@@ -1,42 +1,42 @@
 export default function buildInclude(input: string) {
-  const parts = input.split(',').map(p => p.trim());
+  const paths = input.split(',').map(p => p.trim());
 
-  const result: any = {};
+  const result = {};
 
-  for (const path of parts) {
-    const keys = path.split('.');
-    let current = result;
+  for (const path of paths) {
+    const parts = path.split('.');
+    let current: any = result;
 
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      const isLast = i === parts.length - 1;
 
-      if (i === keys.length - 1) {
-        // Last key — set it to true
-        if (current.select) {
-          current.select[key] = true;
-        } else {
-          current[key] = true;
-        }
+      // Special case: top-level "questions" uses "include"
+      const containerKey =
+        i === 0 && part === 'questions' ? 'include' : 'select';
+
+      if (isLast) {
+        if (part === 'subQuestions') current[part] = { orderBy: { id: 'asc' } };
+        else current[part] = true;
       } else {
-        if (!current[key]) {
-          current[key] = {};
+        // Ensure property exists and is an object with the correct container
+        if (!current[part] || current[part] === true) {
+          if (containerKey === 'include') {
+            current[part] = {
+              orderBy: { id: 'asc' },
+              [containerKey]: {},
+            };
+          } else {
+            current[part] = { [containerKey]: {} };
+          }
         }
-
-        // If this key should use `select`
-        if (!current[key].select) {
-          current[key].select = {};
+        // If it exists but has no containerKey, add it
+        if (!current[part][containerKey]) {
+          current[part][containerKey] = {};
         }
-
-        current = current[key].select;
+        current = current[part][containerKey];
       }
     }
-  }
-
-  // Special override for "questions" 😐
-  if (result.questions === true) {
-    result.questions = {
-      orderBy: { id: 'asc' },
-    };
   }
 
   return result;

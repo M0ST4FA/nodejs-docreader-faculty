@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
 import LectureController from '../controllers/LectureController';
-import QuizController from '../controllers/QuizController';
+import McqQuizController from '../controllers/McqQuizController';
 import LinkController from '../controllers/LinkController';
 import LectureModel from '../models/Lecture';
-import QuizModel from '../models/Quiz';
+import McqQuizModel from '../models/McqQuiz';
 import LinkModel from '../models/Link';
+import WrittenQuizController from '../controllers/WrittenQuizController';
 
 const router = Router();
 
@@ -27,14 +28,24 @@ router
 
 // Nested quiz routes
 router
-  .route('/:lectureId/quizzes')
+  .route('/:lectureId/mcq-quizzes')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'QUIZ'),
-    QuizController.getAllQuizzes,
+    McqQuizController.getAllQuizzes,
   )
   .post(
-    // AuthController.requirePermission('CREATE', 'ANY', 'QUIZ', QuizModel),
-    QuizController.createQuiz,
+    // AuthController.requirePermission('CREATE', 'ANY', 'QUIZ', McqQuizModel),
+    McqQuizController.createQuiz,
+  );
+router
+  .route('/:lectureId/written-quizzes')
+  .get(
+    AuthController.requirePermission('READ', 'ANY', 'QUIZ'),
+    WrittenQuizController.getAllQuizzes,
+  )
+  .post(
+    // AuthController.requirePermission('CREATE', 'ANY', 'QUIZ', McqQuizModel),
+    WrittenQuizController.createQuiz,
   );
 
 // Nested link routes

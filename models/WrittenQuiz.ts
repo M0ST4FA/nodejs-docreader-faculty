@@ -1,0 +1,106 @@
+import quizSchema from '../schema/writtenQuiz.schema';
+import { WrittenQuiz as PrismaQuiz } from '@prisma/client';
+import db from '../prisma/db';
+import { ModelFactory } from './ModelFactory';
+import buildInclude from '../utils/buildInclude';
+import path from 'path';
+import { unlink } from 'fs/promises';
+
+export default class WrittenQuizModel {
+  public static PATH_INCLUDE =
+    'lectureData.id,lectureData.title,lectureData.subject.id,lectureData.subject.name,lectureData.subject.module.id,lectureData.subject.module.name,lectureData.subject.module.semesterName';
+  private data: Partial<PrismaQuiz>;
+
+  private static wrapper(data: PrismaQuiz): WrittenQuizModel {
+    return new WrittenQuizModel(data);
+  }
+
+  constructor(data: Partial<PrismaQuiz>) {
+    this.data = data;
+  }
+
+  toJSON() {
+    return this.data;
+  }
+
+  static createOne = ModelFactory.createOne(
+    db.writtenQuiz,
+    quizSchema,
+    data => new WrittenQuizModel(data),
+  );
+
+  static findMany = ModelFactory.findMany(
+    db.writtenQuiz,
+    quizSchema,
+    WrittenQuizModel.wrapper,
+  );
+
+  static findOneById = ModelFactory.findOneById(
+    db.writtenQuiz,
+    quizSchema,
+    WrittenQuizModel.wrapper,
+  );
+
+  static findCreatorIdById = ModelFactory.findCreatorIdById(db.writtenQuiz);
+
+  static updateOne = ModelFactory.updateOne(
+    db.writtenQuiz,
+    quizSchema,
+    data => new WrittenQuizModel(data),
+  );
+
+  static async deleteOne(id: number) {
+    const writtenQuiz = await db.writtenQuiz.delete({
+      where: { id },
+      include: { questions: true },
+    });
+    for (const question of writtenQuiz.questions) {
+      try {
+        if (question.image)
+          unlink(path.join(__dirname, '../public/image', question.image));
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    return writtenQuiz;
+  }
+
+  static findNotifiable = async function (yearId: number) {
+    return await db.writtenQuiz.findMany({
+      where: {
+        notifiable: true,
+        lectureData: { subject: { module: { yearId } } },
+      },
+      include: buildInclude(WrittenQuizModel.PATH_INCLUDE),
+    });
+  };
+
+  static ignore = async function (yearId: number, ids: number[]) {
+    await db.writtenQuiz.updateMany({
+      where: {
+        AND: [
+          { id: { in: ids } },
+          { lectureData: { subject: { module: { yearId } } } },
+        ],
+      },
+      data: { notifiable: false },
+    });
+  };
+
+  static notify = async function (yearId: number, ids: number[]) {
+    const where = {
+      AND: [
+        { id: { in: ids } },
+        { lectureData: { subject: { module: { yearId } } } },
+      ],
+    };
+    await db.writtenQuiz.updateMany({
+      where,
+      data: { notifiable: false },
+    });
+    return await db.writtenQuiz.findMany({
+      where,
+      include: buildInclude(WrittenQuizModel.PATH_INCLUDE),
+    });
+  };
+}

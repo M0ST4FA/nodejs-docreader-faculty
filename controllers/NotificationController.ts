@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import AppError from '../utils/AppError';
 import notificationSchema from '../schema/notification.schema';
 import LinkModel from '../models/Link';
-import QuizModel from '../models/Quiz';
+import McqQuizModel from '../models/McqQuiz';
 import getUniqueObjectsById from '../utils/getUniqueObjectsById';
 import bolderizeWord from '../utils/bolderizeWord';
 import { messaging } from '../utils/firebase';
@@ -25,10 +25,10 @@ export default class NotificationController {
   ) {
     const yearId = NotificationController.extractYearID(req);
     const links = await LinkModel.findNotifiable(yearId);
-    const quizzes = await QuizModel.findNotifiable(yearId);
+    const mcqQuizzes = await McqQuizModel.findNotifiable(yearId);
     res.status(200).json({
       status: 'success',
-      data: { links, quizzes },
+      data: { links, mcqQuizzes },
     });
   });
 
@@ -49,10 +49,13 @@ export default class NotificationController {
       );
 
     const links = await LinkModel.notify(yearId, validatedBody.data.links);
-    const quizzes = await QuizModel.notify(yearId, validatedBody.data.quizzes);
+    const mcqQuizzes = await McqQuizModel.notify(
+      yearId,
+      validatedBody.data.mcqQuizzes,
+    );
     const practicalQuizzes: any[] = [];
     const lectures = getUniqueObjectsById(
-      [...links, ...quizzes, ...practicalQuizzes].map(
+      [...links, ...mcqQuizzes, ...practicalQuizzes].map(
         ({
           lectureId,
           lectureData: {
@@ -74,7 +77,7 @@ export default class NotificationController {
     ).map(lecture => ({
       ...lecture,
       links: links.filter(link => link.lectureId === lecture.id),
-      quizzes: quizzes.filter(quiz => quiz.lectureId === lecture.id),
+      mcqQuizzes: mcqQuizzes.filter(quiz => quiz.lectureId === lecture.id),
       practicalQuizzes: practicalQuizzes.filter(
         quiz => quiz.lectureId === lecture.id,
       ),
@@ -99,7 +102,7 @@ export default class NotificationController {
       else message += 'في محاضرة ' + bolderizeWord(lecture.title);
       message += ` تم إضافة المصادر التالية:\n${[
         ...lecture.links,
-        ...lecture.quizzes,
+        ...lecture.mcqQuizzes,
         ...lecture.practicalQuizzes,
       ]
         .map(({ title }) => `💥 ${title}\n`)
@@ -143,7 +146,7 @@ export default class NotificationController {
       );
 
     LinkModel.ignore(yearId, validatedBody.data.links);
-    QuizModel.ignore(yearId, validatedBody.data.quizzes);
+    McqQuizModel.ignore(yearId, validatedBody.data.mcqQuizzes);
 
     res
       .status(200)

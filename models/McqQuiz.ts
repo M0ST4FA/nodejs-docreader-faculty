@@ -1,16 +1,19 @@
-import quizSchema from '../schema/quiz.schema';
-import { Quiz as PrismaQuiz } from '@prisma/client';
+import quizSchema from '../schema/mcqQuiz.schema';
+import {
+  McqQuiz as PrismaQuiz,
+  McqQuestion as PrismaQuestion,
+} from '@prisma/client';
 import db from '../prisma/db';
 import { ModelFactory } from './ModelFactory';
 import buildInclude from '../utils/buildInclude';
 
-export default class QuizModel {
+export default class McqQuizModel {
   public static PATH_INCLUDE =
     'lectureData.id,lectureData.title,lectureData.subject.id,lectureData.subject.name,lectureData.subject.module.id,lectureData.subject.module.name,lectureData.subject.module.semesterName';
   private data: Partial<PrismaQuiz>;
 
-  private static wrapper(data: PrismaQuiz): QuizModel {
-    return new QuizModel(data);
+  private static wrapper(data: PrismaQuiz): McqQuizModel {
+    return new McqQuizModel(data);
   }
 
   constructor(data: Partial<PrismaQuiz>) {
@@ -22,48 +25,48 @@ export default class QuizModel {
   }
 
   static createOne = ModelFactory.createOne(
-    db.quiz,
+    db.mcqQuiz,
     quizSchema,
-    data => new QuizModel(data),
+    data => new McqQuizModel(data),
   );
 
   static findMany = ModelFactory.findMany(
-    db.quiz,
+    db.mcqQuiz,
     quizSchema,
-    QuizModel.wrapper,
+    McqQuizModel.wrapper,
   );
 
   static findOneById = ModelFactory.findOneById(
-    db.quiz,
+    db.mcqQuiz,
     quizSchema,
-    QuizModel.wrapper,
+    McqQuizModel.wrapper,
   );
 
-  static findCreatorIdById = ModelFactory.findCreatorIdById(db.quiz);
+  static findCreatorIdById = ModelFactory.findCreatorIdById(db.mcqQuiz);
 
   static updateOne = ModelFactory.updateOne(
-    db.quiz,
+    db.mcqQuiz,
     quizSchema,
-    data => new QuizModel(data),
+    data => new McqQuizModel(data),
   );
 
   static deleteOne = ModelFactory.deleteOne(
-    db.quiz,
-    data => new QuizModel(data),
+    db.mcqQuiz,
+    data => new McqQuizModel(data),
   );
 
   static findNotifiable = async function (yearId: number) {
-    return await db.quiz.findMany({
+    return await db.mcqQuiz.findMany({
       where: {
         notifiable: true,
         lectureData: { subject: { module: { yearId } } },
       },
-      include: buildInclude(QuizModel.PATH_INCLUDE),
+      include: buildInclude(McqQuizModel.PATH_INCLUDE),
     });
   };
 
   static ignore = async function (yearId: number, ids: number[]) {
-    await db.quiz.updateMany({
+    await db.mcqQuiz.updateMany({
       where: {
         AND: [
           { id: { in: ids } },
@@ -81,13 +84,13 @@ export default class QuizModel {
         { lectureData: { subject: { module: { yearId } } } },
       ],
     };
-    await db.quiz.updateMany({
+    await db.mcqQuiz.updateMany({
       where,
       data: { notifiable: false },
     });
-    return await db.quiz.findMany({
+    return await db.mcqQuiz.findMany({
       where,
-      include: buildInclude(QuizModel.PATH_INCLUDE),
+      include: buildInclude(McqQuizModel.PATH_INCLUDE),
     });
   };
 }

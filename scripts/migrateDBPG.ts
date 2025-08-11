@@ -69,7 +69,7 @@ async function main() {
                       FROM "LectureLink" ll
                       WHERE ll."lectureId" = l.id
                     ),
-                    'quizzes', (
+                    'mcqQuizzes', (
                       SELECT COALESCE(json_agg(jsonb_build_object(
                         'oldQuizId', q.id,
                         'quizTitle', q.title,
@@ -254,8 +254,8 @@ async function main() {
                     }
 
                     // Insert Quizzes
-                    if (lecture.quizzes) {
-                      for (const quiz of lecture.quizzes) {
+                    if (lecture.mcqQuizzes) {
+                      for (const quiz of lecture.mcqQuizzes) {
                         const oldQuizId = quiz.oldQuizId;
                         const insertQuizResult = await v2.query(
                           `INSERT INTO "Quiz" (title, "lectureId", notifiable, "createdAt", "updatedAt", "creatorId") VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;`,
