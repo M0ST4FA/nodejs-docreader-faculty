@@ -74,12 +74,12 @@ export default class UserController {
 
     if (user.yearId !== updatedUser.yearId) {
       const devices = await DeviceModel.findMany({ userId: user.id }, {});
-      if (user.yearId)
+      if (user.yearId && devices.length > 0)
         messaging.unsubscribeFromTopic(
           devices.map(device => device.token),
           user.yearId.toString(),
         );
-      if (updatedUser.yearId)
+      if (updatedUser.yearId && devices.length > 0)
         messaging.subscribeToTopic(
           devices.map(device => device.token),
           updatedUser.yearId?.toString(),
