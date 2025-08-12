@@ -2,6 +2,7 @@ import catchAsync from '../utils/catchAsync';
 import { Request, Response, NextFunction } from 'express';
 import LectureModel from '../models/Lecture';
 import AppError from '../utils/AppError';
+import buildInclude from '../utils/buildInclude';
 
 export default class LectureController {
   private static extractSubjectID(req: Request): number {
@@ -31,6 +32,15 @@ export default class LectureController {
         'Invalid lecture ID: lecture ID must be an integer.',
         400,
       );
+
+    return id;
+  }
+
+  private static extractYearID(req: Request): number {
+    const id = Number.parseInt(req.params.yearId);
+
+    if (Number.isNaN(id))
+      throw new AppError('Invalid year ID: year ID must be an integer.', 400);
 
     return id;
   }
@@ -66,6 +76,30 @@ export default class LectureController {
         subjectId,
       },
       req.query,
+    );
+
+    res.status(200).json({
+      status: 'success',
+      totalCount: lectures.length,
+      data: {
+        lectures,
+      },
+    });
+  });
+
+  public static getYearLectures = catchAsync(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    const yearId = LectureController.extractYearID(req);
+
+    const lectures = await LectureModel.findMany(
+      {
+        subject: { module: { yearId } },
+        type: 'Normal',
+      },
+      { ...req.query, include: LectureModel.PATH_INCLUDE },
     );
 
     res.status(200).json({

@@ -5,6 +5,7 @@ import ModuleController from '../controllers/ModuleController';
 import YearModel from '../models/Year';
 import ModuleModel from '../models/Module';
 import NotificationController from '../controllers/NotificationController';
+import LectureController from '../controllers/LectureController';
 
 const router = Router();
 
@@ -50,5 +51,8 @@ router
     AuthController.requirePermission('CREATE', 'ANY', 'MODULE', ModuleModel),
     ModuleController.createModule,
   );
+
+// Nested lecture routes
+router.route('/:yearId/lectures').get(LectureController.getYearLectures);
 
 export default router;
