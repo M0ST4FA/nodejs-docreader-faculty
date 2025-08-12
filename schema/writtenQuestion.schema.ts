@@ -43,7 +43,7 @@ const questionSchema = createModelSchema(
     defaultSize: 10,
     maxPageSize: 100,
     projectableFields: ['id', 'creatorId', 'updatedAt', 'createdAt'],
-    defaultFields: ['id', 'creatorId'],
+    defaultFields: ['id', 'quizId', 'creatorId'],
     sortableFields: [
       'tapes',
       'masks',
