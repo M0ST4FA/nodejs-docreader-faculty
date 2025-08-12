@@ -9,6 +9,7 @@ import { User as PrismaUser, Role as PrismaRole } from '@prisma/client';
 import AppError from '../utils/AppError';
 import RoleModel from './Role';
 import { ModelFactory } from './ModelFactory';
+import { QueryParamsService } from '../utils/QueryParamsService';
 
 type PartialUserWithRole = Partial<PrismaUser> & {
   role?: Partial<PrismaRole>;
@@ -106,11 +107,53 @@ class UserModel {
     return new UserModel(userData);
   }
 
-  static findMany = ModelFactory.findMany(
-    db.user,
-    userSchema,
-    UserModel.wrapper,
-  );
+  static async findMany(query: any) {
+    const search = query?.search;
+    delete query?.search;
+
+    const validatedQueryParams: any = QueryParamsService.parse<
+      typeof userSchema.query
+    >(userSchema, query, {
+      pagination: true,
+      projection: true,
+      sorting: true,
+      joining: true,
+    });
+
+    let users;
+    let total = 0;
+
+    const where: any = {
+      email: {
+        contains: search,
+        mode: 'insensitive',
+      },
+    };
+
+    if (validatedQueryParams.include)
+      [users, total] = await Promise.all([
+        db.user.findMany({
+          where,
+          include: validatedQueryParams.include,
+          orderBy: validatedQueryParams.orderBy,
+          skip: validatedQueryParams.skip,
+          take: validatedQueryParams.take,
+        }),
+        db.user.count({ where }),
+      ]);
+    else
+      [users, total] = await Promise.all([
+        db.user.findMany({
+          where,
+          orderBy: validatedQueryParams.orderBy,
+          skip: validatedQueryParams.skip,
+          take: validatedQueryParams.take,
+        }),
+        db.user.count({ where }),
+      ]);
+
+    return [users, total];
+  }
 
   static updateOne = ModelFactory.updateOne(
     db.user,

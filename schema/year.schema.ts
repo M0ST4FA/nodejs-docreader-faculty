@@ -9,6 +9,9 @@ const fullSchema = z
       .trim()
       .min(1, { message: 'Title is required.' })
       .max(255, { message: 'Cannot be greater than 255 characters.' }),
+    currentSemester: z
+      .number()
+      .int({ message: 'Current semester must be an integer.' }),
     facultyId: z.number().int({ message: 'Faculty ID must be an integer.' }),
 
     creatorId: z.number().int({ message: 'Creator ID must be an integer.' }),
@@ -19,8 +22,11 @@ const fullSchema = z
 
 const yearSchema = createModelSchema(
   fullSchema,
-  { required: ['id', 'title', 'facultyId', 'creatorId'], optional: [] },
-  ['title', 'facultyId'],
+  {
+    required: ['id', 'title', 'facultyId', 'currentSemester', 'creatorId'],
+    optional: ['currentSemester'],
+  },
+  ['currentSemester'],
   {
     defaultPage: 1,
     defaultSize: 10,
@@ -28,12 +34,13 @@ const yearSchema = createModelSchema(
     projectableFields: [
       'id',
       'title',
+
       'facultyId',
       'creatorId',
       'updatedAt',
       'createdAt',
     ],
-    defaultFields: ['id', 'title', 'facultyId', 'creatorId'],
+    defaultFields: ['id', 'title', 'currentSemester', 'facultyId', 'creatorId'],
     sortableFields: ['title', 'createdAt', 'updatedAt'],
   },
 );

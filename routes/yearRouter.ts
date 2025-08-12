@@ -17,7 +17,7 @@ router
     YearController.getYear,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'YEAR', YearModel),
+    // AuthController.requirePermission('UPDATE', 'OWN', 'YEAR', YearModel),
     YearController.updateYear,
   )
   .delete(

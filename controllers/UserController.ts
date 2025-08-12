@@ -49,11 +49,11 @@ export default class UserController {
     res: Response,
     next: NextFunction,
   ) {
-    const users = await UserModel.findMany({}, req.query);
+    const [users, total] = await UserModel.findMany(req.query);
 
     res.status(200).json({
       status: 'success',
-      totalCount: users.length,
+      totalCount: total,
       data: {
         users,
       },
@@ -67,7 +67,8 @@ export default class UserController {
   ) {
     const id = UserController.extractAndValidateId(req);
 
-    const user = req.user;
+    const user =
+      req.user.id === id ? req.user : await UserModel.findOneById(id, {});
 
     const updatedUser = await UserModel.updateOne(id, req.body, req.query);
 
@@ -129,11 +130,11 @@ export default class UserController {
   ) {
     const id = UserController.extractAndValidateId(req);
 
-    await UserModel.deleteOne(id);
+    const user = await UserModel.deleteOne(id);
 
-    res.status(204).json({
+    res.status(200).json({
       status: 'success',
-      data: null,
+      data: { user },
     });
   });
 }

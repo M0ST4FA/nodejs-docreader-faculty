@@ -8,7 +8,7 @@ const fullSchema = z.object({
   familyName: z.string({ message: 'Family name not provided.' }),
   email: z.string().trim().email({ message: 'Invalid Email.' }),
   picture: z.string().url({ message: 'Invalid picture URL.' }),
-  roleId: z.number().int({ message: 'Role ID can only be an integer.' }).min(1),
+  roleId: z.number().int({ message: 'Role ID can only be an integer.' }).min(0),
   facultyId: z.number().gt(0),
   yearId: z.number().gt(0),
   // devices: deviceSchema.array(),
@@ -70,7 +70,7 @@ const userSchema = createModelSchema(
       'createdAt',
     ],
     sortableFields: ['givenName', 'email', 'createdAt', 'updatedAt'],
-    includableFields: ['role'],
+    includableFields: ['role', 'year'],
   },
 );
 

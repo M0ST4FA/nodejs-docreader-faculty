@@ -162,6 +162,7 @@ model RolePermission {
 model StudyingYear {
   id        Int       @id @default(autoincrement())
   title     String
+  currentSemester Int @default(-1)
   facultyId Int
   faculty   Faculty   @relation(fields: [facultyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
