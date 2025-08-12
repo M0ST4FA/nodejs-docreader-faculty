@@ -61,6 +61,22 @@ export default class SubjectController {
     res: Response,
     next: NextFunction,
   ) {
+    const subjects = await SubjectModel.findMany({}, req.query);
+
+    res.status(200).json({
+      status: 'success',
+      totalCount: subjects.length,
+      data: {
+        subjects,
+      },
+    });
+  });
+
+  public static getSubjects = catchAsync(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
     const moduleId = SubjectController.extractModuleID(req);
 
     const subjects = await SubjectModel.findMany(

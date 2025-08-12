@@ -54,7 +54,7 @@ export default class LinkController {
     });
   });
 
-  public static getAllLinks = catchAsync(async function (
+  public static getLinks = catchAsync(async function (
     req: Request,
     res: Response,
     next: NextFunction,

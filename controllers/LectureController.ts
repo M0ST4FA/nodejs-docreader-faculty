@@ -54,7 +54,7 @@ export default class LectureController {
     });
   });
 
-  public static getAllLectures = catchAsync(async function (
+  public static getLectures = catchAsync(async function (
     req: Request,
     res: Response,
     next: NextFunction,

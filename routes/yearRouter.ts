@@ -44,7 +44,7 @@ router
   .route('/:yearId/modules/')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'MODULE'),
-    ModuleController.getAllModules,
+    ModuleController.getModules,
   )
   .post(
     AuthController.requirePermission('CREATE', 'ANY', 'MODULE', ModuleModel),

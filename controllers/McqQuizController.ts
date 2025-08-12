@@ -62,7 +62,7 @@ export default class McqQuizController {
     });
   });
 
-  public static getAllQuizzes = catchAsync(async function (
+  public static getQuizzes = catchAsync(async function (
     req: Request,
     res: Response,
     next: NextFunction,

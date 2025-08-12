@@ -31,7 +31,7 @@ router
   .route('/:lectureId/mcq-quizzes')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'QUIZ'),
-    McqQuizController.getAllQuizzes,
+    McqQuizController.getQuizzes,
   )
   .post(
     // AuthController.requirePermission('CREATE', 'ANY', 'QUIZ', McqQuizModel),
@@ -41,7 +41,7 @@ router
   .route('/:lectureId/written-quizzes')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'QUIZ'),
-    WrittenQuizController.getAllQuizzes,
+    WrittenQuizController.getQuizzes,
   )
   .post(
     // AuthController.requirePermission('CREATE', 'ANY', 'QUIZ', McqQuizModel),
@@ -53,7 +53,7 @@ router
   .route('/:lectureId/links')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'LINK'),
-    LinkController.getAllLinks,
+    LinkController.getLinks,
   )
   .post(
     // AuthController.requirePermission('CREATE', 'ANY', 'LINK', LinkModel),

@@ -56,6 +56,22 @@ export default class ModuleController {
     res: Response,
     next: NextFunction,
   ) {
+    const modules = await ModuleModel.findMany({}, req.query);
+
+    res.status(200).json({
+      status: 'success',
+      totalCount: modules.length,
+      data: {
+        modules,
+      },
+    });
+  });
+
+  public static getModules = catchAsync(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
     const yearId = ModuleController.extractYearID(req);
 
     const modules = await ModuleModel.findMany(

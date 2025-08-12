@@ -9,6 +9,8 @@ const router = Router();
 
 router.use(AuthController.protect);
 
+router.route('/').get(ModuleController.getAllModules);
+
 router
   .route('/:id')
   .get(
@@ -29,7 +31,7 @@ router
   .route('/:moduleId/subjects')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'SUBJECT'),
-    SubjectController.getAllSubjects,
+    SubjectController.getSubjects,
   )
   .post(
     AuthController.requirePermission('CREATE', 'ANY', 'SUBJECT', SubjectModel),

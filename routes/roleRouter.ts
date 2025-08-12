@@ -39,7 +39,7 @@ router
   .route('/:roleId/permissions')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'ROLE'),
-    PermissionController.getAllPermissions,
+    PermissionController.getPermissions,
   )
   .post(
     AuthController.requirePermission('CREATE', 'ANY', 'ROLE'),
