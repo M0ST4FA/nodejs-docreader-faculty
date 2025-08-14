@@ -5,6 +5,8 @@ import { ModelFactory } from './ModelFactory';
 import buildInclude from '../utils/buildInclude';
 import path from 'path';
 import { unlink } from 'fs/promises';
+import { deleteFile, deleteImagesInHtml } from '../utils/imageUtils';
+import WrittenQuestionModel from './WrittenQuesiton';
 
 export default class WrittenQuizModel {
   public static PATH_INCLUDE =
@@ -50,19 +52,16 @@ export default class WrittenQuizModel {
   );
 
   static async deleteOne(id: number) {
-    const writtenQuiz = await db.writtenQuiz.delete({
-      where: { id },
-      include: { questions: true },
+    const writtenQuestions = await db.writtenQuestion.findMany({
+      where: { quizId: id },
+      select: { id: true },
     });
-    for (const question of writtenQuiz.questions) {
-      try {
-        if (question.image)
-          unlink(path.join(__dirname, '../public/image', question.image));
-      } catch (err) {
-        console.error(err);
-      }
-    }
-    return writtenQuiz;
+    await Promise.all(
+      writtenQuestions.map(({ id }) => WrittenQuestionModel.deleteOne(id)),
+    );
+    return await db.writtenQuiz.delete({
+      where: { id },
+    });
   }
 
   static findNotifiable = async function (yearId: number) {

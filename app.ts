@@ -47,7 +47,7 @@ app.use(
 );
 
 // Essential middleware
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, './public')));
 

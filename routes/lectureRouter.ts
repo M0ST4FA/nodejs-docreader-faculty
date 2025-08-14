@@ -3,9 +3,6 @@ import AuthController from '../controllers/AuthController';
 import LectureController from '../controllers/LectureController';
 import McqQuizController from '../controllers/McqQuizController';
 import LinkController from '../controllers/LinkController';
-import LectureModel from '../models/Lecture';
-import McqQuizModel from '../models/McqQuiz';
-import LinkModel from '../models/Link';
 import WrittenQuizController from '../controllers/WrittenQuizController';
 
 const router = Router();
