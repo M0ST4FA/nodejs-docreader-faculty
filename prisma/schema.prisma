@@ -217,7 +217,7 @@ model Subject {
 model Lecture {
   id        Int         @id @default(autoincrement())
   title     String
-  subTitle  String?
+  note      String?
   subjectId Int
   type      LectureType @default(Normal)
   subject   Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)

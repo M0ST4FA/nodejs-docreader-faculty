@@ -3,14 +3,7 @@ import { WrittenQuestion as PrismaQuestion } from '@prisma/client';
 import db from '../prisma/db';
 import { ModelFactory } from './ModelFactory';
 import AppError from '../utils/AppError';
-import { unlink } from 'fs/promises';
-import path from 'path';
-import { JSDOM } from 'jsdom';
-import {
-  deleteFile,
-  deleteImagesInHtml,
-  processHtmlImages,
-} from '../utils/imageUtils';
+import ImageUtils from '../utils/ImageUtils';
 
 interface NewRect {
   x: number;
@@ -81,21 +74,25 @@ export default class WrittenQuestionModel {
     const { masks, tapes, subQuestions } = validatedData.data;
 
     const newMasks: NewRect[] = [];
-    const oldMasks: OldRect[] = [];
+    const updatedMasks: OldRect[] = [];
     const newTapes: NewRect[] = [];
-    const oldTapes: OldRect[] = [];
+    const updatedTapes: OldRect[] = [];
     const newSubQuestions: NewWrittenQuestion[] = [];
-    const oldSubQuestions: OldWrittenQuestion[] = [];
+    const updatedSubQuestions: OldWrittenQuestion[] = [];
 
     masks!.forEach(mask =>
-      mask.id ? oldMasks.push(mask as OldRect) : newMasks.push(mask as NewRect),
+      mask.id
+        ? updatedMasks.push(mask as OldRect)
+        : newMasks.push(mask as NewRect),
     );
     tapes!.forEach(tape =>
-      tape.id ? oldTapes.push(tape as OldRect) : newTapes.push(tape as NewRect),
+      tape.id
+        ? updatedTapes.push(tape as OldRect)
+        : newTapes.push(tape as NewRect),
     );
     subQuestions!.forEach(subQuestion =>
       subQuestion.id
-        ? oldSubQuestions.push(subQuestion as OldWrittenQuestion)
+        ? updatedSubQuestions.push(subQuestion as OldWrittenQuestion)
         : newSubQuestions.push(subQuestion as NewWrittenQuestion),
     );
 
@@ -104,31 +101,32 @@ export default class WrittenQuestionModel {
     await db.rect.deleteMany({
       where: {
         tapeQuestionId: questionId,
-        id: { notIn: oldTapes.map(({ id }) => id) },
+        id: { notIn: updatedTapes.map(({ id }) => id) },
       },
     });
 
     await db.rect.deleteMany({
       where: {
         maskQuestionId: questionId,
-        id: { notIn: oldMasks.map(({ id }) => id) },
+        id: { notIn: updatedMasks.map(({ id }) => id) },
       },
     });
 
     const deletedSubQuestions = await db.subQuestion.findMany({
       where: {
         questionId: questionId,
-        id: { notIn: oldSubQuestions.map(({ id }) => id) },
+        id: { notIn: updatedSubQuestions.map(({ id }) => id) },
       },
       select: { answer: true },
     });
 
-    for (const sq of deletedSubQuestions) deleteImagesInHtml(sq.answer);
+    for (const sq of deletedSubQuestions)
+      ImageUtils.deleteImagesInHtml(sq.answer);
 
     await db.subQuestion.deleteMany({
       where: {
         questionId: questionId,
-        id: { notIn: oldSubQuestions.map(({ id }) => id) },
+        id: { notIn: updatedSubQuestions.map(({ id }) => id) },
       },
     });
 
@@ -151,7 +149,7 @@ export default class WrittenQuestionModel {
     });
 
     for (const sq of newSubQuestions)
-      sq.answer = await processHtmlImages(sq.answer);
+      sq.answer = await ImageUtils.processHtmlImages(sq.answer);
 
     await db.subQuestion.createMany({
       data: newSubQuestions.map(question => ({
@@ -164,31 +162,33 @@ export default class WrittenQuestionModel {
     // UPDATE OLD
 
     await Promise.all(
-      oldMasks.map(({ id, ...mask }) =>
+      updatedMasks.map(({ id, ...mask }) =>
         db.rect.update({ where: { id }, data: { ...mask } }),
       ),
     );
 
     await Promise.all(
-      oldTapes.map(({ id, ...tape }) =>
+      updatedTapes.map(({ id, ...tape }) =>
         db.rect.update({ where: { id }, data: { ...tape } }),
       ),
     );
 
-    for (const sq of oldSubQuestions) {
-      const oldImgs: string[] = [];
-      const dom = new JSDOM(sq.answer);
-      const imgs = Array.from(dom.window.document.querySelectorAll('img'));
-      for (const img of imgs) {
-        const src = img.getAttribute('src');
-        if (src && !src.startsWith('data:image/'))
-          oldImgs.push(src.replace(/^\/public\//, ''));
-      }
-      sq.answer = await processHtmlImages(sq.answer, oldImgs);
-    }
+    const oldSubQuestions = await db.subQuestion.findMany({
+      where: { questionId },
+    });
 
     await Promise.all(
-      oldSubQuestions.map(({ id, ...subQuestion }) =>
+      updatedSubQuestions.map(async sq => {
+        sq.answer = await ImageUtils.processHtmlImages(sq.answer);
+        ImageUtils.deleteOldImages(
+          oldSubQuestions.find(({ id }) => sq.id === id)?.answer || '',
+          sq.answer,
+        );
+      }),
+    );
+
+    await Promise.all(
+      updatedSubQuestions.map(({ id, ...subQuestion }) =>
         db.subQuestion.update({ where: { id }, data: { ...subQuestion } }),
       ),
     );
@@ -205,9 +205,9 @@ export default class WrittenQuestionModel {
       where: { id: writtenQuestion.quizId },
       data: { notifiable: true },
     });
-    deleteFile(`/image/${writtenQuestion.image}`);
+    ImageUtils.deleteFile(`/image/${writtenQuestion.image}`);
     for (const subQuestion of writtenQuestion.subQuestions)
-      deleteImagesInHtml(subQuestion.answer);
+      ImageUtils.deleteImagesInHtml(subQuestion.answer);
     return writtenQuestion;
   }
 

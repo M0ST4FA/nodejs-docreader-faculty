@@ -1,83 +1,83 @@
 import fs from 'fs/promises';
 import path from 'path';
 import sharp from 'sharp';
-import { JSDOM } from 'jsdom';
 
-/**
- * Compresses a base64 image and saves it to public/image.
- * Returns the new relative URL for the image.
- */
-export async function compressAndSaveImage(base64: string): Promise<string> {
-  const matches = base64.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/);
-  if (!matches) throw new Error('Invalid base64 image');
+export default class ImageUtils {
+  static imgTagRegex = /<img\s+[^>]*src=["']([^"']+)["'][^>]*>/gi;
 
-  const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
-  const buffer = Buffer.from(matches[2], 'base64');
-  const filename = `${Math.floor(
-    Math.random() * 1_000_000_000,
-  )}-${Date.now()}.${ext}`;
-  const outputPath = path.join(__dirname, '../public/image', filename);
+  public static async compressAndSaveImage(base64: string): Promise<string> {
+    const matches = base64.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/);
+    if (!matches) throw new Error('Invalid base64 image');
 
-  await sharp(buffer).toFormat('jpeg').jpeg({ quality: 80 }).toFile(outputPath);
-  return `/image/${filename}`;
-}
+    const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
+    const buffer = Buffer.from(matches[2], 'base64');
+    const filename = `${Math.floor(
+      Math.random() * 1_000_000_000,
+    )}-${Date.now()}.${ext}`;
+    const outputPath = path.join(__dirname, '../public/image', filename);
 
-/**
- * Deletes a file safely.
- */
-export function deleteFile(relativePath: string) {
-  const filePath = path.join(
-    __dirname,
-    '../public',
-    relativePath.replace(/^\//, ''),
-  );
-  try {
-    fs.unlink(filePath);
-  } catch (err) {
-    console.warn(`Failed to delete file: ${filePath}`, err);
+    await sharp(buffer)
+      .toFormat('jpeg')
+      .jpeg({ quality: 80 })
+      .toFile(outputPath);
+    return `/image/${filename}`;
   }
-}
 
-/**
- * Processes all <img> tags in HTML:
- * - compresses base64 images
- * - replaces src with new path
- * - deletes old images if provided
- */
-export async function processHtmlImages(
-  html: string,
-  oldImages: string[] = [],
-): Promise<string> {
-  const dom = new JSDOM(html);
-  const imgs = Array.from(dom.window.document.querySelectorAll('img'));
-
-  for (const img of imgs) {
-    const src = img.getAttribute('src');
-    if (!src) continue;
-
-    // Compress new base64 images
-    if (src.startsWith('data:image/')) {
-      const newSrc = await compressAndSaveImage(src);
-      img.setAttribute('src', newSrc);
-
-      // Delete old images if any
-      for (const oldImg of oldImages) deleteFile(oldImg);
+  public static deleteFile(relativePath: string) {
+    const filePath = path.join(
+      __dirname,
+      '../public',
+      relativePath.replace(/^\//, ''),
+    );
+    try {
+      fs.unlink(filePath);
+    } catch (err) {
+      console.warn(`Failed to delete file: ${filePath}`, err);
     }
   }
 
-  return dom.serialize();
-}
+  public static deleteOldImages(oldHtml: string, newHtml: string) {
+    const imagesInOld = [];
+    const imagesInNew = [];
+    let oldMatch: RegExpExecArray | null;
+    while ((oldMatch = ImageUtils.imgTagRegex.exec(oldHtml)) !== null) {
+      const src = oldMatch[1];
+      if (src && !src.startsWith('data:')) imagesInOld.push(src);
+    }
+    let newMatch: RegExpExecArray | null;
+    while ((newMatch = ImageUtils.imgTagRegex.exec(newHtml)) !== null) {
+      const src = newMatch[1];
+      if (src && !src.startsWith('data:')) imagesInNew.push(src);
+    }
+    console.log(imagesInOld, imagesInNew);
+    for (const image of imagesInOld)
+      if (!imagesInNew.includes(image)) ImageUtils.deleteFile(image);
+  }
 
-/**
- * Deletes all relative images found in HTML.
- */
-export function deleteImagesInHtml(html: string) {
-  const dom = new JSDOM(html);
-  const imgs = Array.from(dom.window.document.querySelectorAll('img'));
+  public static async processHtmlImages(html: string): Promise<string> {
+    let newHtml = html;
+    let match: RegExpExecArray | null;
 
-  for (const img of imgs) {
-    const src = img.getAttribute('src');
-    if (src && !src.startsWith('http') && !src.startsWith('data:'))
-      deleteFile(src);
+    while ((match = ImageUtils.imgTagRegex.exec(html)) !== null) {
+      const src = match[1];
+      if (!src) continue;
+      if (src.startsWith('data:')) {
+        const newSrc = await ImageUtils.compressAndSaveImage(src);
+        newHtml = newHtml.replace(src, newSrc);
+      }
+    }
+
+    return newHtml;
+  }
+
+  public static deleteImagesInHtml(html: string) {
+    let match: RegExpExecArray | null;
+
+    while ((match = ImageUtils.imgTagRegex.exec(html)) !== null) {
+      const src = match[1];
+      if (src && !src.startsWith('http') && !src.startsWith('data:')) {
+        ImageUtils.deleteFile(src);
+      }
+    }
   }
 }

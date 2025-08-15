@@ -2,7 +2,6 @@ import lectureSchema from '../schema/lecture.schema';
 import { Lecture as PrismaLecture } from '@prisma/client';
 import db from '../prisma/db';
 import { ModelFactory } from './ModelFactory';
-import AppError from '../utils/AppError';
 import { QueryParamsService } from '../utils/QueryParamsService';
 
 export default class LectureModel {
@@ -20,6 +19,10 @@ export default class LectureModel {
 
   toJSON() {
     return this.data;
+  }
+
+  get note() {
+    return this.data.note;
   }
 
   static createOne = ModelFactory.createOne(

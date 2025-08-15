@@ -2,7 +2,7 @@ import catchAsync from '../utils/catchAsync';
 import { Request, Response, NextFunction } from 'express';
 import LectureModel from '../models/Lecture';
 import AppError from '../utils/AppError';
-import buildInclude from '../utils/buildInclude';
+import ImageUtils from '../utils/ImageUtils';
 
 export default class LectureController {
   private static extractSubjectID(req: Request): number {
@@ -138,6 +138,15 @@ export default class LectureController {
   ) {
     const id = LectureController.extractLectureID(req);
 
+    const oldLecture = await LectureModel.findOneById(id, {});
+
+    if (typeof req.body.note === 'undefined') {
+      req.body.note = oldLecture.note;
+    }
+
+    req.body.note = await ImageUtils.processHtmlImages(req.body.note);
+    ImageUtils.deleteOldImages(oldLecture?.note || '', req.body.note || '');
+
     const updatedLecture = await LectureModel.updateOne(
       id,
       req.body,
@@ -159,7 +168,11 @@ export default class LectureController {
   ) {
     const id = LectureController.extractLectureID(req);
 
-    const lecture = await LectureModel.deleteOne(id);
+    const lecture = await LectureModel.findOneById(id, {});
+
+    if (lecture?.note) ImageUtils.deleteImagesInHtml(lecture.note);
+
+    await LectureModel.deleteOne(id);
 
     res.status(200).json({
       status: 'success',

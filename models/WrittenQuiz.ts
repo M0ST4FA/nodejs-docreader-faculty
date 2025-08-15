@@ -4,8 +4,7 @@ import db from '../prisma/db';
 import { ModelFactory } from './ModelFactory';
 import buildInclude from '../utils/buildInclude';
 import path from 'path';
-import { unlink } from 'fs/promises';
-import { deleteFile, deleteImagesInHtml } from '../utils/imageUtils';
+import ImageUtils from '../utils/ImageUtils';
 import WrittenQuestionModel from './WrittenQuesiton';
 
 export default class WrittenQuizModel {
