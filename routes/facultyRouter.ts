@@ -42,7 +42,7 @@ router
   .route('/:facultyId/years')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'YEAR'),
-    YearController.getAllYears,
+    YearController.getYears,
   )
   .post(
     AuthController.requirePermission('CREATE', 'ANY', 'YEAR'),

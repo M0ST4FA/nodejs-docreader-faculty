@@ -1,30 +1,11 @@
 import z from 'zod';
 
-const fullSchema = z
-  .object({
-    notification: z
-      .object(
-        {
-          title: z
-            .string()
-            .trim()
-            .min(1, { message: 'Notification title is required.' })
-            .optional(),
-          body: z
-            .string()
-            .trim()
-            .min(1, { message: 'Notification body is required.' })
-            .optional(),
-          imageUrl: z
-            .string()
-            .url({ message: 'Invalid notification image URL.' })
-            .optional(),
-        },
-        { message: 'Notification field is required.' },
-      )
-      .strict(),
-    data: z.object({}).default({}).optional(),
-  })
-  .strict();
+const fullSchema = {
+  action: z.object({
+    links: z.array(z.number()),
+    mcqQuizzes: z.array(z.number()),
+    practicalQuizzes: z.array(z.number()),
+  }),
+};
 
 export default fullSchema;

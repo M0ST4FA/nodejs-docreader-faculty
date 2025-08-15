@@ -54,7 +54,7 @@ export default class LinkController {
     });
   });
 
-  public static getAllLinks = catchAsync(async function (
+  public static getLinks = catchAsync(async function (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -101,7 +101,11 @@ export default class LinkController {
   ) {
     const id = LinkController.extractLinkID(req);
 
-    const updatedLink = await LinkModel.updateOne(id, req.body, req.query);
+    const updatedLink = await LinkModel.updateOne(
+      id,
+      { ...req.body, notifiable: true },
+      req.query,
+    );
 
     res.status(200).json({
       status: 'success',
@@ -118,11 +122,11 @@ export default class LinkController {
   ) {
     const id = LinkController.extractLinkID(req);
 
-    await LinkModel.deleteOne(id);
+    const link = await LinkModel.deleteOne(id);
 
-    res.status(204).json({
+    res.status(200).json({
       status: 'success',
-      data: null,
+      data: { link },
     });
   });
 }

@@ -51,7 +51,7 @@ export default class YearController {
     });
   });
 
-  public static getAllYears = catchAsync(async function (
+  public static getYears = catchAsync(async function (
     req: Request,
     res: Response,
     next: NextFunction,

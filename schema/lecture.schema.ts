@@ -10,12 +10,7 @@ const fullSchema = z
       .trim()
       .min(1, { message: 'Title is required.' })
       .max(255, { message: 'Cannot be greater than 255 characters.' }),
-    subTitle: z
-      .string()
-      .trim()
-      .min(1, { message: 'Subtitle is required.' })
-      .max(255, 'Cannot be greater than 255 characters.')
-      .optional(),
+    note: z.string().trim().optional(),
     subjectId: z.number().int({ message: 'Subject ID must be an integer.' }),
     type: z.nativeEnum(LectureType, {
       message:
@@ -34,9 +29,9 @@ const lectureSchema = createModelSchema(
   fullSchema,
   {
     required: ['title', 'subjectId', 'creatorId', 'date', 'type'],
-    optional: ['subTitle'],
+    optional: [],
   },
-  ['title', 'subTitle', 'subjectId', 'date', 'type'],
+  ['title', 'note', 'subjectId', 'date', 'type'],
   {
     defaultPage: 1,
     defaultSize: 10,
@@ -45,7 +40,7 @@ const lectureSchema = createModelSchema(
       'id',
       'type',
       'title',
-      'subTitle',
+      'note',
       'subjectId',
       'date',
       'creatorId',
@@ -57,12 +52,19 @@ const lectureSchema = createModelSchema(
       'id',
       'type',
       'title',
-      'subTitle',
+      'note',
       'subjectId',
       'date',
       'creatorId',
     ],
-    sortableFields: ['title', 'subTitle', 'date', 'createdAt', 'updatedAt'],
+    sortableFields: ['title', 'note', 'date', 'createdAt', 'updatedAt'],
+    includableFields: [
+      'subject.id',
+      'subject.name',
+      'subject.module.id',
+      'subject.module.semesterName',
+      'subject.module.name',
+    ],
   },
 );
 

@@ -2,16 +2,17 @@ import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
 import SubjectController from '../controllers/SubjectController';
 import LectureController from '../controllers/LectureController';
-import SubjectModel from '../models/Subject';
 
 const router = Router({ mergeParams: true });
 
 router.use(AuthController.protect);
 
+router.route('/').get(SubjectController.getAllSubjects);
+
 router
   .route('/:id')
   .get(
-    AuthController.requirePermission('READ', 'ANY', 'SUBJECT'),
+    // AuthController.requirePermission('READ', 'ANY', 'SUBJECT'),
     SubjectController.getSubject,
   )
   .patch(
@@ -30,7 +31,7 @@ router
   .route('/:subjectId/lectures')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'LECTURE'),
-    LectureController.getAllLectures,
+    LectureController.getLectures,
   )
   .post(
     AuthController.requirePermission('CREATE', 'ANY', 'LECTURE'),

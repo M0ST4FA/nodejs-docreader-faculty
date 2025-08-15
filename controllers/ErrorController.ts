@@ -43,12 +43,19 @@ class ErrorController {
               `Every (roleId, permissionId) pair must be unique. It seems you're adding a permission a second time for the same role.`,
               400,
             );
-        } else if (errorMeta?.modelName === 'Device')
+        } else if (errorMeta?.modelName === 'Device') {
           if ((errorMeta?.target as string[])?.includes('token'))
             return new AppError(
               `Duplicate token! A token with this ID already exists.`,
               400,
             );
+        } else if (errorMeta?.modelName === 'Module') {
+          return new AppError('Module already exists.', 400);
+        } else if (errorMeta?.modelName === 'Subject') {
+          return new AppError('Subject already exists.', 400);
+        } else if (errorMeta?.modelName === 'Lecture') {
+          return new AppError('Lecture already exists.', 400);
+        }
 
         break;
 
@@ -99,20 +106,16 @@ class ErrorController {
     error.name = err.name;
     error.stack = err.stack;
 
-    if (process.env.NODE_ENV === 'development') {
+    if (error?.name === 'PrismaClientKnownRequestError')
+      error = this.#handlePrismaClientKnownRequestError(error);
+    else if (error?.name === 'JsonWebTokenError')
+      error = this.#handleJsonWebTokenError(error);
+    else if (error?.codePrefix === 'messaging')
+      error = this.#handleFCMError(error);
+
+    if (process.env.NODE_ENV === 'development')
       ErrorController.#sendDevErrors(error, res);
-    } else {
-      if (error?.name === 'PrismaClientKnownRequestError')
-        error = this.#handlePrismaClientKnownRequestError(error);
-
-      if (error?.name === 'JsonWebTokenError')
-        error = this.#handleJsonWebTokenError(error);
-
-      if (error?.codePrefix === 'messaging')
-        error = this.#handleFCMError(error);
-
-      error = ErrorController.#sendProdErrors(error, res);
-    }
+    else ErrorController.#sendProdErrors(error, res);
   }
 
   static globalErrorHandler(

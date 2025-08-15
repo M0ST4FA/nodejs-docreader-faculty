@@ -9,7 +9,7 @@ router.use(AuthController.protect);
 router
   .route('/:id')
   .get(
-    AuthController.requirePermission('READ', 'ANY', 'LINK'),
+    // AuthController.requirePermission('READ', 'ANY', 'LINK'),
     LinkController.getLink,
   )
   .patch(

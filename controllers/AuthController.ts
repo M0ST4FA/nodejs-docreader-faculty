@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { CookieOptions, NextFunction, Request, Response } from 'express';
 
 import UserModel from '../models/User';
 import { Credentials, OAuth2Client, TokenPayload } from 'google-auth-library';
@@ -150,7 +150,7 @@ export default class AuthController {
   ) {
     // Verify ID token (JWT) and get user info
     const ticket = await AuthController.oauth2Client.verifyIdToken({
-      idToken: String(req.oauthTokens.id_token),
+      idToken: String(req.body.id_token),
       audience: AuthController.GOOGLE_CLIENT_ID,
     });
 

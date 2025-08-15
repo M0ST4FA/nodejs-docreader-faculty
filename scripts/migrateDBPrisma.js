@@ -14,7 +14,7 @@ const newDb = new NewPrismaClient();
 async function migrate() {
   console.log('Starting data migration...');
 
-  // Migrate faculties, studying years, modules, subjects, lectures, links, quizzes, questions
+  // Migrate faculties, studying years, modules, subjects, lectures, links, mcqQuizzes, questions
   const faculties = await oldDb.faculty.findMany({
     include: {
       years: {
@@ -26,7 +26,7 @@ async function migrate() {
                   lectures: {
                     include: {
                       links: true,
-                      quizzes: {
+                      mcqQuizzes: {
                         include: {
                           questions: true,
                         },
@@ -87,8 +87,8 @@ async function migrate() {
                             updatedAt: link.updatedAt || new Date(),
                           })),
                         },
-                        quizzes: {
-                          create: lecture.quizzes.map(quiz => ({
+                        mcqQuizzes: {
+                          create: lecture.mcqQuizzes.map(quiz => ({
                             title: quiz.title,
                             notifiable: quiz.notifiable,
                             createdAt: quiz.createdAt || new Date(),

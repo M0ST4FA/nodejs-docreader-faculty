@@ -56,6 +56,22 @@ export default class ModuleController {
     res: Response,
     next: NextFunction,
   ) {
+    const modules = await ModuleModel.findMany({}, req.query);
+
+    res.status(200).json({
+      status: 'success',
+      totalCount: modules.length,
+      data: {
+        modules,
+      },
+    });
+  });
+
+  public static getModules = catchAsync(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
     const yearId = ModuleController.extractYearID(req);
 
     const modules = await ModuleModel.findMany(
@@ -115,11 +131,11 @@ export default class ModuleController {
   ) {
     const id = ModuleController.extractModuleID(req);
 
-    await ModuleModel.deleteOne(id);
+    const module = await ModuleModel.deleteOne(id);
 
-    res.status(204).json({
+    res.status(200).json({
       status: 'success',
-      data: null,
+      data: { module },
     });
   });
 }

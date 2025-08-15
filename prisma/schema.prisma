@@ -111,9 +111,12 @@ model User {
   createdSubjects   Subject[]      @relation(name: "SubjectCreator")
   createdLectures   Lecture[]      @relation(name: "LectureCreator")
   createdLinks      LectureLink[]  @relation(name: "LinkCreator")
-  createdQuizzes    Quiz[]         @relation(name: "QuizCreator")
-  createdQuestions  Question[]     @relation(name: "QuestionCreator")
-  createdTopics     Topic[]        @relation(name: "TopicCreator")
+  createdMcqQuizzes    McqQuiz[]         @relation(name: "McqQuizCreator")
+  createdMcqQuestions  McqQuestion[]     @relation(name: "McqQuestionCreator")
+  createdWrittenQuizzes    WrittenQuiz[]         @relation(name: "WrittenQuizCreator")
+  createdWrittenQuestions  WrittenQuestion[]     @relation(name: "WrittenQuestionCreator")
+  createdRects  Rect[]     @relation(name: "RectCreator")
+  createdSubQuestions  SubQuestion[]     @relation(name: "SubQuestionCreator")
 }
 
 model Role {
@@ -159,6 +162,7 @@ model RolePermission {
 model StudyingYear {
   id        Int       @id @default(autoincrement())
   title     String
+  currentSemester Int @default(-1)
   facultyId Int
   faculty   Faculty   @relation(fields: [facultyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
@@ -187,6 +191,8 @@ model Module {
 
   createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
+
+  @@unique([name,semesterName,yearId])
 }
 
 model Subject {
@@ -204,12 +210,14 @@ model Subject {
 
   createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
+
+  @@unique([name, moduleId])
 }
 
 model Lecture {
   id        Int         @id @default(autoincrement())
   title     String
-  subTitle  String?
+  note      String?
   subjectId Int
   type      LectureType @default(Normal)
   subject   Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -221,7 +229,10 @@ model Lecture {
   createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
   links     LectureLink[]
-  quizzes   Quiz[]
+  mcqQuizzes   McqQuiz[]
+  writtenQuizzes   WrittenQuiz[]
+
+  @@unique([title,subjectId])
 }
 
 model LectureLink {
@@ -248,71 +259,108 @@ model Device {
   userId    Int
   user      User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  topics    DeviceTopic[]
-
   createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
 }
 
-model Topic {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
-  description String?
-  public      Boolean   @default(true)
-
-  devices     DeviceTopic[]
-
-  creator     User? @relation(name: "TopicCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  creatorId   Int?
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([name])
-}
-
-model DeviceTopic {
-  id        Int   @id @default(autoincrement())
-  deviceId  Int   
-  topicId   Int
-
-  device    Device @relation(fields: [deviceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  topic     Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  @@unique([deviceId, topicId])
-}
-
-model Quiz {
+model McqQuiz {
   id          Int        @id @default(autoincrement())
   lectureId   Int
   lectureData Lecture    @relation(fields: [lectureId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   title       String
-  questions   Question[]
+  questions   McqQuestion[]
   notifiable  Boolean      @default(true)
 
-  creator   User? @relation(name: "QuizCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creator   User? @relation(name: "McqQuizCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   creatorId Int?
 
   createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
+
+  @@map("Quiz")
 }
 
-model Question {
+model McqQuestion {
   id                 Int              @id @default(autoincrement())
   quizId             Int
-  quiz               Quiz             @relation(fields: [quizId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  quiz               McqQuiz             @relation(fields: [quizId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   image              String?
   explanation        String?
   text               String
   options            String[]
   correctOptionIndex Int
 
-  creator   User? @relation(name: "QuestionCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creator   User? @relation(name: "McqQuestionCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   creatorId Int?
 
   createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
+
+  @@map("Question")
+}
+
+
+model WrittenQuiz {
+  id          Int                 @id @default(autoincrement())
+  lectureId   Int
+  lectureData Lecture             @relation(fields: [lectureId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  title       String
+  questions   WrittenQuestion[]
+  notifiable  Boolean             @default(true)
+
+  creator   User? @relation(name: "WrittenQuizCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creatorId Int?
+
+  createdAt   DateTime?           @db.Timestamp()
+  updatedAt   DateTime?           @updatedAt @db.Timestamp()
+}
+
+model WrittenQuestion {
+  id               Int               @id @default(autoincrement())
+  quizId           Int
+  quiz             WrittenQuiz     @relation(fields: [quizId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  image            String?
+  width            Int?
+  height           Int?
+  tapes            Rect[]            @relation("Tapes")
+  masks            Rect[]            @relation("Masks")
+  subQuestions SubQuestion[]
+
+  creator   User? @relation(name: "WrittenQuestionCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creatorId Int?
+
+  createdAt        DateTime?         @db.Timestamp()
+  updatedAt        DateTime?         @updatedAt @db.Timestamp()
+}
+
+model Rect {
+  id             Int                @id @default(autoincrement())
+  tapeQuestion   WrittenQuestion? @relation("Tapes", fields: [tapeQuestionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tapeQuestionId Int?               @map("tapeQuestionId")
+  maskQuestion   WrittenQuestion? @relation("Masks", fields: [maskQuestionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  maskQuestionId Int?               @map("maskQuestionId")
+  x              Float
+  y              Float
+  w              Float
+  h              Float
+
+  creator   User? @relation(name: "RectCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creatorId Int?
+
+  createdAt      DateTime?          @db.Timestamp()
+  updatedAt      DateTime?          @updatedAt @db.Timestamp()
+}
+
+model SubQuestion {
+  id         Int               @id @default(autoincrement())
+  questionId Int
+  question   WrittenQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  text       String
+  answer     String
+
+  creator   User? @relation(name: "SubQuestionCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creatorId Int?
+
+  createdAt  DateTime?         @db.Timestamp()
+  updatedAt  DateTime?         @updatedAt @db.Timestamp()
 }

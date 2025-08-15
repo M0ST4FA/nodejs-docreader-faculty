@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import morgan = require('morgan');
+import cookieParser from 'cookie-parser';
+import path from 'path';
 
 import globalErrorHandler from './controllers/ErrorController';
 import authRouter from './routes/authRouter';
@@ -12,9 +14,9 @@ import moduleRouter from './routes/moduleRouter';
 import yearRouter from './routes/yearRouter';
 import subjectRouter from './routes/subjectRouter';
 import lectureRouter from './routes/lectureRouter';
-import quizRouter from './routes/quizRouter';
+import mcqQuizRouter from './routes/mcqQuizRouter';
+import writtenQuizRouter from './routes/writtenQuizRouter';
 import linkRouter from './routes/linkRouter';
-import notificationRouter from './routes/notificationRouter';
 
 const app = express();
 const apiRoutesBase = '/api/v2';
@@ -31,10 +33,23 @@ const formatWithUser =
 app.use(morgan(formatWithUser));
 
 // Security
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    allowedHeaders: [
+      'Access-Control-Allow-Origin',
+      'Content-Type',
+      'Authorization',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true,
+  }),
+);
 
 // Essential middleware
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, './public')));
 
 // Routes
 app.use(`${apiRoutesBase}/`, authRouter);
@@ -46,9 +61,9 @@ app.use(`${apiRoutesBase}/years`, yearRouter);
 app.use(`${apiRoutesBase}/modules`, moduleRouter);
 app.use(`${apiRoutesBase}/subjects`, subjectRouter);
 app.use(`${apiRoutesBase}/lectures`, lectureRouter);
-app.use(`${apiRoutesBase}/quizzes`, quizRouter);
+app.use(`${apiRoutesBase}/`, mcqQuizRouter);
+app.use(`${apiRoutesBase}/`, writtenQuizRouter);
 app.use(`${apiRoutesBase}/links`, linkRouter);
-app.use(`${apiRoutesBase}/notifications`, notificationRouter);
 
 // Error handling
 app.use(globalErrorHandler);

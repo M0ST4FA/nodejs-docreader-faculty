@@ -3,8 +3,6 @@ import UserController from '../controllers/UserController';
 import AuthController from '../controllers/AuthController';
 import DeviceController from '../controllers/DeviceController';
 import DeviceModel from '../models/Device';
-import TopicController from '../controllers/TopicController';
-import TopicModel from '../models/Topic';
 
 const router = Router();
 
@@ -18,13 +16,10 @@ router
   .delete(UserController.getMe, UserController.deleteUser);
 
 // DEVICE ROUTES
-router
-  .route('/me/devices')
-  .get(DeviceController.getDevices)
-  .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'DEVICE'),
-    DeviceController.createDevice,
-  );
+router.route('/me/devices').get(DeviceController.getDevices).post(
+  // AuthController.requirePermission('CREATE', 'ANY', 'DEVICE'),
+  DeviceController.createDevice,
+);
 
 router.delete(
   '/me/devices/:id',
@@ -69,17 +64,17 @@ router
     UserController.getUser,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'ANY', 'USER'),
+    // AuthController.requirePermission('UPDATE', 'ANY', 'USER'),
     UserController.updateUser,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'ANY', 'USER'),
+    // AuthController.requirePermission('DELETE', 'ANY', 'USER'),
     UserController.deleteUser,
   );
 
 router.route('/:id/role').put(
   // You must be able to create roles to be able to assign them (there is no "assign" action, so that is an indirect permission)
-  AuthController.requirePermission('ASSIGN', 'ANY', 'ROLE'),
+  // AuthController.requirePermission('ASSIGN', 'ANY', 'ROLE'),
   UserController.assignRole,
 );
 

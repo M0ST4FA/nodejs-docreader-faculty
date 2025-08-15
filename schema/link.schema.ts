@@ -13,8 +13,8 @@ const fullSchema = z
     subTitle: z
       .string()
       .trim()
-      .min(1, { message: 'Subtitle is required.' })
-      .max(255, 'Cannot be greater than 255 characters.'),
+      .max(255, 'Cannot be greater than 255 characters.')
+      .optional(),
     url: z.string().url({ message: 'Link URL is not a valid URL.' }),
     type: z.nativeEnum(DataType, {
       message:
@@ -37,9 +37,9 @@ const linkSchema = createModelSchema(
   fullSchema,
   {
     required: ['title', 'url', 'category', 'type', 'lectureId', 'creatorId'],
-    optional: [],
+    optional: ['subTitle'],
   },
-  ['title', 'subTitle', 'url', 'category', 'type', 'lectureId'],
+  ['title', 'subTitle', 'url', 'category', 'type', 'lectureId', 'notifiable'],
   {
     defaultPage: 1,
     defaultSize: 10,
@@ -69,6 +69,15 @@ const linkSchema = createModelSchema(
       'creatorId',
     ],
     sortableFields: ['title', 'subTitle', 'createdAt', 'updatedAt'],
+    includableFields: [
+      'lectureData.id',
+      'lectureData.title',
+      'lectureData.subject.id',
+      'lectureData.subject.name',
+      'lectureData.subject.module.id',
+      'lectureData.subject.module.semesterName',
+      'lectureData.subject.module.name',
+    ],
   },
 );
 

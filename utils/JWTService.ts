@@ -30,8 +30,7 @@ class JWTService {
     // 2) Set the cookie on the response
 
     const cookieOptions: CookieOptions = {
-      maxAge:
-        Date.now() + this.JWT_COOKIE_EXPIRES_IN_DAYS * 24 * 60 * 60 * 1000,
+      maxAge: this.JWT_COOKIE_EXPIRES_IN_DAYS * 24 * 60 * 60 * 1000,
       httpOnly: true,
     };
 
