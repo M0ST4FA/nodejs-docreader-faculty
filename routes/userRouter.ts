@@ -28,25 +28,29 @@ router
 
 router.delete(
   '/me/devices/:id',
-  AuthController.requirePermission('DELETE', 'OWN', 'DEVICE', DeviceModel),
+  AuthController.requirePermission('DELETE', 'OWN', 'DEVICE'),
+  AuthController.checkUserIsResourceCreator(DeviceModel),
   DeviceController.deleteDevice,
 );
 
 // TOPIC ROUTES
 router.get(
   '/me/topics',
-  AuthController.requirePermission('READ', 'ANY', 'TOPIC', TopicModel),
+  AuthController.requirePermission('READ', 'ANY', 'TOPIC'),
+  AuthController.checkUserIsResourceCreator(TopicModel),
   TopicController.getUserDevicesTopics,
 );
 
 router
   .route('/me/topics/:name')
   .post(
-    AuthController.requirePermission('SUBSCRIBE', 'ANY', 'TOPIC', TopicModel),
+    AuthController.requirePermission('SUBSCRIBE', 'ANY', 'TOPIC'),
+    AuthController.checkUserIsResourceCreator(TopicModel),
     TopicController.subscribeUserDevicesToTopic,
   )
   .delete(
-    AuthController.requirePermission('SUBSCRIBE', 'ANY', 'TOPIC', TopicModel),
+    AuthController.requirePermission('SUBSCRIBE', 'ANY', 'TOPIC'),
+    AuthController.checkUserIsResourceCreator(TopicModel),
     TopicController.unsubscribeUserDevicesFromTopic,
   );
 

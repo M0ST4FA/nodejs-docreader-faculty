@@ -16,11 +16,13 @@ router
     ModuleController.getModule,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'MODULE', ModuleModel),
+    AuthController.requirePermission('UPDATE', 'OWN', 'MODULE'),
+    AuthController.checkUserIsResourceCreator(ModuleModel),
     ModuleController.updateModule,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'OWN', 'MODULE', ModuleModel),
+    AuthController.requirePermission('DELETE', 'OWN', 'MODULE'),
+    AuthController.checkUserIsResourceCreator(ModuleModel),
     ModuleController.deleteModule,
   );
 
@@ -32,7 +34,8 @@ router
     SubjectController.getAllSubjects,
   )
   .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'SUBJECT', SubjectModel),
+    AuthController.requirePermission('CREATE', 'ANY', 'SUBJECT'),
+    AuthController.checkUserIsResourceCreator(SubjectModel),
     SubjectController.createSubject,
   );
 

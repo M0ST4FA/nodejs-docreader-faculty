@@ -4,8 +4,7 @@ import LectureController from '../controllers/LectureController';
 import QuizController from '../controllers/QuizController';
 import LinkController from '../controllers/LinkController';
 import LectureModel from '../models/Lecture';
-import QuizModel from '../models/Quiz';
-import LinkModel from '../models/Link';
+import FacultyModel from '../models/Faculty';
 
 const router = Router();
 
@@ -17,11 +16,13 @@ router
     LectureController.getLecture,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'LECTURE', LectureModel),
+    AuthController.requirePermission('UPDATE', 'OWN', 'LECTURE'),
+    AuthController.checkUserIsResourceCreator(LectureModel),
     LectureController.updateLecture,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'OWN', 'LECTURE', LectureModel),
+    AuthController.requirePermission('DELETE', 'OWN', 'LECTURE'),
+    AuthController.checkUserIsResourceCreator(FacultyModel),
     LectureController.deleteLecture,
   );
 
@@ -33,7 +34,7 @@ router
     QuizController.getAllQuizzes,
   )
   .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'QUIZ', QuizModel),
+    AuthController.requirePermission('CREATE', 'ANY', 'QUIZ'),
     QuizController.createQuiz,
   );
 
@@ -45,7 +46,7 @@ router
     LinkController.getAllLinks,
   )
   .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'LINK', LinkModel),
+    AuthController.requirePermission('CREATE', 'ANY', 'LINK'),
     LinkController.createLink,
   );
 

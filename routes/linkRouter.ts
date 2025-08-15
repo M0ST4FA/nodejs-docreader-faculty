@@ -13,11 +13,13 @@ router
     LinkController.getLink,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'LINK', LinkModel),
+    AuthController.requirePermission('UPDATE', 'OWN', 'LINK'),
+    AuthController.checkUserIsResourceCreator(LinkModel),
     LinkController.updateLink,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'OWN', 'LINK', LinkModel),
+    AuthController.requirePermission('DELETE', 'OWN', 'LINK'),
+    AuthController.checkUserIsResourceCreator(LinkModel),
     LinkController.deleteLink,
   );
 

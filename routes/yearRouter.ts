@@ -16,11 +16,13 @@ router
     YearController.getYear,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'YEAR', YearModel),
+    AuthController.requirePermission('UPDATE', 'OWN', 'YEAR'),
+    AuthController.checkUserIsResourceCreator(YearModel),
     YearController.updateYear,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'OWN', 'YEAR', YearModel),
+    AuthController.requirePermission('DELETE', 'OWN', 'YEAR'),
+    AuthController.checkUserIsResourceCreator(YearModel),
     YearController.deleteYear,
   );
 
@@ -32,7 +34,8 @@ router
     ModuleController.getAllModules,
   )
   .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'MODULE', ModuleModel),
+    AuthController.requirePermission('CREATE', 'ANY', 'MODULE'),
+    AuthController.checkUserIsResourceCreator(ModuleModel),
     ModuleController.createModule,
   );
 

@@ -15,11 +15,13 @@ router
     SubjectController.getSubject,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'SUBJECT', SubjectModel),
+    AuthController.requirePermission('UPDATE', 'OWN', 'SUBJECT'),
+    AuthController.checkUserIsResourceCreator(SubjectModel),
     SubjectController.updateSubject,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'OWN', 'SUBJECT', SubjectModel),
+    AuthController.requirePermission('DELETE', 'OWN', 'SUBJECT'),
+    AuthController.checkUserIsResourceCreator(SubjectModel),
     SubjectController.deleteSubject,
   );
 
