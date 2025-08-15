@@ -92,10 +92,7 @@ export default class McqQuizController {
   ) {
     const id = McqQuizController.extractQuizID(req);
 
-    const mcqQuiz = await McqQuizModel.findOneById(id, {
-      ...req.query,
-      include: 'questions,' + McqQuizModel.PATH_INCLUDE,
-    });
+    const mcqQuiz = await McqQuizModel.findOneById(id, req.query);
 
     res.status(200).json({
       status: 'success',

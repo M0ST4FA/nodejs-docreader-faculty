@@ -24,10 +24,7 @@ export default class FacultyController {
     res: Response,
     next: NextFunction,
   ) {
-    const faculties = await FacultyModel.findMany(
-      {},
-      { ...req.query, include: 'years' },
-    );
+    const faculties = await FacultyModel.findMany({}, req.query);
 
     res.status(200).json({
       status: 'success',

@@ -6,6 +6,8 @@ import buildInclude from '../utils/buildInclude';
 import path from 'path';
 import ImageUtils from '../utils/ImageUtils';
 import WrittenQuestionModel from './WrittenQuesiton';
+import AppError from '../utils/AppError';
+import { QueryParamsService } from '../utils/QueryParamsService';
 
 export default class WrittenQuizModel {
   public static PATH_INCLUDE =
@@ -36,11 +38,39 @@ export default class WrittenQuizModel {
     WrittenQuizModel.wrapper,
   );
 
-  static findOneById = ModelFactory.findOneById(
-    db.writtenQuiz,
-    quizSchema,
-    WrittenQuizModel.wrapper,
-  );
+  static async findOneById(id: number, queryParams: any) {
+    if (Number.isNaN(id))
+      throw new AppError('Invalid resource ID. Must be an integer.', 400);
+
+    QueryParamsService.parse<typeof quizSchema.query>(
+      quizSchema,
+      queryParams,
+      {},
+    );
+
+    const writtenQuiz = await db.writtenQuiz.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        ...buildInclude(WrittenQuizModel.PATH_INCLUDE),
+        questions: {
+          include: {
+            tapes: true,
+            masks: true,
+            subQuestions: {
+              orderBy: { id: 'asc' },
+            },
+          },
+        },
+      },
+    });
+
+    if (!writtenQuiz)
+      throw new AppError(`Couldn't find resource with ID ${id}.`, 404);
+
+    return new WrittenQuizModel(writtenQuiz);
+  }
 
   static findCreatorIdById = ModelFactory.findCreatorIdById(db.writtenQuiz);
 

@@ -6,6 +6,8 @@ import {
 import db from '../prisma/db';
 import { ModelFactory } from './ModelFactory';
 import buildInclude from '../utils/buildInclude';
+import AppError from '../utils/AppError';
+import { QueryParamsService } from '../utils/QueryParamsService';
 
 export default class McqQuizModel {
   public static PATH_INCLUDE =
@@ -36,11 +38,31 @@ export default class McqQuizModel {
     McqQuizModel.wrapper,
   );
 
-  static findOneById = ModelFactory.findOneById(
-    db.mcqQuiz,
-    quizSchema,
-    McqQuizModel.wrapper,
-  );
+  static async findOneById(id: number, queryParams: any) {
+    if (Number.isNaN(id))
+      throw new AppError('Invalid resource ID. Must be an integer.', 400);
+
+    QueryParamsService.parse<typeof quizSchema.query>(
+      quizSchema,
+      queryParams,
+      {},
+    );
+
+    const mcqQuiz = await db.mcqQuiz.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        ...buildInclude(McqQuizModel.PATH_INCLUDE),
+        questions: { orderBy: { id: 'asc' } },
+      },
+    });
+
+    if (!mcqQuiz)
+      throw new AppError(`Couldn't find resource with ID ${id}.`, 404);
+
+    return new McqQuizModel(mcqQuiz);
+  }
 
   static findCreatorIdById = ModelFactory.findCreatorIdById(db.mcqQuiz);
 

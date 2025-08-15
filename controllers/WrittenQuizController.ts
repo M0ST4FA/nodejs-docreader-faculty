@@ -95,12 +95,7 @@ export default class WrittenQuizController {
   ) {
     const id = WrittenQuizController.extractQuizID(req);
 
-    const writtenQuiz = await WrittenQuizModel.findOneById(id, {
-      ...req.query,
-      include:
-        'questions,questions.tapes,questions.masks,questions.subQuestions,' +
-        WrittenQuizModel.PATH_INCLUDE,
-    });
+    const writtenQuiz = await WrittenQuizModel.findOneById(id, req.query);
 
     res.status(200).json({
       status: 'success',
