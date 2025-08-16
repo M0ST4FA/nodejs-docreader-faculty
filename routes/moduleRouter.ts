@@ -14,7 +14,7 @@ router.route('/').get(ModuleController.getAllModules);
 router
   .route('/:id')
   .get(
-    // AuthController.requirePermission('READ', 'ANY', 'MODULE'),
+    AuthController.requirePermission('READ', 'ANY', 'MODULE'),
     ModuleController.getModule,
   )
   .patch(

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
-import QuizController from '../controllers/QuizController';
-import QuizModel from '../models/Quiz';
+import QuizController from '../controllers/McqQuizController';
+import QuizModel from '../models/McqQuiz';
 
 const router = Router();
 

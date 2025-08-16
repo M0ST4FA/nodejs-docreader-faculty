@@ -4,8 +4,6 @@ import UserModel from '../models/User';
 import AppError from '../utils/AppError';
 import userSchema, { UserQueryParamInput } from '../schema/user.schema';
 import { QueryParamsService } from '../utils/QueryParamsService';
-import { messaging } from '../utils/firebase';
-import DeviceModel from '../models/Device';
 
 export default class UserController {
   private static extractAndValidateId(req: Request): number {
@@ -71,20 +69,6 @@ export default class UserController {
       req.user.id === id ? req.user : await UserModel.findOneById(id, {});
 
     const updatedUser = await UserModel.updateOne(id, req.body, req.query);
-
-    if (user.yearId !== updatedUser.yearId) {
-      const devices = await DeviceModel.findMany({ userId: user.id }, {});
-      if (user.yearId && devices.length > 0)
-        messaging.unsubscribeFromTopic(
-          devices.map(device => device.token),
-          user.yearId.toString(),
-        );
-      if (updatedUser.yearId && devices.length > 0)
-        messaging.subscribeToTopic(
-          devices.map(device => device.token),
-          updatedUser.yearId?.toString(),
-        );
-    }
 
     res.status(200).json({
       status: 'success',

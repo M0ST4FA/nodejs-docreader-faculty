@@ -59,7 +59,7 @@ export default class LinkModel {
     });
   };
 
-  static ignore = async function (yearId: number, ids: number[]) {
+  static markAllNotified = async function (yearId: number, ids: number[]) {
     await db.lectureLink.updateMany({
       where: {
         AND: [
@@ -71,20 +71,45 @@ export default class LinkModel {
     });
   };
 
-  static notify = async function (yearId: number, ids: number[]) {
+  static markAllNotifiedAndReturn = async function (
+    yearId: number,
+    ids: number[],
+  ) {
     const where = {
       AND: [
         { id: { in: ids } },
         { lectureData: { subject: { module: { yearId } } } },
       ],
     };
-    await db.lectureLink.updateMany({
+
+    return await db.lectureLink.updateManyAndReturn({
       where,
       data: { notifiable: false },
-    });
-    return await db.lectureLink.findMany({
-      where,
-      include: buildInclude(LinkModel.PATH_INCLUDE),
+      include: {
+        lectureData: {
+          select: {
+            id: true,
+            title: true,
+          },
+          include: {
+            subject: {
+              select: {
+                id: true,
+                name: true,
+              },
+              include: {
+                module: {
+                  select: {
+                    id: true,
+                    name: true,
+                    semesterName: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
   };
 }

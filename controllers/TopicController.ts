@@ -115,7 +115,7 @@ export default class TopicController {
   ) {
     let topics: any[];
 
-    if (req.hasAccessToRestrictedResource)
+    if (req.userMostPermissiveScope === 'RESTRICTED')
       topics = await TopicModel.findMany({}, req.query);
     else topics = await TopicModel.findMany({ public: true }, req.query);
 

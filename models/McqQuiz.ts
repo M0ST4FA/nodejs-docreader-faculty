@@ -12,6 +12,7 @@ import { QueryParamsService } from '../utils/QueryParamsService';
 export default class McqQuizModel {
   public static PATH_INCLUDE =
     'lectureData.id,lectureData.title,lectureData.subject.id,lectureData.subject.name,lectureData.subject.module.id,lectureData.subject.module.name,lectureData.subject.module.semesterName';
+
   private data: Partial<PrismaQuiz>;
 
   private static wrapper(data: PrismaQuiz): McqQuizModel {
@@ -87,7 +88,7 @@ export default class McqQuizModel {
     });
   };
 
-  static ignore = async function (yearId: number, ids: number[]) {
+  static markAllNotified = async function (yearId: number, ids: number[]) {
     await db.mcqQuiz.updateMany({
       where: {
         AND: [
@@ -99,20 +100,45 @@ export default class McqQuizModel {
     });
   };
 
-  static notify = async function (yearId: number, ids: number[]) {
+  static markAllNotifiedAndReturn = async function (
+    yearId: number,
+    ids: number[],
+  ) {
     const where = {
       AND: [
         { id: { in: ids } },
         { lectureData: { subject: { module: { yearId } } } },
       ],
     };
-    await db.mcqQuiz.updateMany({
+
+    return await db.mcqQuiz.updateManyAndReturn({
       where,
       data: { notifiable: false },
-    });
-    return await db.mcqQuiz.findMany({
-      where,
-      include: buildInclude(McqQuizModel.PATH_INCLUDE),
+      include: {
+        lectureData: {
+          select: {
+            id: true,
+            title: true,
+          },
+          include: {
+            subject: {
+              select: {
+                id: true,
+                name: true,
+              },
+              include: {
+                module: {
+                  select: {
+                    id: true,
+                    name: true,
+                    semesterName: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
   };
 }

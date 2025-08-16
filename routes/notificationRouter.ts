@@ -38,6 +38,10 @@ router
 
 router
   .route('/topics/:name')
+  .get(
+    AuthController.requirePermission('READ', 'ANY', 'TOPIC'),
+    NotificationController.getNotifiableResources,
+  )
   .patch(
     AuthController.requirePermission('UPDATE', 'OWN', 'TOPIC'),
     AuthController.checkUserIsResourceCreator(TopicModel),

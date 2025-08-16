@@ -148,9 +148,13 @@ export default class AuthController {
     res: Response,
     next: NextFunction,
   ) {
+    const idToken = req.body.id_token || req.oauthTokens.id_token;
+
+    if (idToken === undefined) throw new AppError('Invalid Google JWT.', 500);
+
     // Verify ID token (JWT) and get user info
     const ticket = await AuthController.oauth2Client.verifyIdToken({
-      idToken: String(req.body.id_token),
+      idToken,
       audience: AuthController.GOOGLE_CLIENT_ID,
     });
 
@@ -216,6 +220,28 @@ export default class AuthController {
 
     JWTService.createAndSendJWT(user.id, user.roleId, res, 201, {
       user,
+    });
+  });
+
+  static logout = catchAsync(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    // 1) Clear the cookie
+    const cookieOptions: CookieOptions = {
+      maxAge: 0, // Set to 0 to delete the cookie
+      httpOnly: true,
+    };
+
+    if (process.env.NODE_ENV !== 'development') cookieOptions.secure = true;
+
+    res.cookie('jwt', '', cookieOptions);
+
+    // 2) Send the response
+    res.status(200).send({
+      status: 'success',
+      message: 'Logged out successfully.',
     });
   });
 

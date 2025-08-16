@@ -13,7 +13,7 @@ router.use(AuthController.protect);
 router
   .route('/:id')
   .get(
-    // AuthController.requirePermission('READ', 'ANY', 'LECTURE'),
+    AuthController.requirePermission('READ', 'ANY', 'LECTURE'),
     LectureController.getLecture,
   )
   .patch(
@@ -35,7 +35,7 @@ router
     McqQuizController.getQuizzes,
   )
   .post(
-    // AuthController.requirePermission('CREATE', 'ANY', 'QUIZ', McqQuizModel),
+    AuthController.requirePermission('CREATE', 'ANY', 'QUIZ'),
     McqQuizController.createQuiz,
   );
 router
@@ -46,7 +46,7 @@ router
   )
   .post(
     AuthController.requirePermission('CREATE', 'ANY', 'QUIZ'),
-    QuizController.createQuiz,
+    McqQuizController.createQuiz,
   );
 
 // Nested link routes
