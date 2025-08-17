@@ -25,6 +25,7 @@ router
 
 router
   .route('/written-quizzes/:id/questions')
+  .get(WrittenQuizController.getQuestions)
   .post(upload.single('image'), WrittenQuizController.createQuestion);
 
 router

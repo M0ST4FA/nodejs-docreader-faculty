@@ -38,39 +38,46 @@ export default class WrittenQuizModel {
     WrittenQuizModel.wrapper,
   );
 
-  static async findOneById(id: number, queryParams: any) {
-    if (Number.isNaN(id))
-      throw new AppError('Invalid resource ID. Must be an integer.', 400);
+  static findOneById = ModelFactory.findOneById(
+    db.writtenQuiz,
+    quizSchema,
+    WrittenQuizModel.wrapper,
+  );
 
-    QueryParamsService.parse<typeof quizSchema.query>(
-      quizSchema,
-      queryParams,
-      {},
-    );
+  // static async findOneById(id: number, queryParams: any) {
+  //   if (Number.isNaN(id))
+  //     throw new AppError('Invalid resource ID. Must be an integer.', 400);
 
-    const writtenQuiz = await db.writtenQuiz.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        ...buildInclude(WrittenQuizModel.PATH_INCLUDE),
-        questions: {
-          include: {
-            tapes: true,
-            masks: true,
-            subQuestions: {
-              orderBy: { id: 'asc' },
-            },
-          },
-        },
-      },
-    });
+  //   QueryParamsService.parse<typeof quizSchema.query>(
+  //     quizSchema,
+  //     queryParams,
+  //     {},
+  //   );
 
-    if (!writtenQuiz)
-      throw new AppError(`Couldn't find resource with ID ${id}.`, 404);
+  //   const writtenQuiz = await db.writtenQuiz.findUnique({
+  //     where: {
+  //       id,
+  //     },
+  //     include: {
+  //       ...buildInclude(WrittenQuizModel.PATH_INCLUDE),
+  //       questions: {
+  //         orderBy: { id: 'asc' },
+  //         include: {
+  //           tapes: true,
+  //           masks: true,
+  //           subQuestions: {
+  //             orderBy: { id: 'asc' },
+  //           },
+  //         },
+  //       },
+  //     },
+  //   });
 
-    return new WrittenQuizModel(writtenQuiz);
-  }
+  //   if (!writtenQuiz)
+  //     throw new AppError(`Couldn't find resource with ID ${id}.`, 404);
+
+  //   return new WrittenQuizModel(writtenQuiz);
+  // }
 
   static findCreatorIdById = ModelFactory.findCreatorIdById(db.writtenQuiz);
 

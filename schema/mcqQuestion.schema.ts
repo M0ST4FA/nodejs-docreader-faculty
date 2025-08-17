@@ -38,7 +38,7 @@ const questionSchema = createModelSchema(
       'quizId',
       'creatorId',
     ],
-    sortableFields: ['createdAt', 'updatedAt'],
+    sortableFields: ['id', 'createdAt', 'updatedAt'],
   },
 );
 

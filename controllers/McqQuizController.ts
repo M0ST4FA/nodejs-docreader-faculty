@@ -92,7 +92,10 @@ export default class McqQuizController {
   ) {
     const id = McqQuizController.extractQuizID(req);
 
-    const mcqQuiz = await McqQuizModel.findOneById(id, req.query);
+    const mcqQuiz = await McqQuizModel.findOneById(id, {
+      ...req.query,
+      include: McqQuizModel.PATH_INCLUDE,
+    });
 
     res.status(200).json({
       status: 'success',
@@ -158,6 +161,22 @@ export default class McqQuizController {
       status: 'success',
       totalCount: mcqQuestions.count,
       data: { mcqQuestions },
+    });
+  });
+
+  public static getQuestions = catchAsync(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    const quizId = McqQuizController.extractQuizID(req);
+
+    const questions = await McqQuestionModel.findMany({ quizId }, req.query);
+
+    res.status(200).json({
+      status: 'success',
+      totalCount: questions.length,
+      data: { questions },
     });
   });
 
