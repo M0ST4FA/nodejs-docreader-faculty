@@ -59,6 +59,9 @@ const lectureSchema = createModelSchema(
     ],
     sortableFields: ['title', 'note', 'date', 'createdAt', 'updatedAt'],
     includableFields: [
+      'links',
+      'mcqQuizzes',
+      'writtenQuizzes',
       'subject.id',
       'subject.name',
       'subject.module.id',

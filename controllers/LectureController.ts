@@ -120,7 +120,7 @@ export default class LectureController {
 
     const lecture = await LectureModel.findOneById(id, {
       ...req.query,
-      include: LectureModel.PATH_INCLUDE,
+      include: `${req.query.include},${LectureModel.PATH_INCLUDE}`,
     });
 
     res.status(200).json({
