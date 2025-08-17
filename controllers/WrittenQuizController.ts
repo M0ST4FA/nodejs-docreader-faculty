@@ -95,10 +95,7 @@ export default class WrittenQuizController {
   ) {
     const id = WrittenQuizController.extractQuizID(req);
 
-    const writtenQuiz = await WrittenQuizModel.findOneById(id, {
-      ...req.query,
-      include: WrittenQuizModel.PATH_INCLUDE,
-    });
+    const writtenQuiz = await WrittenQuizModel.findOneById(id, req.query);
 
     res.status(200).json({
       status: 'success',
@@ -192,25 +189,6 @@ export default class WrittenQuizController {
       data: {
         writtenQuestion,
       },
-    });
-  });
-
-  public static getQuestions = catchAsync(async function (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) {
-    const quizId = WrittenQuizController.extractQuizID(req);
-
-    const questions = await WrittenQuestionModel.findMany(
-      { quizId },
-      req.query,
-    );
-
-    res.status(200).json({
-      status: 'success',
-      totalCount: questions.length,
-      data: { questions },
     });
   });
 

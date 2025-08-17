@@ -22,7 +22,6 @@ router
 
 router
   .route('/mcq-quizzes/:id/questions')
-  .get(McqQuizController.getQuestions)
   .post(McqQuizController.createQuestions);
 
 router

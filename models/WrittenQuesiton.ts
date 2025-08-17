@@ -4,7 +4,6 @@ import db from '../prisma/db';
 import { ModelFactory } from './ModelFactory';
 import AppError from '../utils/AppError';
 import ImageUtils from '../utils/ImageUtils';
-import { QueryParamsService } from '../utils/QueryParamsService';
 
 interface NewRect {
   x: number;
@@ -212,44 +211,11 @@ export default class WrittenQuestionModel {
     return writtenQuestion;
   }
 
-  static async findMany(
-    where: any,
-    queryParams: any,
-  ): Promise<Array<WrittenQuestionModel>> {
-    const validatedWhere = questionSchema.where.safeParse(where);
-
-    if (validatedWhere.error)
-      throw new AppError(
-        `Invalid filter object. Issues: [ ${validatedWhere.error.issues.map(
-          issue => issue.message,
-        )} ]`,
-        400,
-      );
-
-    const validatedQueryParams: any = QueryParamsService.parse<
-      typeof questionSchema.query
-    >(questionSchema, queryParams, {
-      pagination: true,
-      projection: true,
-      sorting: true,
-    });
-
-    const questions = await db.writtenQuestion.findMany({
-      where: validatedWhere.data as any,
-      include: {
-        subQuestions: {
-          orderBy: { id: 'asc' },
-        },
-        masks: true,
-        tapes: true,
-      },
-      orderBy: validatedQueryParams.orderBy,
-      skip: validatedQueryParams.skip,
-      take: validatedQueryParams.take,
-    });
-
-    return questions.map(question => WrittenQuestionModel.wrapper(question));
-  }
+  static findMany = ModelFactory.findMany(
+    db.writtenQuestion,
+    questionSchema,
+    WrittenQuestionModel.wrapper,
+  );
 
   static findOneById = ModelFactory.findOneById(
     db.writtenQuestion,
