@@ -15,7 +15,9 @@ const fullSchema = z
       .trim()
       .max(255, 'Cannot be greater than 255 characters.')
       .optional(),
-    url: z.string().url({ message: 'Link URL is not a valid URL.' }),
+    urls: z
+      .array(z.string().url({ message: 'Link URL is not a valid URL.' }))
+      .min(1, 'Link should contain at least 1 url'),
     type: z.nativeEnum(DataType, {
       message:
         "Invalid link type. Link type must be one of these: 'Data', 'PDF', 'Record', 'Video'",
@@ -36,10 +38,10 @@ const fullSchema = z
 const linkSchema = createModelSchema(
   fullSchema,
   {
-    required: ['title', 'url', 'category', 'type', 'lectureId', 'creatorId'],
+    required: ['title', 'urls', 'category', 'type', 'lectureId', 'creatorId'],
     optional: ['subTitle'],
   },
-  ['title', 'subTitle', 'url', 'category', 'type', 'lectureId', 'notifiable'],
+  ['title', 'subTitle', 'urls', 'category', 'type', 'lectureId', 'notifiable'],
   {
     defaultPage: 1,
     defaultSize: 10,
@@ -51,7 +53,7 @@ const linkSchema = createModelSchema(
       'notifiable',
       'title',
       'subTitle',
-      'url',
+      'urls',
       'lectureId',
       'creatorId',
       'updatedAt',
@@ -64,7 +66,7 @@ const linkSchema = createModelSchema(
       'notifiable',
       'title',
       'subTitle',
-      'url',
+      'urls',
       'lectureId',
       'creatorId',
     ],
