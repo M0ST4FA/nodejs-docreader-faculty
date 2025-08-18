@@ -65,9 +65,6 @@ export default class UserController {
   ) {
     const id = UserController.extractAndValidateId(req);
 
-    const user =
-      req.user.id === id ? req.user : await UserModel.findOneById(id, {});
-
     const updatedUser = await UserModel.updateOne(id, req.body, req.query);
 
     res.status(200).json({

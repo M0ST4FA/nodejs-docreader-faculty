@@ -118,6 +118,7 @@ export default class McqQuizModel {
           select: {
             id: true,
             title: true,
+            type: true,
           },
           include: {
             subject: {
@@ -131,6 +132,13 @@ export default class McqQuizModel {
                     id: true,
                     name: true,
                     semesterName: true,
+                  },
+                  include: {
+                    year: {
+                      include: {
+                        faculty: true,
+                      },
+                    },
                   },
                 },
               },
