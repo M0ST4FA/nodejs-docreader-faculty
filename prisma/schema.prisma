@@ -117,6 +117,8 @@ model User {
   createdWrittenQuestions  WrittenQuestion[]     @relation(name: "WrittenQuestionCreator")
   createdRects  Rect[]     @relation(name: "RectCreator")
   createdSubQuestions  SubQuestion[]     @relation(name: "SubQuestionCreator")
+
+  Topic Topic[] @relation(name: "TopicCreator")
 }
 
 model Role {
@@ -261,6 +263,39 @@ model Device {
 
   createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
+
+  DeviceTopic DeviceTopic[]
+}
+
+model Topic {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  public      Boolean   @default(true)
+
+  devices     DeviceTopic[]
+
+  creator     User? @relation(name: "TopicCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creatorId   Int?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([name])
+}
+
+model DeviceTopic {
+  id        Int   @id @default(autoincrement())
+  deviceId  Int   
+  topicId   Int
+
+  device    Device @relation(fields: [deviceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  topic     Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([deviceId, topicId])
 }
 
 model McqQuiz {
@@ -298,7 +333,6 @@ model McqQuestion {
 
   @@map("Question")
 }
-
 
 model WrittenQuiz {
   id          Int                 @id @default(autoincrement())

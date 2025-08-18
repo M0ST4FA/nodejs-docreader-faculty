@@ -3,6 +3,8 @@ import AuthController from '../controllers/AuthController';
 import LectureController from '../controllers/LectureController';
 import McqQuizController from '../controllers/McqQuizController';
 import LinkController from '../controllers/LinkController';
+import LectureModel from '../models/Lecture';
+import FacultyModel from '../models/Faculty';
 import WrittenQuizController from '../controllers/WrittenQuizController';
 
 const router = Router();
@@ -14,15 +16,17 @@ router.get('/', LectureController.getAllLectures);
 router
   .route('/:id')
   .get(
-    // AuthController.requirePermission('READ', 'ANY', 'LECTURE'),
+    AuthController.requirePermission('READ', 'ANY', 'LECTURE'),
     LectureController.getLecture,
   )
   .patch(
-    // AuthController.requirePermission('UPDATE', 'OWN', 'LECTURE', LectureModel),
+    AuthController.requirePermission('UPDATE', 'OWN', 'LECTURE'),
+    AuthController.checkUserIsResourceCreator(LectureModel),
     LectureController.updateLecture,
   )
   .delete(
-    // AuthController.requirePermission('DELETE', 'OWN', 'LECTURE', LectureModel),
+    AuthController.requirePermission('DELETE', 'OWN', 'LECTURE'),
+    AuthController.checkUserIsResourceCreator(FacultyModel),
     LectureController.deleteLecture,
   );
 
@@ -34,7 +38,7 @@ router
     McqQuizController.getQuizzes,
   )
   .post(
-    // AuthController.requirePermission('CREATE', 'ANY', 'QUIZ', McqQuizModel),
+    AuthController.requirePermission('CREATE', 'ANY', 'QUIZ'),
     McqQuizController.createQuiz,
   );
 router
@@ -44,8 +48,8 @@ router
     WrittenQuizController.getQuizzes,
   )
   .post(
-    // AuthController.requirePermission('CREATE', 'ANY', 'QUIZ', McqQuizModel),
-    WrittenQuizController.createQuiz,
+    AuthController.requirePermission('CREATE', 'ANY', 'QUIZ'),
+    McqQuizController.createQuiz,
   );
 
 // Nested link routes
@@ -56,7 +60,7 @@ router
     LinkController.getLinks,
   )
   .post(
-    // AuthController.requirePermission('CREATE', 'ANY', 'LINK', LinkModel),
+    AuthController.requirePermission('CREATE', 'ANY', 'LINK'),
     LinkController.createLink,
   );
 

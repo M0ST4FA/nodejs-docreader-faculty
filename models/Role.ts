@@ -30,6 +30,12 @@ export default class RoleModel {
   public static rolePermissionMap: Record<string, Set<PartialPermission>> =
     Object.create(null);
 
+  private static scopeRestrictionOrder: Record<PermissionScope, number> = {
+    ['OWN']: 1,
+    ['ANY']: 2,
+    ['RESTRICTED']: 3,
+  };
+
   public async addPermissions(permissionIds: PermissionArrayInput) {
     if (permissionIds.length === 0) return;
 
@@ -125,6 +131,51 @@ export default class RoleModel {
 
   public getPermissions(): PartialPermission[] {
     return Array.from(RoleModel.rolePermissionMap[this.name] ?? []);
+  }
+
+  public getMostPermissiveScope(
+    action: PermissionAction,
+    resource: PermissionResource,
+  ): PermissionScope | null {
+    if (this.id === 0) return 'RESTRICTED';
+
+    // 1. Get all role permissions
+    const permSet = RoleModel.rolePermissionMap[this.name];
+    if (!permSet) return null;
+
+    // 2. Get role permissions for this action-resource combination
+    const permsOfInterest = Array.from(permSet).filter(
+      value => value.action === action && value.resource === resource,
+    );
+    if (permsOfInterest.length === 0) return null;
+
+    // 3. Sort array in-place descending so that more permissive is first
+    permsOfInterest.sort(
+      (a, b) =>
+        RoleModel.scopeRestrictionOrder[b.scope] -
+        RoleModel.scopeRestrictionOrder[a.scope],
+    );
+
+    return permsOfInterest[0].scope;
+  }
+
+  public static scopeIsDominant(
+    scope1: PermissionScope,
+    scope2: PermissionScope,
+  ): boolean {
+    if (
+      !(scope1 in RoleModel.scopeRestrictionOrder) ||
+      !(scope2 in RoleModel.scopeRestrictionOrder)
+    )
+      throw new AppError(
+        `Invalid scope comparison: ${scope1} vs ${scope2}`,
+        500,
+      );
+
+    return (
+      RoleModel.scopeRestrictionOrder[scope1] >=
+      RoleModel.scopeRestrictionOrder[scope2]
+    );
   }
 
   public static async refreshPermissionCache() {

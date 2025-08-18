@@ -1,16 +1,35 @@
 import catchAsync from '../utils/catchAsync';
 import { Request, Response, NextFunction } from 'express';
 import AppError from '../utils/AppError';
-import notificationSchema from '../schema/notification.schema';
 import LinkModel from '../models/Link';
 import McqQuizModel from '../models/McqQuiz';
-import getUniqueObjectsById from '../utils/getUniqueObjectsById';
-import bolderizeWord from '../utils/bolderizeWord';
-import { messaging } from '../utils/firebase';
+import fcmService from '../utils/FCMService';
+import DeviceModel from '../models/Device';
+import notificationBodySchema from '../schema/notification.schema';
+import TopicModel from '../models/Topic';
+import NotificationService from '../utils/NotificationService';
 
 export default class NotificationController {
-  private static extractYearID(req: Request): number {
-    const id = Number.parseInt(req.params.yearId);
+  private static extractTopicName(req: Request): string {
+    const name = req.params.name;
+
+    if (name === undefined)
+      throw new AppError(
+        'Invalid topic name: topic name must be a string.',
+        400,
+      );
+
+    return name;
+  }
+
+  private static extractYearIDFromBody(req: Request): number {
+    if (req.body.yearId === undefined)
+      throw new AppError(
+        "'yearId' must be specified when querying for notifiable resources.",
+        400,
+      );
+
+    const id = Number.parseInt(req.body.yearId);
 
     if (Number.isNaN(id))
       throw new AppError('Invalid year ID: year ID must be an integer.', 400);
@@ -18,138 +37,126 @@ export default class NotificationController {
     return id;
   }
 
-  public static getNotifiable = catchAsync(async function (
+  private static async extractCurrentUserDevices(
+    req: Request,
+  ): Promise<Partial<DeviceModel[]>> {
+    const devices = (await DeviceModel.findMany(
+      {
+        userId: req.user.id,
+      },
+      { fields: 'token' },
+    )) as DeviceModel[];
+
+    if (devices.length === 0)
+      throw new AppError(
+        'The logged in user account does not have any device associated with them.',
+        400,
+      );
+
+    return devices;
+  }
+
+  private static async validateNotificationBody(body: any) {
+    const validatedNotificationBody = notificationBodySchema.safeParse(body);
+
+    if (validatedNotificationBody.error)
+      throw new AppError(
+        `Invalid notification body: [ ${validatedNotificationBody.error.issues.map(
+          issue => issue.message,
+        )} ]`,
+        400,
+      );
+
+    const notification = validatedNotificationBody.data;
+
+    return notification;
+  }
+
+  static getNotifiableResources = catchAsync(async function (
     req: Request,
     res: Response,
     next: NextFunction,
   ) {
-    const yearId = NotificationController.extractYearID(req);
-    const links = await LinkModel.findNotifiable(yearId);
-    const mcqQuizzes = await McqQuizModel.findNotifiable(yearId);
+    const yearId = NotificationController.extractYearIDFromBody(req);
+
+    const [links, mcqQuizzes] = await Promise.all([
+      LinkModel.findNotifiable(yearId),
+      McqQuizModel.findNotifiable(yearId),
+    ]);
     res.status(200).json({
       status: 'success',
       data: { links, mcqQuizzes },
     });
   });
 
-  public static notify = catchAsync(async function (
+  static setGlobalTopic = catchAsync(async function (
     req: Request,
     res: Response,
     next: NextFunction,
   ) {
-    const yearId = NotificationController.extractYearID(req);
-    const validatedBody = notificationSchema.action.safeParse(req.body);
+    req.params.name = 'global_announcements';
 
-    if (validatedBody.error)
-      throw new AppError(
-        `Invalid ignore input: [ ${validatedBody.error.issues.map(
-          issue => issue.message,
-        )} ]`,
-        400,
-      );
+    next();
+  });
 
-    const links = await LinkModel.notify(yearId, validatedBody.data.links);
-    const mcqQuizzes = await McqQuizModel.notify(
-      yearId,
-      validatedBody.data.mcqQuizzes,
+  static broadcastToTopic = catchAsync(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    // Extract topic name
+    const topicName = NotificationController.extractTopicName(req);
+
+    // Check whether the topic already exists (an exception is thrown if it doesn't)
+    const topic = await TopicModel.findOneByName(topicName, {});
+
+    // Extract and validate notification body
+    const notification = await NotificationController.validateNotificationBody(
+      req.body,
     );
-    const practicalQuizzes: any[] = [];
-    const lectures = getUniqueObjectsById(
-      [...links, ...mcqQuizzes, ...practicalQuizzes].map(
-        ({
-          lectureId,
-          lectureData: {
-            title: lectureTitle,
-            subject: {
-              id: subjectId,
-              name: subjectName,
-              module: { name: moduleName },
-            },
-          },
-        }) => ({
-          id: lectureId,
-          title: lectureTitle,
-          subjectId,
-          subjectName,
-          moduleName,
-        }),
-      ),
-    ).map(lecture => ({
-      ...lecture,
-      links: links.filter(link => link.lectureId === lecture.id),
-      mcqQuizzes: mcqQuizzes.filter(quiz => quiz.lectureId === lecture.id),
-      practicalQuizzes: practicalQuizzes.filter(
-        quiz => quiz.lectureId === lecture.id,
-      ),
-    }));
 
-    let message = '';
+    const messageId = await NotificationService.broadcastToTopic(
+      notification,
+      topic.name,
+    );
 
-    for (const lecture of lectures) {
-      message += '👈 ';
-      if (lecture.title === 'Practical Data')
-        message +=
-          'في عملي مادة ' +
-          bolderizeWord(lecture.subjectName) +
-          ' موديول ' +
-          bolderizeWord(lecture.moduleName);
-      else if (lecture.title === 'Final Revision Data')
-        message +=
-          'في المراجعة النهائية لمادة ' +
-          bolderizeWord(lecture.subjectName) +
-          ' موديول ' +
-          bolderizeWord(lecture.moduleName);
-      else message += 'في محاضرة ' + bolderizeWord(lecture.title);
-      message += ` تم إضافة المصادر التالية:\n${[
-        ...lecture.links,
-        ...lecture.mcqQuizzes,
-        ...lecture.practicalQuizzes,
-      ]
-        .map(({ title }) => `💥 ${title}\n`)
-        .join('')}`;
-    }
-
-    await messaging.send({
-      notification: {
-        title: 'تم إضافة مصادر جديدة 🔥',
-        body: message,
-      },
-      data: { id: lectures[0].id.toString(), title: lectures[0].title },
-      webpush: {
-        fcmOptions: {
-          link: `${process.env.FRONTEND_URL}/lectures/${lectures[0].id}`,
-        },
-      },
-      topic: yearId.toString(),
-    });
-
-    return res.status(200).json({
+    res.status(200).json({
       status: 'success',
-      message: 'Notification was sent successfully',
+      data: {
+        messageId,
+      },
     });
   });
 
-  public static ignore = catchAsync(async function (
+  static test = catchAsync(async function (
     req: Request,
     res: Response,
     next: NextFunction,
   ) {
-    const yearId = NotificationController.extractYearID(req);
-    const validatedBody = notificationSchema.action.safeParse(req.body);
+    const devices = (await NotificationController.extractCurrentUserDevices(
+      req,
+    )) as Partial<DeviceModel>[];
+    const notification = await NotificationController.validateNotificationBody(
+      req.body,
+    );
 
-    if (validatedBody.error)
-      throw new AppError(
-        `Invalid ignore input: [ ${validatedBody.error.issues.map(
-          issue => issue.message,
-        )} ]`,
-        400,
-      );
+    if (notification.type === 'autogenerated')
+      throw new AppError('Test notification cannot be autogenerated.', 400);
 
-    LinkModel.ignore(yearId, validatedBody.data.links);
-    McqQuizModel.ignore(yearId, validatedBody.data.mcqQuizzes);
+    const result = await fcmService.multicastNotification(
+      notification.body,
+      devices.map(device => device.token!),
+    );
 
-    res
-      .status(200)
-      .json({ status: 'success', message: 'Links where ignored successfully' });
+    res.status(207).json({
+      status: 'partial',
+      totalCount: result.successCount + result.failureCount,
+      successCount: result.successCount,
+      failureCount: result.failureCount,
+      data: {
+        successfulTokens: result.successfulTokens,
+        failedTokens: result.failedTokens,
+      },
+    });
   });
 }

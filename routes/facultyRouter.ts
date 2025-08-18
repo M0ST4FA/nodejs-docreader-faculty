@@ -2,12 +2,7 @@ import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
 import FacultyController from '../controllers/FacultyController';
 import YearController from '../controllers/YearController';
-import {
-  PermissionAction,
-  PermissionResource,
-  PermissionScope,
-} from '@prisma/client';
-import YearModel from '../models/Year';
+import FacultyModel from '../models/Faculty';
 
 const router = Router();
 
@@ -27,15 +22,18 @@ router
 router
   .route('/:id')
   .get(
-    AuthController.requirePermission('READ', 'ANY', 'FACULTY'),
+    AuthController.requirePermission('READ', 'OWN', 'FACULTY'),
+    AuthController.checkUserIsResourceCreator(FacultyModel),
     FacultyController.getFaculty,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'ANY', 'FACULTY'),
+    AuthController.requirePermission('UPDATE', 'OWN', 'FACULTY'),
+    AuthController.checkUserIsResourceCreator(FacultyModel),
     FacultyController.updateFaculty,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'ANY', 'FACULTY'),
+    AuthController.requirePermission('DELETE', 'OWN', 'FACULTY'),
+    AuthController.checkUserIsResourceCreator(FacultyModel),
     FacultyController.deleteFaculty,
   );
 
@@ -47,7 +45,7 @@ router
     YearController.getYears,
   )
   .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'YEAR', YearModel),
+    AuthController.requirePermission('CREATE', 'ANY', 'YEAR'),
     YearController.createYear,
   );
 

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
 import SubjectController from '../controllers/SubjectController';
 import LectureController from '../controllers/LectureController';
+import SubjectModel from '../models/Subject';
 
 const router = Router({ mergeParams: true });
 
@@ -12,15 +13,17 @@ router.route('/').get(SubjectController.getAllSubjects);
 router
   .route('/:id')
   .get(
-    // AuthController.requirePermission('READ', 'ANY', 'SUBJECT'),
+    AuthController.requirePermission('READ', 'ANY', 'SUBJECT'),
     SubjectController.getSubject,
   )
   .patch(
-    // AuthController.requirePermission('UPDATE', 'OWN', 'SUBJECT', SubjectModel),
+    AuthController.requirePermission('UPDATE', 'OWN', 'SUBJECT'),
+    AuthController.checkUserIsResourceCreator(SubjectModel),
     SubjectController.updateSubject,
   )
   .delete(
-    // AuthController.requirePermission('DELETE', 'OWN', 'SUBJECT', SubjectModel),
+    AuthController.requirePermission('DELETE', 'OWN', 'SUBJECT'),
+    AuthController.checkUserIsResourceCreator(SubjectModel),
     SubjectController.deleteSubject,
   );
 

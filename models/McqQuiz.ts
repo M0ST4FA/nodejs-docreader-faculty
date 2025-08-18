@@ -87,7 +87,7 @@ export default class McqQuizModel {
     });
   };
 
-  static ignore = async function (yearId: number, ids: number[]) {
+  static markAllNotified = async function (yearId: number, ids: number[]) {
     await db.mcqQuiz.updateMany({
       where: {
         AND: [
@@ -99,20 +99,53 @@ export default class McqQuizModel {
     });
   };
 
-  static notify = async function (yearId: number, ids: number[]) {
+  static markAllNotifiedAndReturn = async function (
+    yearId: number,
+    ids: number[],
+  ) {
     const where = {
       AND: [
         { id: { in: ids } },
         { lectureData: { subject: { module: { yearId } } } },
       ],
     };
-    await db.mcqQuiz.updateMany({
+
+    return await db.mcqQuiz.updateManyAndReturn({
       where,
       data: { notifiable: false },
-    });
-    return await db.mcqQuiz.findMany({
-      where,
-      include: buildInclude(McqQuizModel.PATH_INCLUDE),
+      include: {
+        lectureData: {
+          select: {
+            id: true,
+            title: true,
+            type: true,
+          },
+          include: {
+            subject: {
+              select: {
+                id: true,
+                name: true,
+              },
+              include: {
+                module: {
+                  select: {
+                    id: true,
+                    name: true,
+                    semesterName: true,
+                  },
+                  include: {
+                    year: {
+                      include: {
+                        faculty: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
   };
 }
