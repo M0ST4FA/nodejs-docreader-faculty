@@ -1,5 +1,6 @@
 import LinkModel from '../models/Link';
 import McqQuizModel from '../models/McqQuiz';
+import WrittenQuizModel from '../models/WrittenQuiz';
 import { NotificationSchemaType } from '../schema/notification.schema';
 import fcmService from './FCMService';
 
@@ -16,7 +17,7 @@ type NotificationBody = {
 type ResourceIds = {
   links: number[];
   mcqQuizzes: number[];
-  practicalQuizzes: number[];
+  writtenQuizzes: number[];
 };
 
 class NotificationService {
@@ -65,7 +66,10 @@ class NotificationService {
       yearId,
       resourceIds.mcqQuizzes,
     );
-    const practicalQuizzes: any[] = []; // Placeholder if needed later
+    const practicalQuizzes = await WrittenQuizModel.markAllNotifiedAndReturn(
+      yearId,
+      resourceIds.writtenQuizzes,
+    );
     return { links, mcqQuizzes, practicalQuizzes };
   }
 
@@ -146,9 +150,9 @@ class NotificationService {
       },
       webpush: {
         fcmOptions: {
-          link: `${process.env.FRONTEND_URL}/lectures/${lecture.id}`
-        }
-      }
+          link: `${process.env.FRONTEND_URL}/lectures/${lecture.id}`,
+        },
+      },
     };
   }
 

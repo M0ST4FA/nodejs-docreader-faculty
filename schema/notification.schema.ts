@@ -35,7 +35,7 @@ const resourceSchema = z.object(
     mcqQuizzes: z
       .array(z.number({ message: "'quizzes' must be an array of integers." }))
       .default([]),
-    practicalQuizzes: z
+    writtenQuizzes: z
       .array(
         z.number({
           message: "'practicalQuizzes' must be an array of integers.",

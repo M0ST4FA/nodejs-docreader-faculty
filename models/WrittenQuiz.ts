@@ -103,7 +103,7 @@ export default class WrittenQuizModel {
     });
   };
 
-  static ignore = async function (yearId: number, ids: number[]) {
+  static markAllNotified = async function (yearId: number, ids: number[]) {
     await db.writtenQuiz.updateMany({
       where: {
         AND: [
@@ -115,7 +115,10 @@ export default class WrittenQuizModel {
     });
   };
 
-  static notify = async function (yearId: number, ids: number[]) {
+  static markAllNotifiedAndReturn = async function (
+    yearId: number,
+    ids: number[],
+  ) {
     const where = {
       AND: [
         { id: { in: ids } },
