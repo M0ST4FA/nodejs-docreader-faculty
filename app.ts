@@ -17,6 +17,7 @@ import lectureRouter from './routes/lectureRouter';
 import mcqQuizRouter from './routes/mcqQuizRouter';
 import writtenQuizRouter from './routes/writtenQuizRouter';
 import linkRouter from './routes/linkRouter';
+import notificationRouter from './routes/notificationRouter';
 
 const app = express();
 const apiRoutesBase = '/api/v2';
@@ -64,6 +65,7 @@ app.use(`${apiRoutesBase}/lectures`, lectureRouter);
 app.use(`${apiRoutesBase}/`, mcqQuizRouter);
 app.use(`${apiRoutesBase}/`, writtenQuizRouter);
 app.use(`${apiRoutesBase}/links`, linkRouter);
+app.use(`${apiRoutesBase}/notifications`, notificationRouter);
 
 // Error handling
 app.use(globalErrorHandler);
