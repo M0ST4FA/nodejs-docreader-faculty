@@ -49,7 +49,6 @@ export default class ImageUtils {
       const src = newMatch[1];
       if (src && !src.startsWith('data:')) imagesInNew.push(src);
     }
-    console.log(imagesInOld, imagesInNew);
     for (const image of imagesInOld)
       if (!imagesInNew.includes(image)) ImageUtils.deleteFile(image);
   }

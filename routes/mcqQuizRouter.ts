@@ -5,6 +5,7 @@ import McqQuizController from '../controllers/McqQuizController';
 const router = Router();
 
 router.use(AuthController.protect);
+router.route('/mcq-quizzes').get(McqQuizController.getAllQuizzes);
 router
   .route('/mcq-quizzes/:id')
   .get(

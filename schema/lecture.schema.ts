@@ -34,8 +34,8 @@ const lectureSchema = createModelSchema(
   ['title', 'note', 'subjectId', 'date', 'type'],
   {
     defaultPage: 1,
-    defaultSize: 10,
-    maxPageSize: 100,
+    defaultSize: Number.POSITIVE_INFINITY,
+    maxPageSize: Number.POSITIVE_INFINITY,
     projectableFields: [
       'id',
       'type',
@@ -67,6 +67,7 @@ const lectureSchema = createModelSchema(
       'subject.module.id',
       'subject.module.semesterName',
       'subject.module.name',
+      'subject.module.year.faculty',
     ],
   },
 );

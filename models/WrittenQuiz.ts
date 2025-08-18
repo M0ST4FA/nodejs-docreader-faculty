@@ -11,7 +11,7 @@ import { QueryParamsService } from '../utils/QueryParamsService';
 
 export default class WrittenQuizModel {
   public static PATH_INCLUDE =
-    'lectureData.id,lectureData.title,lectureData.subject.id,lectureData.subject.name,lectureData.subject.module.id,lectureData.subject.module.name,lectureData.subject.module.semesterName';
+    'lectureData.id,lectureData.type,lectureData.title,lectureData.subject.id,lectureData.subject.name,lectureData.subject.module.id,lectureData.subject.module.name,lectureData.subject.module.semesterName,lectureData.subject.module.year.faculty';
   private data: Partial<PrismaQuiz>;
 
   private static wrapper(data: PrismaQuiz): WrittenQuizModel {

@@ -64,6 +64,22 @@ export default class LectureController {
     });
   });
 
+  public static getAllLectures = catchAsync(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    const lectures = await LectureModel.findMany({}, req.query);
+
+    res.status(200).json({
+      status: 'success',
+      totalCount: lectures.length,
+      data: {
+        lectures,
+      },
+    });
+  });
+
   public static getLectures = catchAsync(async function (
     req: Request,
     res: Response,
