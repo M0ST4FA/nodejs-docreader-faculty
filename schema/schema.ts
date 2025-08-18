@@ -158,8 +158,8 @@ export default function createModelSchema<
           : undefined;
 
       return {
-        skip,
-        take,
+        skip: size === Number.POSITIVE_INFINITY ? undefined : skip,
+        take: size === Number.POSITIVE_INFINITY ? undefined : take,
         select,
         orderBy,
         include: include && buildInclude(include),

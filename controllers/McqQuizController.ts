@@ -62,6 +62,22 @@ export default class McqQuizController {
     });
   });
 
+  public static getAllQuizzes = catchAsync(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    const mcqQuizzes = await McqQuizModel.findMany({}, req.query);
+
+    res.status(200).json({
+      status: 'success',
+      totalCount: mcqQuizzes.length,
+      data: {
+        mcqQuizzes,
+      },
+    });
+  });
+
   public static getQuizzes = catchAsync(async function (
     req: Request,
     res: Response,

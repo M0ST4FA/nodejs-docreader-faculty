@@ -65,6 +65,22 @@ export default class WrittenQuizController {
     });
   });
 
+  public static getAllQuizzes = catchAsync(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    const writtenQuizzes = await WrittenQuizModel.findMany({}, req.query);
+
+    res.status(200).json({
+      status: 'success',
+      totalCount: writtenQuizzes.length,
+      data: {
+        writtenQuizzes,
+      },
+    });
+  });
+
   public static getQuizzes = catchAsync(async function (
     req: Request,
     res: Response,

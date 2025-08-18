@@ -10,6 +10,9 @@ import WrittenQuizController from '../controllers/WrittenQuizController';
 const router = Router();
 
 router.use(AuthController.protect);
+
+router.get('/', LectureController.getAllLectures);
+
 router
   .route('/:id')
   .get(

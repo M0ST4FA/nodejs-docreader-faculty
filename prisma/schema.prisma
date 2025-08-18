@@ -241,7 +241,7 @@ model LectureLink {
   id          Int          @id @default(autoincrement())
   title       String
   subTitle    String?
-  url         String
+  urls        String[]     @default([])
   type        DataType     @default(PDF)
   category    CategoryType @default(Data)
   lectureId   Int

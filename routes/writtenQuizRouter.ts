@@ -9,6 +9,7 @@ const upload = multer({ storage });
 const router = Router();
 
 router.use(AuthController.protect);
+router.route('/written-quizzes').get(WrittenQuizController.getAllQuizzes);
 router
   .route('/written-quizzes/:id')
   .get(

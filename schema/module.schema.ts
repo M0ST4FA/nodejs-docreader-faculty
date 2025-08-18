@@ -32,8 +32,8 @@ const moduleSchema = createModelSchema(
   ['name', 'semesterName', 'yearId', 'icon'],
   {
     defaultPage: 1,
-    defaultSize: 10,
-    maxPageSize: 100,
+    defaultSize: Number.POSITIVE_INFINITY,
+    maxPageSize: Number.POSITIVE_INFINITY,
     projectableFields: [
       'id',
       'name',
@@ -53,6 +53,7 @@ const moduleSchema = createModelSchema(
       'creatorId',
     ],
     sortableFields: ['name', 'createdAt', 'updatedAt'],
+    includableFields: ['year.faculty'],
   },
 );
 
