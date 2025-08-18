@@ -3,6 +3,7 @@ import AuthController from '../controllers/AuthController';
 import WrittenQuizController from '../controllers/WrittenQuizController';
 import multer from 'multer';
 import WrittenQuizModel from '../models/WrittenQuiz';
+import WrittenQuestionModel from '../models/WrittenQuesiton';
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
@@ -35,10 +36,12 @@ router
   .route('/written-questions/:id')
   .patch(
     AuthController.requirePermission('UPDATE', 'OWN', 'QUESTION'),
+    AuthController.checkUserIsResourceCreator(WrittenQuestionModel),
     WrittenQuizController.updateQuestion,
   )
   .delete(
     AuthController.requirePermission('UPDATE', 'OWN', 'QUESTION'),
+    AuthController.checkUserIsResourceCreator(WrittenQuestionModel),
     WrittenQuizController.deleteQuestion,
   );
 

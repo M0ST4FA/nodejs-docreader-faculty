@@ -2,6 +2,7 @@ import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
 import McqQuizController from '../controllers/McqQuizController';
 import McqQuizModel from '../models/McqQuiz';
+import McqQuestionModel from '../models/McqQuestion';
 
 const router = Router();
 
@@ -30,7 +31,15 @@ router
 
 router
   .route('/mcq-questions/:id')
-  .patch(McqQuizController.updateQuestion)
-  .delete(McqQuizController.deleteQuestion);
+  .patch(
+    AuthController.requirePermission('UPDATE', 'OWN', 'QUESTION'),
+    AuthController.checkUserIsResourceCreator(McqQuestionModel),
+    McqQuizController.updateQuestion,
+  )
+  .delete(
+    AuthController.requirePermission('DELETE', 'OWN', 'QUESTION'),
+    AuthController.checkUserIsResourceCreator(McqQuestionModel),
+    McqQuizController.deleteQuestion,
+  );
 
 export default router;
