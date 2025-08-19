@@ -2,6 +2,7 @@ import facultySchema from '../schema/faculty.schema';
 import { Faculty as PrismaFaculty } from '@prisma/client';
 import db from '../prisma/db';
 import { ModelFactory } from './ModelFactory';
+import AppError from '../utils/AppError';
 
 export default class FacultyModel {
   private data: Partial<PrismaFaculty>;
@@ -16,6 +17,20 @@ export default class FacultyModel {
 
   toJSON() {
     return this.data;
+  }
+
+  get id(): number {
+    if (this.data.id === undefined)
+      throw new AppError("'id' field not defined on faculty!", 500);
+
+    return this.data.id;
+  }
+
+  get name(): string {
+    if (this.data.name === undefined)
+      throw new AppError("'name' field not defined on faculty!", 500);
+
+    return this.data.name;
   }
 
   static createOne = ModelFactory.createOne(

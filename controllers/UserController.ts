@@ -67,12 +67,13 @@ export default class UserController {
 
     const updatedUser = await UserModel.updateOne(id, req.body, req.query);
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        user: updatedUser,
-      },
-    });
+    if (req.body)
+      res.status(200).json({
+        status: 'success',
+        data: {
+          user: updatedUser,
+        },
+      });
   });
 
   public static assignRole = catchAsync(async function (

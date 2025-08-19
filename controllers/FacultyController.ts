@@ -1,6 +1,7 @@
 import catchAsync from '../utils/catchAsync';
 import { Request, Response, NextFunction } from 'express';
 import FacultyModel from '../models/Faculty';
+import TopicModel from '../models/Topic';
 export default class FacultyController {
   public static createFaculty = catchAsync(async function (
     req: Request,
@@ -9,12 +10,28 @@ export default class FacultyController {
   ) {
     req.body.creatorId = req.user.id;
 
-    const faculty = await FacultyModel.createOne(req.body, req.query);
+    if (req.query.select === undefined) req.query.select = [];
+    (req.query.select as string[]).push('name');
+
+    const faculty = (await FacultyModel.createOne(
+      req.body,
+      req.query,
+    )) as FacultyModel;
+    const topic = await TopicModel.createOne(
+      {
+        creatorId: req.user.id,
+        name: faculty.id.toString(),
+        description: `Topic for notifications of ${faculty.name!} faculty.`,
+        public: true,
+      },
+      {},
+    );
 
     res.status(201).json({
       status: 'success',
       data: {
         faculty,
+        topic,
       },
     });
   });

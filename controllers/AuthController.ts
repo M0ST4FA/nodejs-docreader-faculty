@@ -355,10 +355,10 @@ export default class AuthController {
           );
       }
 
-      // To handle old resources (that didn't have creatorId), assume that everyone is their owner
-      if (!creatorId || creatorId === 0) return next();
-
       if (creatorId === req.user.id) return next();
+
+      // To handle old resources (that didn't have creatorId), allow anyone with ANY scope to modify them
+      if (req.userMostPermissiveScope !== 'OWN') return next();
 
       // The default is: don't give ownership (to counteract any possible security bugs)
       return next(

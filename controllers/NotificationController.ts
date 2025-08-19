@@ -8,6 +8,7 @@ import DeviceModel from '../models/Device';
 import notificationBodySchema from '../schema/notification.schema';
 import TopicModel from '../models/Topic';
 import NotificationService from '../utils/NotificationService';
+import WrittenQuizModel from '../models/WrittenQuiz';
 
 export default class NotificationController {
   private static extractTopicName(req: Request): string {
@@ -22,14 +23,14 @@ export default class NotificationController {
     return name;
   }
 
-  private static extractYearIDFromBody(req: Request): number {
-    if (req.body.yearId === undefined)
+  private static extractYearIDFromUrl(req: Request): number {
+    if (req.params.name === undefined)
       throw new AppError(
-        "'yearId' must be specified when querying for notifiable resources.",
+        'Topic name must be specified when querying for notifiable resources under a given topic.',
         400,
       );
 
-    const id = Number.parseInt(req.body.yearId);
+    const id = Number.parseInt(req.params.name);
 
     if (Number.isNaN(id))
       throw new AppError('Invalid year ID: year ID must be an integer.', 400);
@@ -77,15 +78,17 @@ export default class NotificationController {
     res: Response,
     next: NextFunction,
   ) {
-    const yearId = NotificationController.extractYearIDFromBody(req);
+    const yearId = NotificationController.extractYearIDFromUrl(req);
+    console.log(yearId);
 
-    const [links, mcqQuizzes] = await Promise.all([
+    const [links, mcqQuizzes, writtenQuizzes] = await Promise.all([
       LinkModel.findNotifiable(yearId),
       McqQuizModel.findNotifiable(yearId),
+      WrittenQuizModel.findNotifiable(yearId),
     ]);
     res.status(200).json({
       status: 'success',
-      data: { links, mcqQuizzes },
+      data: { links, mcqQuizzes, writtenQuizzes },
     });
   });
 

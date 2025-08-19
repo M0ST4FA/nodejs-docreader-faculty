@@ -200,6 +200,14 @@ export default class WrittenQuizController {
       subQuestions,
     });
 
+    await WrittenQuizModel.updateOne(
+      writtenQuestion.quizId,
+      {
+        notifiable: true,
+      },
+      {},
+    );
+
     res.status(201).json({
       status: 'success',
       data: {

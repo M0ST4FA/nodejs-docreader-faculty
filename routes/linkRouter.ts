@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
 import LinkController from '../controllers/LinkController';
+import LinkModel from '../models/Link';
 
 const router = Router();
 
