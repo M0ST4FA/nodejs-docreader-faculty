@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 import morgan = require('morgan');
 import cookieParser from 'cookie-parser';
 import path from 'path';
@@ -20,7 +19,7 @@ import linkRouter from './routes/linkRouter';
 import notificationRouter from './routes/notificationRouter';
 
 const app = express();
-const apiRoutesBase = '/api/v2';
+const apiRoutesBase = '/v2';
 
 // Morgan logging settings
 morgan.token('user-id', (req: any) => {
@@ -32,20 +31,6 @@ const formatWithUser =
   '[:date[iso]] user.id=:user-id raddr=:remote-addr :method :url :status - rtime=:response-time ms referrer=":referrer" uagent=":user-agent"';
 
 app.use(morgan(formatWithUser));
-
-// Security
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL,
-    allowedHeaders: [
-      'Access-Control-Allow-Origin',
-      'Content-Type',
-      'Authorization',
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    credentials: true,
-  }),
-);
 
 // Essential middleware
 app.use(express.json({ limit: '10mb' }));
