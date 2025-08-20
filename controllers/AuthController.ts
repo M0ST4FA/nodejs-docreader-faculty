@@ -229,20 +229,7 @@ export default class AuthController {
     next: NextFunction,
   ) {
     // 1) Clear the cookie
-    const cookieOptions: CookieOptions = {
-      maxAge: 0, // Set to 0 to delete the cookie
-      httpOnly: true,
-    };
-
-    if (process.env.NODE_ENV !== 'development') cookieOptions.secure = true;
-
-    res.cookie('jwt', '', cookieOptions);
-
-    // 2) Send the response
-    res.status(200).send({
-      status: 'success',
-      message: 'Logged out successfully.',
-    });
+    JWTService.resetAndSendJWT(res);
   });
 
   public static protect = catchAsync(async function (

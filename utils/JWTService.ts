@@ -32,6 +32,8 @@ class JWTService {
     const cookieOptions: CookieOptions = {
       maxAge: this.JWT_COOKIE_EXPIRES_IN_DAYS * 24 * 60 * 60 * 1000,
       httpOnly: true,
+      domain: process.env.COOKIE_DOMAIN,
+      path: '/',
     };
 
     if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
@@ -52,6 +54,23 @@ class JWTService {
         status: 'success',
         token,
       });
+  }
+
+  static resetAndSendJWT(res: Response) {
+    const cookieOptions: CookieOptions = {
+      maxAge: this.JWT_COOKIE_EXPIRES_IN_DAYS * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      domain: process.env.COOKIE_DOMAIN,
+      path: '/',
+    };
+
+    if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+    res.cookie('jwt', '', cookieOptions);
+
+    res.status(200).send({
+      status: 'success',
+    });
   }
 
   static verifyJWT(token: string) {
