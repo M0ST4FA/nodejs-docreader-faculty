@@ -2,7 +2,6 @@ import express from 'express';
 import morgan = require('morgan');
 import cookieParser from 'cookie-parser';
 import path from 'path';
-import cors from 'cors';
 
 import globalErrorHandler from './controllers/ErrorController';
 import authRouter from './routes/authRouter';
@@ -37,14 +36,6 @@ app.use(morgan(formatWithUser));
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, './public')));
-
-if (process.env.NODE_ENV === 'development')
-  app.use(
-    cors({
-      origin: process.env.FRONTEND_URL,
-      credentials: true,
-    }),
-  );
 
 // Routes
 app.use(`${apiRoutesBase}/`, authRouter);

@@ -79,7 +79,6 @@ export default class NotificationController {
     next: NextFunction,
   ) {
     const yearId = NotificationController.extractYearIDFromUrl(req);
-    console.log(yearId);
 
     const [links, mcqQuizzes, writtenQuizzes] = await Promise.all([
       LinkModel.findNotifiable(yearId),

@@ -59,10 +59,8 @@ NODE_ENV='production'||'development' # defaults to 'production'
 # Connection variables
 PORT=tcp_port
 
-# TLS variables
-TLS_ENABLED='True'||'False' # defaults to 'False'
-TLS_KEY_PATH=path_to_tls_private_key_pem_file
-TLS_CERT_PATH=path_to_tls_certificate_chain
+# Cookie variables
+COOKIE_DOMAIN=domains_allowed_to_set_httpOnly_cookies
 
 # Database variables
 DATABASE_URL=database_url
@@ -85,11 +83,9 @@ FIREBASE_PRIVATE_KEY_PATH=firebase_private_key_path
 FIREBASE_CLIENT_EMAIL=firebase_client_email
 ```
 
-## Database Migration Scripts
+## Database Seeding Scripts
 
-The `scripts` directory has some useful migration and seeding scripts. Here's a description of each one:
+The `scripts` directory has some useful seeding scripts. Here's a description of each one:
 
-1. `migrateDBPrisma.js`: Copies data from v1 database to v2 database using Prisma. It needs a `.env` file that `OLD_COMPILED_SCHEMA_PATH` and `NEW_COMPILED_SCHEMA_PATH` variables.
-2. `migrateDBPG.ts`: Copies data from v1 database to v2 database without Prisma dependency. It relies solely on `pg` (official postgres driver for nodejs) package. It is slower than the Prisma-dependent one, so that should be preferred. It needs a `.env` file with two environment variables: `OLD_DATABASE_URL` and `NEW_DATABASE_URL` variables.
-3. `seedPermissions.js`: Seeds permissions for all action, scope and resource combinations.
-4. `seedRoles.js`: Seeds the two default roles (`SuperAdmin` at id 0 and `User` at id 1) with expected (hard-coded) ids and appropriate permissions.
+1. `seedPermissions.js`: Seeds permissions for all action, scope and resource combinations.
+2. `seedRoles.js`: Seeds the two default roles (`SuperAdmin` at id 0 and `User` at id 1) with expected (hard-coded) ids and appropriate permissions.
