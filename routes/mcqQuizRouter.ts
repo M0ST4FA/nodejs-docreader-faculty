@@ -30,7 +30,7 @@ router
   .post(McqQuizController.createQuestions);
 
 router
-  .route('mcq-questions/:id')
+  .route('/mcq-questions/:id')
   .patch(
     AuthController.requirePermission('UPDATE', 'OWN', 'QUESTION'),
     AuthController.checkUserIsResourceCreator(McqQuestionModel),
