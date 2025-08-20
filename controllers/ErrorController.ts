@@ -50,11 +50,14 @@ class ErrorController {
               400,
             );
         } else if (errorMeta?.modelName === 'Module') {
-          return new AppError('Module already exists.', 400);
+          if ((errorMeta?.target as string[])?.length === 3)
+            return new AppError('Module already exists.', 400);
         } else if (errorMeta?.modelName === 'Subject') {
-          return new AppError('Subject already exists.', 400);
+          if ((errorMeta?.target as string[])?.length === 2)
+            return new AppError('Subject already exists.', 400);
         } else if (errorMeta?.modelName === 'Lecture') {
-          return new AppError('Lecture already exists.', 400);
+          if ((errorMeta?.target as string[])?.length === 2)
+            return new AppError('Lecture already exists.', 400);
         }
 
         break;
