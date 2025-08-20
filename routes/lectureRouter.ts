@@ -48,7 +48,7 @@ router
   )
   .post(
     AuthController.requirePermission('CREATE', 'ANY', 'QUIZ'),
-    McqQuizController.createQuiz,
+    WrittenQuizController.createQuiz,
   );
 
 // Nested link routes
