@@ -4,7 +4,6 @@ import LectureController from '../controllers/LectureController';
 import McqQuizController from '../controllers/McqQuizController';
 import LinkController from '../controllers/LinkController';
 import LectureModel from '../models/Lecture';
-import FacultyModel from '../models/Faculty';
 import WrittenQuizController from '../controllers/WrittenQuizController';
 
 const router = Router();
@@ -26,7 +25,7 @@ router
   )
   .delete(
     AuthController.requirePermission('DELETE', 'OWN', 'LECTURE'),
-    AuthController.checkUserIsResourceCreator(FacultyModel),
+    AuthController.checkUserIsResourceCreator(LectureModel),
     LectureController.deleteLecture,
   );
 

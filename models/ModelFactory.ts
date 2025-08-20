@@ -8,6 +8,7 @@ import {
   PrismaCreateModel,
 } from '../types/Factory.types';
 import { QueryParamsService } from '../utils/QueryParamsService';
+import db from '../prisma/db';
 
 export class ModelFactory {
   static createOne<TCreateInput, TCreateResult, TInstance>(
@@ -147,7 +148,9 @@ export class ModelFactory {
         throw new AppError('Invalid ID. Must be an integer.', 400);
 
       const object = await prismaModel.findUnique({
-        where: { id },
+        where: {
+          id,
+        },
         select: { creatorId: true },
       });
 

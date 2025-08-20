@@ -1,4 +1,4 @@
-import { CookieOptions, NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 import UserModel from '../models/User';
 import { Credentials, OAuth2Client, TokenPayload } from 'google-auth-library';
