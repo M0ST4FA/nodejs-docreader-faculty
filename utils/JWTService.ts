@@ -36,7 +36,11 @@ class JWTService {
       path: '/',
     };
 
-    if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+    if (process.env.NODE_ENV === 'production') {
+      cookieOptions.domain = process.env.COOKIE_DOMAIN;
+      cookieOptions.path = '/';
+      cookieOptions.secure = true;
+    }
 
     res.cookie('jwt', token, cookieOptions);
 
