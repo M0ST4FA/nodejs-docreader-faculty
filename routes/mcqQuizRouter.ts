@@ -27,7 +27,11 @@ router
 
 router
   .route('/mcq-quizzes/:id/questions')
-  .post(McqQuizController.createQuestions);
+  .post(
+    AuthController.requirePermission('CREATE', 'OWN', 'QUESTION'),
+    AuthController.checkUserIsResourceCreator(McqQuestionModel),
+    McqQuizController.createQuestions,
+  );
 
 router
   .route('/mcq-questions/:id')
