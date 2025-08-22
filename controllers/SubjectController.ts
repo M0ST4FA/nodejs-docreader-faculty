@@ -48,6 +48,8 @@ export default class SubjectController {
 
     const subject = await SubjectModel.createOne(req.body, req.query);
 
+    await LectureModel.createDefaultLectures(subject.id, req.user.id);
+
     res.status(201).json({
       status: 'success',
       data: {

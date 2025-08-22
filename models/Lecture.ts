@@ -88,4 +88,28 @@ export default class LectureModel {
   );
 
   static deleteOne = ModelFactory.deleteOne(db.lecture, LectureModel.wrapper);
+
+  static createDefaultLectures = async function (
+    subjectId: number,
+    creatorId: number,
+  ) {
+    await db.lecture.createMany({
+      data: [
+        {
+          title: 'Practical',
+          type: 'Practical',
+          subjectId,
+          creatorId,
+          date: new Date(),
+        },
+        {
+          title: 'Final Revision',
+          type: 'FinalRevision',
+          subjectId,
+          creatorId,
+          date: new Date(),
+        },
+      ],
+    });
+  };
 }
