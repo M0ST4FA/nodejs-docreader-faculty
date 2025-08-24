@@ -10,9 +10,6 @@ export default class FacultyController {
   ) {
     req.body.creatorId = req.user.id;
 
-    if (req.query.select === undefined) req.query.select = [];
-    (req.query.select as string[]).push('name');
-
     const faculty = (await FacultyModel.createOne(
       req.body,
       req.query,

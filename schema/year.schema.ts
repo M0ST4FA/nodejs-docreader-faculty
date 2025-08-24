@@ -23,7 +23,7 @@ const fullSchema = z
 const yearSchema = createModelSchema(
   fullSchema,
   {
-    required: ['id', 'title', 'facultyId', 'currentSemester', 'creatorId'],
+    required: ['title', 'facultyId', 'creatorId'],
     optional: ['currentSemester'],
   },
   ['currentSemester'],
