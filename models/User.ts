@@ -1,10 +1,5 @@
 import db from '../prisma/db';
-import userSchema, {
-  UserCreateInput,
-  UserQueryParamInput,
-  UserUpdateInput,
-  UserWhereInput,
-} from '../schema/user.schema';
+import userSchema, { UserQueryParamInput } from '../schema/user.schema';
 import { User as PrismaUser, Role as PrismaRole } from '@prisma/client';
 import AppError from '../utils/AppError';
 import RoleModel from './Role';
@@ -50,6 +45,13 @@ class UserModel {
       throw new AppError('User yearId field undefined.', 500);
 
     return this.data.yearId;
+  }
+
+  get facultyId(): number {
+    if (this.data.facultyId === undefined || this.data.facultyId === null)
+      throw new AppError('User facultyId field undefined.', 500);
+
+    return this.data.facultyId;
   }
 
   async role(): Promise<RoleModel> {

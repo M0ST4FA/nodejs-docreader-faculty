@@ -5,6 +5,7 @@ import AppError from '../utils/AppError';
 import fcmService from '../utils/FCMService';
 import DeviceModel from '../models/Device';
 import db from '../prisma/db';
+import NotificationService from '../utils/NotificationService';
 
 interface FailedTokenDetails {
   token: string | null;
@@ -41,51 +42,6 @@ export default class TopicController {
     ) as Map<string, number>;
 
     return { topicName, deviceTokens, tokenToDeviceId };
-  }
-
-  private static async cleanUpInvalidDevices(
-    failedTokens: FailedTokenDetails[],
-    tokenToDeviceId: Map<string, number>,
-  ): Promise<number> {
-    const tokensToRemoveFromDb: string[] = [];
-
-    failedTokens.forEach(failed => {
-      // Identify tokens that should be removed from your database based on FCM error codes
-      if (
-        failed.errorCode === 'messaging/invalid-argument' ||
-        failed.errorCode === 'messaging/registration-token-not-registered' ||
-        failed.errorCode === 'messaging/invalid-registration-token' ||
-        failed.errorCode === 'messaging/unregistered' // Older code, but good to include
-      ) {
-        if (failed.token) {
-          tokensToRemoveFromDb.push(failed.token);
-        }
-      }
-    });
-
-    if (tokensToRemoveFromDb.length > 0) {
-      const deviceIdsToRemove = tokensToRemoveFromDb
-        .map(token => tokenToDeviceId.get(token))
-        .filter((id): id is number => id !== undefined); // Filter out any undefined/null device IDs
-
-      if (deviceIdsToRemove.length > 0)
-        try {
-          await db.device.deleteMany({
-            where: {
-              id: {
-                in: deviceIdsToRemove,
-              },
-            },
-          });
-        } catch {
-          throw new AppError(
-            'Failed to remove invalid FCM devices from database.',
-            500,
-          );
-        }
-    }
-
-    return tokensToRemoveFromDb.length;
   }
 
   public static createTopic = catchAsync(async function (
@@ -219,26 +175,12 @@ export default class TopicController {
       });
 
     // Note: All of their errors will be handled by global error handler
-    const topic = await TopicModel.findOneByName(topicName, {});
-
-    // Group successes and failures
-    const { failedTokens, successfulTokens } =
-      await fcmService.subscribeDevicesToTopic(deviceTokens, topicName);
-
-    // Remove any invalid token
-    const removedInvalidTokensCount =
-      await TopicController.cleanUpInvalidDevices(
-        failedTokens,
+    const { successfulTokens, failedTokens, removedInvalidTokensCount } =
+      await NotificationService.subscribeDevicesToTopic(
+        deviceTokens,
         tokenToDeviceId,
+        topicName,
       );
-
-    await db.deviceTopic.createMany({
-      data: successfulTokens.map(token => ({
-        deviceId: tokenToDeviceId.get(token)!,
-        topicId: topic.id,
-      })),
-      skipDuplicates: true,
-    });
 
     res.status(207).json({
       status: 'partial',
@@ -268,28 +210,12 @@ export default class TopicController {
         message: "You don't have any devices subscribed to this topic.",
       });
 
-    // Group response into successes and failures
-    const { failedTokens, successfulTokens } =
-      await fcmService.unsubscribeDevicesFromTopic(deviceTokens, topicName);
-
-    // Note: All of their errors will be handled by global error handler
-    const topic = await TopicModel.findOneByName(topicName, {});
-
-    // Remove any invalid token
-    const removedInvalidTokensCount =
-      await TopicController.cleanUpInvalidDevices(
-        failedTokens,
+    const { successfulTokens, failedTokens, removedInvalidTokensCount } =
+      await NotificationService.unsubscribeDevicesFromTopic(
+        deviceTokens,
         tokenToDeviceId,
+        topicName,
       );
-
-    await db.deviceTopic.deleteMany({
-      where: {
-        deviceId: {
-          in: successfulTokens.map(token => tokenToDeviceId.get(token)!),
-        },
-        topicId: topic.id,
-      },
-    });
 
     res.status(207).json({
       status: 'partial',

@@ -1,4 +1,3 @@
-import { AnyZodObject, ZodError, ZodObject } from 'zod';
 import AppError from './AppError';
 
 export type QueryFeatureSet = {
@@ -76,5 +75,30 @@ export class QueryParamsService {
       );
 
     return parsed.data as ReturnT;
+  }
+
+  static addFieldsToList(
+    queryObj: any,
+    listName: string,
+    fields: string[],
+  ): string {
+    if (!fields || fields.length === 0) return queryObj[listName] ?? '';
+
+    if (queryObj[listName] === undefined) {
+      queryObj[listName] = fields.join(',');
+      return queryObj[listName];
+    }
+
+    // Split existing fields into an array
+    const existing = queryObj.select
+      .split(',')
+      .map((f: string) => f.trim())
+      .filter((f: string) => f.length > 0);
+
+    // Merge and deduplicate
+    const merged = Array.from(new Set([...existing, ...fields]));
+
+    queryObj[listName] = merged.join(',');
+    return queryObj[listName];
   }
 }

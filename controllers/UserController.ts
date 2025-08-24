@@ -4,6 +4,8 @@ import UserModel from '../models/User';
 import AppError from '../utils/AppError';
 import userSchema, { UserQueryParamInput } from '../schema/user.schema';
 import { QueryParamsService } from '../utils/QueryParamsService';
+import NotificationService from '../utils/NotificationService';
+import DeviceModel from '../models/Device';
 
 export default class UserController {
   private static extractAndValidateId(req: Request): number {
@@ -58,22 +60,73 @@ export default class UserController {
     });
   });
 
+  private static async extractDataForTokenOperation(req: Request) {
+    // Fetch user devices
+    const userId = req.user.id;
+    const devices = await DeviceModel.findMany(
+      { userId },
+      { fields: 'token,id' },
+    );
+
+    // If the user has at least one device
+    const deviceTokens = devices.map(device => device.token) as string[];
+    const tokenToDeviceId = new Map(
+      devices.map(device => [device.token, device.id]),
+    ) as Map<string, number>;
+
+    return { deviceTokens, tokenToDeviceId };
+  }
+
+  private static async moveTopicSubscriptionToNewFaculty(
+    req: Request,
+    oldUser: UserModel,
+    newFacultyId: number,
+  ) {
+    const { deviceTokens, tokenToDeviceId } =
+      await UserController.extractDataForTokenOperation(req);
+    await Promise.all([
+      NotificationService.unsubscribeDevicesFromTopic(
+        deviceTokens,
+        tokenToDeviceId,
+        oldUser.facultyId.toString(),
+      ),
+      NotificationService.subscribeDevicesToTopic(
+        deviceTokens,
+        tokenToDeviceId,
+        newFacultyId.toString(),
+      ),
+    ]);
+  }
+
   public static updateUser = catchAsync(async function (
     req: Request,
     res: Response,
     next: NextFunction,
   ) {
     const id = UserController.extractAndValidateId(req);
+    const newFacultyId = Number.parseInt(req.body.facultyId);
+
+    let oldUser: UserModel | undefined = undefined;
+    if (!Number.isNaN(newFacultyId))
+      oldUser = (await UserModel.findOneById(id, {
+        include: 'devices',
+      })) as UserModel;
 
     const updatedUser = await UserModel.updateOne(id, req.body, req.query);
 
-    if (req.body)
-      res.status(200).json({
-        status: 'success',
-        data: {
-          user: updatedUser,
-        },
-      });
+    if (oldUser && oldUser.facultyId !== newFacultyId)
+      UserController.moveTopicSubscriptionToNewFaculty(
+        req,
+        oldUser,
+        newFacultyId,
+      );
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: updatedUser,
+      },
+    });
   });
 
   public static assignRole = catchAsync(async function (

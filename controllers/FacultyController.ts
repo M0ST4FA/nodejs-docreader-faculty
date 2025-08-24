@@ -2,6 +2,7 @@ import catchAsync from '../utils/catchAsync';
 import { Request, Response, NextFunction } from 'express';
 import FacultyModel from '../models/Faculty';
 import TopicModel from '../models/Topic';
+import { QueryParamsService } from '../utils/QueryParamsService';
 export default class FacultyController {
   public static createFaculty = catchAsync(async function (
     req: Request,
@@ -10,8 +11,12 @@ export default class FacultyController {
   ) {
     req.body.creatorId = req.user.id;
 
-    if (req.query.select === undefined) req.query.select = [];
-    (req.query.select as string[]).push('name');
+    if (req.query.select !== undefined)
+      req.query.select = QueryParamsService.addFieldsToList(
+        req.query,
+        'select',
+        ['name'],
+      );
 
     const faculty = (await FacultyModel.createOne(
       req.body,
@@ -97,7 +102,10 @@ export default class FacultyController {
   ) {
     const id = Number.parseInt(req.params.id);
 
-    await FacultyModel.deleteOne(id);
+    const [faculty, topic] = await Promise.all([
+      FacultyModel.deleteOne(id),
+      TopicModel.deleteOne(id.toString()),
+    ]);
 
     res.status(204).json({
       status: 'success',
