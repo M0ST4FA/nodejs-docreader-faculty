@@ -33,7 +33,9 @@ export default class LectureModel {
 
   static async findMany(where: any, query: any) {
     const search = query?.search;
+    const date = query?.date;
     delete query?.search;
+    delete query?.date;
 
     const validatedQueryParams: any = QueryParamsService.parse<
       typeof lectureSchema.query
@@ -51,6 +53,7 @@ export default class LectureModel {
         contains: search,
         mode: 'insensitive',
       },
+      date: new Date(date).toISOString(),
       ...where,
     };
 
