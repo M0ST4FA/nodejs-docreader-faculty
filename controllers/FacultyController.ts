@@ -102,10 +102,7 @@ export default class FacultyController {
   ) {
     const id = Number.parseInt(req.params.id);
 
-    const [faculty, topic] = await Promise.all([
-      FacultyModel.deleteOne(id),
-      TopicModel.deleteOne(id.toString()),
-    ]);
+    const faculty = await FacultyModel.deleteOne(id);
 
     res.status(204).json({
       status: 'success',
