@@ -61,6 +61,9 @@ const lectureSchema = createModelSchema(
     includableFields: [
       'links',
       'mcqQuizzes',
+      'mcqQuizzes.id',
+      'mcqQuizzes.title',
+      'mcqQuizzes.questions',
       'writtenQuizzes',
       'subject.id',
       'subject.name',

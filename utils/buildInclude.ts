@@ -1,27 +1,31 @@
 export default function buildInclude(input: string) {
   const paths = input.split(',').map(p => p.trim());
-
-  const result = {};
+  const result: any = {};
 
   for (const path of paths) {
     const parts = path.split('.');
-    let current: any = result;
+    let current = result;
 
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
 
-      // Create object if doesn't exist
-      if (!current[part]) {
-        current[part] = {};
-      }
-
+      // If this is the last part, set to true
       if (i === parts.length - 1) {
-        // Last segment: mark as true in `select`
-        current[part] = true;
+        if (
+          current[part] &&
+          typeof current[part] === 'object' &&
+          current[part].select
+        ) {
+          // If already an object with select, do nothing (keep nested)
+        } else {
+          current[part] = true;
+        }
       } else {
-        // Ensure we're inside a "select" object
-        if (!current[part].select) {
-          current[part].select = {};
+        // If current[part] is true (was a leaf before, now needs to be nested)
+        if (current[part] === true) {
+          current[part] = { select: {} };
+        } else if (!current[part]) {
+          current[part] = { select: {} };
         }
         current = current[part].select;
       }
