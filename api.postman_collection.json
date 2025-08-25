@@ -1,1895 +1,2489 @@
 {
-  "info": {
-    "_postman_id": "5dbba3de-2692-4863-b2fb-362379f3df87",
-    "name": "DRG Backend",
-    "description": "## 📘 API Conventions\n\n### Nested Routes\n\nRoutes are nested when a clear resource dependency is eminent, without limiting flexibility. NO resource has ALL of its routes nested. They are distribuited in a sensible manner, between nesting and flatting.\n\n**IMPORTANT**: In most nested routes, (for performance reasons) no checks happen for the parent resource. This has the consquence that, if the parent resource doesn't exist, it will return normally. The return will be a failure for single resources or a success with an empty collection for resource collections. Note that some of them are checked by database due to foriegn constraints (like in the case of roles and permissions).\n\n### Query Parameters\n\nMany endpoints follow consistent conventions for query parameters, pagination, sorting, and field projection.\n\nIn general, queries that return a collection have all of the parameters. Queries that return or update a single item (which also return the updated item) have the projection query parameter only (this is because they return a single item, and thus, sorting and pagination make no sense).\n\nAlso note that projectable and sortable fields differ by resource. These will documented in their respective resource page.\n\n**IMPORTANT**: These parameters are projectable for each resource, and thus will not be mentioned:\n\n1. `createdAt` and\n    \n2. `updatedAt`\n    \n\nNote also that they are not projected by default.\n\n| Parameter | Type | Description |\n| --- | --- | --- |\n| `sort` | `string[]` | List of fields to sort by. Prefix with `-` for descending order. |\n| `fields` | `string[]` | List of fields to include in the response. Default and possible values vary by endpoint. |\n| `page` | `integer` | Page number (1-indexed). Default is 1 for all endpoints. |\n| `size` | `integer` | Number of items per page. Default is 10 for all endpoints. |\n\n##### Example\n\n``` http\nGET /users?sort=-createdAt,name&fields=id,name,email&page=2&size=20 HTTP/1.1\n\n ```\n\n---\n\n### HTTP Status Codes\n\n| Status | Usage |\n| --- | --- |\n| `200` | Success for `GET`, `PUT`. |\n| `201` | Resource created. |\n| `204` | Resource deleted, no body. |\n| `400` | Bad input. |\n| `404` | Resource not found. |\n| `500` | Internal server error. |\n\n---\n\n### Structure of Returned Result\n\nThe structure of returned result depends on:\n\n1. Whether the request was successfull or not.\n    \n2. Whether the endpoint returns a single result or a collection.\n    \n\n#### Success Result for Single Resource\n\n| **Field** | **Type** | **Value** |\n| --- | --- | --- |\n| `status` | `enum/string` | `success` |\n| `data` | `object` | Object containing a single field (named after the resource) whose value is the single result resource. |\n\n##### Example:\n\n``` json\n{\n    \"status\": \"success\",\n    \"data\": {\n        \"year\": {\n            \"id\": 4,\n            \"title\": \"الثانية\",\n            \"facultyId\": 4,\n            \"creatorId\": null\n        }\n    }\n}\n\n ```\n\n#### Success Result for Resource Collection\n\n| **Field** | **Type** | **Value** |\n| --- | --- | --- |\n| `status` | `enum/string` | `success` |\n| `totalCount` | `number` | Number of resources in the collection. |\n| `data` | `object` | Object containing an array of resources. |\n\n##### Example:\n\n``` json\n{\n    \"status\": \"success\",\n    \"totalCount\": 5,\n    \"data\": {\n        \"years\": [\n            {\n                \"facultyId\": 4,\n                \"title\": \"Fala7 year\"\n            },\n            {\n                \"facultyId\": 4,\n                \"title\": \"Fala7 year patched\"\n            },\n            {\n                \"facultyId\": 4,\n                \"title\": \"الأولى\"\n            },\n            {\n                \"facultyId\": 4,\n                \"title\": \"الثانية\"\n            }\n        ]\n    }\n}\n\n ```\n\n#### Failure Result\n\n| **Field** | **Type** | **Value** |\n| --- | --- | --- |\n| `status` | `enum` | One of: `fail`(for client errors), `error` (for server errors) |\n| `message` | `string` | Error message. |\n\n##### Example:\n\n``` json\n{\n  \"status\": \"fail\",\n  \"message\": \"Invalid ID. Must be an integer.\"\n}\n\n ```",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "37635789"
-  },
-  "item": [
-    {
-      "name": "Auth",
-      "item": [
-        {
-          "name": "Continue With Google",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [""],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url_remote}}/continueWithGoogle",
-              "host": ["{{url_remote}}"],
-              "path": ["continueWithGoogle"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "User",
-      "item": [
-        {
-          "name": "Devices",
-          "item": [
-            {
-              "name": "Current Devices",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{JWT_USER}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{url}}/users/me/devices",
-                  "host": ["{{url}}"],
-                  "path": ["users", "me", "devices"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Device",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{JWT_USER}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"token\": \"fjaodjfiel;adfj.cjvodajp;eoiaffjaljdfe2\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{url}}/users/me/devices",
-                  "host": ["{{url}}"],
-                  "path": ["users", "me", "devices"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Device",
-              "request": {
-                "method": "DELETE",
-                "header": [],
-                "url": {
-                  "raw": "{{url}}/users/me/devices/1",
-                  "host": ["{{url}}"],
-                  "path": ["users", "me", "devices", "1"]
-                }
-              },
-              "response": []
-            }
-          ],
-          "description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `token`\n    \n- `userId`\n    \n\n#### 🔄 Sortable Fields\n\n- `createdAt`\n    \n- `updatedAt`"
-        },
-        {
-          "name": "Topics",
-          "item": [
-            {
-              "name": "Topics",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{url}}/users/me/topics",
-                  "host": ["{{url}}"],
-                  "path": ["users", "me", "topics"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Subscribe All Devices",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{JWT_USER}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "POST",
-                "header": [],
-                "url": {
-                  "raw": "{{url}}/users/me/topics/global_announcements",
-                  "host": ["{{url}}"],
-                  "path": ["users", "me", "topics", "global_announcements"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Unsubscribe All Devices",
-              "request": {
-                "method": "DELETE",
-                "header": [],
-                "url": {
-                  "raw": "{{url}}/users/me/topics/admin",
-                  "host": ["{{url}}"],
-                  "path": ["users", "me", "topics", "admin"]
-                }
-              },
-              "response": []
-            }
-          ],
-          "description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `name`\n    \n- `description`\n    \n- `public`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `name`\n    \n- `createdAt`\n    \n- `updatedAt`"
-        },
-        {
-          "name": "Role",
-          "item": [
-            {
-              "name": "Assign Role",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{JWT}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "PUT",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"roleId\": 3\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{url}}/users/3/role",
-                  "host": ["{{url}}"],
-                  "path": ["users", "3", "role"]
-                }
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "Current User",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_REMOTE}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/users/me?include=role",
-              "host": ["{{url}}"],
-              "path": ["users", "me"],
-              "query": [
-                {
-                  "key": "include",
-                  "value": "role"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "User [ID]",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_REMOTE}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "dsfsd",
-                  "type": "file",
-                  "src": []
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{url_remote}}/users/4?fields",
-              "host": ["{{url_remote}}"],
-              "path": ["users", "4"],
-              "query": [
-                {
-                  "key": "fields",
-                  "value": null
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "All Users",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/users",
-              "host": ["{{url}}"],
-              "path": ["users"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Current User",
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"facultyId\": 1,\n    \"yearId\": 2\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/users/me?fields=id,roleId",
-              "host": ["{{url}}"],
-              "path": ["users", "me"],
-              "query": [
-                {
-                  "key": "fields",
-                  "value": "id,roleId"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "User [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"status\": true,\n    \"facultyId\": 1,\n    \"yearId\": 2\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/users/6?fields=givenName,email",
-              "host": ["{{url}}"],
-              "path": ["users", "6"],
-              "query": [
-                {
-                  "key": "fields",
-                  "value": "givenName,email"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Current User",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/users/me",
-              "host": ["{{url}}"],
-              "path": ["users", "me"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "User [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/users/7",
-              "host": ["{{url}}"],
-              "path": ["users", "7"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `roleId`\n    \n- `email`\n    \n- `givenName`\n    \n- `familyName`\n    \n- `picture`\n    \n- `yearId`\n    \n- `facultyId`\n    \n\n#### 🔄 Sortable Fields\n\n- `givenName`\n    \n- `email`\n    \n- `createdAt`\n    \n- `updatedAt`"
-    },
-    {
-      "name": "Role",
-      "item": [
-        {
-          "name": "Permission",
-          "item": [
-            {
-              "name": "All Permissions",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{JWT_USER}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{url}}/roles/2/permissions",
-                  "host": ["{{url}}"],
-                  "path": ["roles", "2", "permissions"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Permission",
-              "request": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"permissions\": [1, 2, 3, 10, 20, 30]\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{url}}/roles/6/permissions",
-                  "host": ["{{url}}"],
-                  "path": ["roles", "6", "permissions"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Permission",
-              "request": {
-                "method": "DELETE",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"permissions\": [1, 2, 3, 10, 20, 30, 40]\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{url}}/roles/6/permissions",
-                  "host": ["{{url}}"],
-                  "path": ["roles", "6", "permissions"]
-                }
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "All Roles",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/roles",
-              "host": ["{{url}}"],
-              "path": ["roles"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Role [ID]",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/roles/1?include=permissions.permission",
-              "host": ["{{url}}"],
-              "path": ["roles", "1"],
-              "query": [
-                {
-                  "key": "include",
-                  "value": "permissions.permission"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Role",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"TestRole5\",\n    \"description\": \"A role for testing role creation. Expect a ton of these to fill the database 🥸\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/roles",
-              "host": ["{{url}}"],
-              "path": ["roles"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Role [ID]",
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Updated name\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/roles/6",
-              "host": ["{{url}}"],
-              "path": ["roles", "6"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Role [ID]",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/roles/5",
-              "host": ["{{url}}"],
-              "path": ["roles", "5"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `name`\n    \n- `description`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `name`\n    \n- `createdAt`\n    \n- `updatedAt`"
-    },
-    {
-      "name": "Permission",
-      "item": [
-        {
-          "name": "All Permissions",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/permissions?size=100",
-              "host": ["{{url}}"],
-              "path": ["permissions"],
-              "query": [
-                {
-                  "key": "size",
-                  "value": "100"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Permission [ID]",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/permissions/50",
-              "host": ["{{url}}"],
-              "path": ["permissions", "50"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `description`\n    \n- `action`\n    \n- `scope`\n    \n- `resource`\n    \n\n#### 🔄 Sortable Fields\n\n- `action`"
-    },
-    {
-      "name": "Faculties",
-      "item": [
-        {
-          "name": "Studying Years",
-          "item": [
-            {
-              "name": "All Years",
-              "protocolProfileBehavior": {
-                "disableBodyPruning": true
-              },
-              "request": {
-                "method": "GET",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{url_remote}}/faculties/1/years",
-                  "host": ["{{url_remote}}"],
-                  "path": ["faculties", "1", "years"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Year",
-              "request": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"id\": 79,\n    \"title\": \"Fala7 year\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{url}}/faculties/4/years",
-                  "host": ["{{url}}"],
-                  "path": ["faculties", "4", "years"]
-                }
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "All Faculties",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_REMOTE}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url_remote}}/faculties?include=year",
-              "host": ["{{url_remote}}"],
-              "path": ["faculties"],
-              "query": [
-                {
-                  "key": "include",
-                  "value": "year"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Faculty [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/faculties/19",
-              "host": ["{{url}}"],
-              "path": ["faculties", "19"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Faculty",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Fala7 College45324\",\n    \"city\": \"Fala7 City\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/faculties",
-              "host": ["{{url}}"],
-              "path": ["faculties"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Faculty [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"city\": \"Telegram\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/faculties/5",
-              "host": ["{{url}}"],
-              "path": ["faculties", "5"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Faculty [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_REMOTE}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{url_remote}}/faculties/4",
-              "host": ["{{url_remote}}"],
-              "path": ["faculties", "4"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `name`\n    \n- `city`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `name`\n    \n- `city`\n    \n- `createdAt`\n    \n- `updatedAt`"
-    },
-    {
-      "name": "Studying Years",
-      "item": [
-        {
-          "name": "Module",
-          "item": [
-            {
-              "name": "All Modules",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{JWT_USER}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{url}}/years/2/modules?fields=id,name,semesterName&sort=-name",
-                  "host": ["{{url}}"],
-                  "path": ["years", "2", "modules"],
-                  "query": [
-                    {
-                      "key": "fields",
-                      "value": "id,name,semesterName"
-                    },
-                    {
-                      "key": "sort",
-                      "value": "-name"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Module",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{JWT}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"name\": \"Fala7 Module 3\",\n    \"semesterName\": 4,\n    \"icon\": \"https://www.fala7.com/icon.png\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{url}}/years/2/modules",
-                  "host": ["{{url}}"],
-                  "path": ["years", "2", "modules"]
-                }
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "Year [ID]",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/years/5",
-              "host": ["{{url}}"],
-              "path": ["years", "5"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Year [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"title\": \"Fala7 year patched\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/years/55?fields=title,facultyId",
-              "host": ["{{url}}"],
-              "path": ["years", "55"],
-              "query": [
-                {
-                  "key": "fields",
-                  "value": "title,facultyId"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Year [ID]",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/years/55",
-              "host": ["{{url}}"],
-              "path": ["years", "55"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `title`\n    \n- `facultyId`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `title`\n    \n- `createdAt`\n    \n- `updatedAt`"
-    },
-    {
-      "name": "Modules",
-      "item": [
-        {
-          "name": "Subjects",
-          "item": [
-            {
-              "name": "All Subjects",
-              "protocolProfileBehavior": {
-                "disableBodyPruning": true
-              },
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{JWT}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "GET",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{url}}/modules/2/subjects?fields=id,name,icon",
-                  "host": ["{{url}}"],
-                  "path": ["modules", "2", "subjects"],
-                  "query": [
-                    {
-                      "key": "fields",
-                      "value": "id,name,icon"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Subject",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{JWT}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"name\": \"MY_SUBJECT 5\",\r\n    \"icon\": \"https://fala7.com/icon.png\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{url}}/modules/2/subjects",
-                  "host": ["{{url}}"],
-                  "path": ["modules", "2", "subjects"]
-                },
-                "description": "`{{url}}/subjects/:moduleId/:subjectId/update`"
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "Module [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/modules/6?fields=icon,id",
-              "host": ["{{url}}"],
-              "path": ["modules", "6"],
-              "query": [
-                {
-                  "key": "fields",
-                  "value": "icon,id"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Module [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"yearId\": 3\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/modules/6?fields=creatorId",
-              "host": ["{{url}}"],
-              "path": ["modules", "6"],
-              "query": [
-                {
-                  "key": "fields",
-                  "value": "creatorId"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Module [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/modules/7",
-              "host": ["{{url}}"],
-              "path": ["modules", "7"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `name`\n    \n- `semesterName`\n    \n- `yearId`\n    \n- `icon`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `name`\n    \n- `createdAt`\n    \n- `updatedAt`"
-    },
-    {
-      "name": "Subjects",
-      "item": [
-        {
-          "name": "Lectures",
-          "item": [
-            {
-              "name": "All Lectures",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{JWT_USER}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{url}}/subjects/4/lectures?size=5&sort=-title&fields=id,type,title,subTitle",
-                  "host": ["{{url}}"],
-                  "path": ["subjects", "4", "lectures"],
-                  "query": [
-                    {
-                      "key": "size",
-                      "value": "5"
-                    },
-                    {
-                      "key": "sort",
-                      "value": "-title"
-                    },
-                    {
-                      "key": "fields",
-                      "value": "id,type,title,subTitle"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Lecture",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{JWT_USER}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"title\": \"Fala7 Lecture\",\n    \"date\": \"2020-01-01\",\n    \"type\": \"Normal\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{url}}/subjects/4/lectures",
-                  "host": ["{{url}}"],
-                  "path": ["subjects", "4", "lectures"]
-                }
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "Subject [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/subjects/9",
-              "host": ["{{url}}"],
-              "path": ["subjects", "9"]
-            },
-            "description": "`{{url}}/subjects/:moduleId/`"
-          },
-          "response": []
-        },
-        {
-          "name": "Subject [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"name\": \"PATCHED SUBJ\",\r\n    \"icon\": \"https://hi.there.com\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/subjects/7",
-              "host": ["{{url}}"],
-              "path": ["subjects", "7"]
-            },
-            "description": "`{{url}}/subjects/:moduleId/:subjectId/update`"
-          },
-          "response": []
-        },
-        {
-          "name": "Subject [ID]",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/subjects/9",
-              "host": ["{{url}}"],
-              "path": ["subjects", "9"]
-            },
-            "description": "`{{url}}/subjects/:moduleId/:subjectId/update`"
-          },
-          "response": []
-        }
-      ],
-      "description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `name`\n    \n- `icon`\n    \n- `moduleId`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `name`\n    \n- `createdAt`\n    \n- `updatedAt`"
-    },
-    {
-      "name": "Lectures",
-      "item": [
-        {
-          "name": "Quizzes",
-          "item": [
-            {
-              "name": "All Quizzes",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{url}}/lectures/8/mcq-quizzes?include=lectureData.quiz&sort=-createdAt&size=2",
-                  "host": ["{{url}}"],
-                  "path": ["lectures", "8", "mcqQuizzes"],
-                  "query": [
-                    {
-                      "key": "include",
-                      "value": "lectureData.quiz"
-                    },
-                    {
-                      "key": "sort",
-                      "value": "-createdAt"
-                    },
-                    {
-                      "key": "size",
-                      "value": "2"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Quiz",
-              "request": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"title\": \"Fala7 Quiz3\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{url}}/lectures/8/mcq-quizzes",
-                  "host": ["{{url}}"],
-                  "path": ["lectures", "8", "mcqQuizzes"]
-                }
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "Links",
-          "item": [
-            {
-              "name": "All Links",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{url}}/lectures/8/links?fields=id,type,category,title,subTitle",
-                  "host": ["{{url}}"],
-                  "path": ["lectures", "8", "links"],
-                  "query": [
-                    {
-                      "key": "fields",
-                      "value": "id,type,category,title,subTitle"
-                    }
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Link",
-              "request": {
-                "auth": {
-                  "type": "bearer",
-                  "bearer": [
-                    {
-                      "key": "token",
-                      "value": "{{JWT_USER}}",
-                      "type": "string"
-                    }
-                  ]
-                },
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"title\": \"Fala7 Link\",\n    \"url\": \"https://fala7.com\",\n    \"category\": \"Data\",\n    \"type\": \"Video\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{url}}/lectures/8/links",
-                  "host": ["{{url}}"],
-                  "path": ["lectures", "8", "links"]
-                }
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "Lecture [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/lectures/9?fields=title,type",
-              "host": ["{{url}}"],
-              "path": ["lectures", "9"],
-              "query": [
-                {
-                  "key": "fields",
-                  "value": "title,type"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Lecture [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"subTitle\": \"Test subtitle.\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/lectures/8?fields=title,subTitle",
-              "host": ["{{url}}"],
-              "path": ["lectures", "8"],
-              "query": [
-                {
-                  "key": "fields",
-                  "value": "title,subTitle"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Lecture [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/lectures/2",
-              "host": ["{{url}}"],
-              "path": ["lectures", "2"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Quizzes",
-      "item": [
-        {
-          "name": "Quiz [ID]",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/mcq-quizzes/8",
-              "host": ["{{url}}"],
-              "path": ["mcqQuizzes", "8"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Quiz [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"notifiable\": false\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/mcq-quizzes/8?fields=title",
-              "host": ["{{url}}"],
-              "path": ["mcqQuizzes", "8"],
-              "query": [
-                {
-                  "key": "fields",
-                  "value": "title"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Quiz [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/mcq-quizzes/8",
-              "host": ["{{url}}"],
-              "path": ["mcqQuizzes", "8"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `lectureId`\n    \n- `title`\n    \n- `notifiable`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `title`\n    \n- `createdAt`\n    \n- `updatedAt`"
-    },
-    {
-      "name": "Links",
-      "item": [
-        {
-          "name": "Link [ID]",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/links/4",
-              "host": ["{{url}}"],
-              "path": ["links", "4"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Link [ID]",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"subTitle\": \"Fala7 subtitle\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/links/2",
-              "host": ["{{url}}"],
-              "path": ["links", "2"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Link",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{JWT_USER}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/links/6",
-              "host": ["{{url}}"],
-              "path": ["links", "6"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `type`\n    \n- `category`\n    \n- `notifiable`\n    \n- `title`\n    \n- `subTitle`\n    \n- `url`\n    \n- `lectureId`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `title`\n    \n- `subTitle`\n    \n- `createdAt`\n    \n- `updatedAt`"
-    },
-    {
-      "name": "Notifications",
-      "item": [
-        {
-          "name": "Topics",
-          "item": [
-            {
-              "name": "CRUD",
-              "item": [
-                {
-                  "name": "All Topics",
-                  "request": {
-                    "auth": {
-                      "type": "bearer",
-                      "bearer": [
-                        {
-                          "key": "token",
-                          "value": "{{JWT_USER}}",
-                          "type": "string"
-                        }
-                      ]
-                    },
-                    "method": "GET",
-                    "header": [],
-                    "url": {
-                      "raw": "{{url}}/notifications/topics",
-                      "host": ["{{url}}"],
-                      "path": ["notifications", "topics"]
-                    }
-                  },
-                  "response": []
-                },
-                {
-                  "name": "Topic",
-                  "request": {
-                    "method": "POST",
-                    "header": [],
-                    "body": {
-                      "mode": "raw",
-                      "raw": "{\n    \"name\": \"global_announcements\",\n    \"public\": true\n}",
-                      "options": {
-                        "raw": {
-                          "language": "json"
-                        }
-                      }
-                    },
-                    "url": {
-                      "raw": "{{url}}/notifications/topics",
-                      "host": ["{{url}}"],
-                      "path": ["notifications", "topics"]
-                    }
-                  },
-                  "response": []
-                },
-                {
-                  "name": "Topic",
-                  "request": {
-                    "method": "PATCH",
-                    "header": [],
-                    "body": {
-                      "mode": "raw",
-                      "raw": "{\n    \"description\": \"Topic for general announcments.\"\n}",
-                      "options": {
-                        "raw": {
-                          "language": "json"
-                        }
-                      }
-                    },
-                    "url": {
-                      "raw": "{{url}}/notifications/topics/global_announcment",
-                      "host": ["{{url}}"],
-                      "path": ["notifications", "topics", "global_announcment"]
-                    }
-                  },
-                  "response": []
-                },
-                {
-                  "name": "Topic",
-                  "request": {
-                    "method": "DELETE",
-                    "header": [],
-                    "url": {
-                      "raw": "{{url}}/notifications/topics/global_announcments",
-                      "host": ["{{url}}"],
-                      "path": ["notifications", "topics", "global_announcments"]
-                    }
-                  },
-                  "response": []
-                }
-              ]
-            },
-            {
-              "name": "Broadcast to Topic",
-              "request": {
-                "method": "PATCH",
-                "header": [],
-                "url": {
-                  "raw": "{{url}}/notifications/topics/global_announcments",
-                  "host": ["{{url}}"],
-                  "path": ["notifications", "topics", "global_announcments"]
-                }
-              },
-              "response": []
-            }
-          ],
-          "description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `name`\n    \n- `description`\n    \n- `public`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `name`\n    \n- `createdAt`\n    \n- `updatedAt`"
-        },
-        {
-          "name": "Broadcast (global topic)",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"notification\": {}\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/notifications",
-              "host": ["{{url}}"],
-              "path": ["notifications"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Test",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"notification\": {\n        \n    }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/notifications/test",
-              "host": ["{{url}}"],
-              "path": ["notifications", "test"]
-            }
-          },
-          "response": []
-        }
-      ]
-    }
-  ],
-  "auth": {
-    "type": "bearer",
-    "bearer": [
-      {
-        "key": "token",
-        "value": "{{JWT}}",
-        "type": "string"
-      }
-    ]
-  },
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "packages": {},
-        "exec": [""]
-      }
-    },
-    {
-      "listen": "test",
-      "script": {
-        "type": "text/javascript",
-        "packages": {},
-        "exec": [""]
-      }
-    }
-  ],
-  "variable": [
-    {
-      "key": "url",
-      "value": "http://localhost:8080/api/v2",
-      "type": "string"
-    },
-    {
-      "key": "url_remote",
-      "value": "https://doc-reader-guide-server.online:8433/api/v2",
-      "type": "string"
-    },
-    {
-      "key": "JWT",
-      "value": "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9.eyJpZCI6Niwicm9sZSI6IlVzZXIiLCJpYXQiOjE3NTIyNzIzNDcsImV4cCI6MTc2MDA0ODM0N30.gsQ-CVEgr71IJCUPDTG1vw5ftTYaFNXqGr2Yipn8_woCQkNdlqb90wEdmyD49Ex3-9muDsFxgaAKjV7Y14tYm0Ncyftjjerb81GavqX4buDq-UQzJJGjUWcFnG8c-2gQ",
-      "type": "default"
-    },
-    {
-      "key": "JWT_USER",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "JWT_REMOTE",
-      "value": "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwicm9sZSI6IlVzZXIiLCJpYXQiOjE3NTMyOTc1MTksImV4cCI6MTc2MTA3MzUxOX0.7TzRTWJHQUuWsoO183dWrPDL2ufFyEdeweVcNpqI8dsr1IrzgTeJ_a7Qn9da4N6ufMD8MA1XK2yBvlVHv5STWQhuSWgMoiJxccQ1ktcKTS6aRAh0jmrXzF-xybFEaVi7",
-      "type": "string"
-    },
-    {
-      "key": "JWT_USER_REMOTE",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "GOOGLE_CLIENT_ID",
-      "value": "",
-      "type": "default"
-    },
-    {
-      "key": "GOOGLE_CLIENT_SECRET",
-      "value": "",
-      "type": "default"
-    },
-    {
-      "key": "GOOGLE_API_ACCESS_TOKEN",
-      "value": "",
-      "type": "default"
-    }
-  ]
+	"info": {
+		"_postman_id": "5dbba3de-2692-4863-b2fb-362379f3df87",
+		"name": "DRG Backend",
+		"description": "## 📘 API Conventions\n\n### Nested Routes\n\nRoutes are nested when a clear resource dependency is eminent, without limiting flexibility. NO resource has ALL of its routes nested. They are distribuited in a sensible manner, between nesting and flatting.\n\n**IMPORTANT**: In most nested routes, (for performance reasons) no checks happen for the parent resource. This has the consquence that, if the parent resource doesn't exist, it will return normally. The return will be a failure for single resources or a success with an empty collection for resource collections. Note that some of them are checked by database due to foriegn constraints (like in the case of roles and permissions).\n\n### Query Parameters\n\nMany endpoints follow consistent conventions for query parameters, pagination, sorting, and field projection.\n\nIn general, queries that return a collection have all of the parameters. Queries that return or update a single item (which also return the updated item) have the projection query parameter only (this is because they return a single item, and thus, sorting and pagination make no sense).\n\nAlso note that projectable and sortable fields differ by resource. These will documented in their respective resource page.\n\n**IMPORTANT**: These parameters are projectable for each resource, and thus will not be mentioned:\n\n1. `createdAt` and\n    \n2. `updatedAt`\n    \n\nNote also that they are not projected by default.\n\n| Parameter | Type | Description |\n| --- | --- | --- |\n| `sort` | `string[]` | List of fields to sort by. Prefix with `-` for descending order. |\n| `fields` | `string[]` | List of fields to include in the response. Default and possible values vary by endpoint. |\n| `page` | `integer` | Page number (1-indexed). Default is 1 for all endpoints. |\n| `size` | `integer` | Number of items per page. Default is 10 for all endpoints. |\n\n##### Example\n\n``` http\nGET /users?sort=-createdAt,name&fields=id,name,email&page=2&size=20 HTTP/1.1\n\n ```\n\n---\n\n### HTTP Status Codes\n\n| Status | Usage |\n| --- | --- |\n| `200` | Success for `GET`, `PUT`. |\n| `201` | Resource created. |\n| `204` | Resource deleted, no body. |\n| `400` | Bad input. |\n| `404` | Resource not found. |\n| `500` | Internal server error. |\n\n---\n\n### Structure of Returned Result\n\nThe structure of returned result depends on:\n\n1. Whether the request was successfull or not.\n    \n2. Whether the endpoint returns a single result or a collection.\n    \n\n#### Success Result for Single Resource\n\n| **Field** | **Type** | **Value** |\n| --- | --- | --- |\n| `status` | `enum/string` | `success` |\n| `data` | `object` | Object containing a single field (named after the resource) whose value is the single result resource. |\n\n##### Example:\n\n``` json\n{\n    \"status\": \"success\",\n    \"data\": {\n        \"year\": {\n            \"id\": 4,\n            \"title\": \"الثانية\",\n            \"facultyId\": 4,\n            \"creatorId\": null\n        }\n    }\n}\n\n ```\n\n#### Success Result for Resource Collection\n\n| **Field** | **Type** | **Value** |\n| --- | --- | --- |\n| `status` | `enum/string` | `success` |\n| `totalCount` | `number` | Number of resources in the collection. |\n| `data` | `object` | Object containing an array of resources. |\n\n##### Example:\n\n``` json\n{\n    \"status\": \"success\",\n    \"totalCount\": 5,\n    \"data\": {\n        \"years\": [\n            {\n                \"facultyId\": 4,\n                \"title\": \"Fala7 year\"\n            },\n            {\n                \"facultyId\": 4,\n                \"title\": \"Fala7 year patched\"\n            },\n            {\n                \"facultyId\": 4,\n                \"title\": \"الأولى\"\n            },\n            {\n                \"facultyId\": 4,\n                \"title\": \"الثانية\"\n            }\n        ]\n    }\n}\n\n ```\n\n#### Failure Result\n\n| **Field** | **Type** | **Value** |\n| --- | --- | --- |\n| `status` | `enum` | One of: `fail`(for client errors), `error` (for server errors) |\n| `message` | `string` | Error message. |\n\n##### Example:\n\n``` json\n{\n  \"status\": \"fail\",\n  \"message\": \"Invalid ID. Must be an integer.\"\n}\n\n ```",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "37635789"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Continue With Google",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_remote}}/continueWithGoogle",
+							"host": [
+								"{{url_remote}}"
+							],
+							"path": [
+								"continueWithGoogle"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Devices",
+					"item": [
+						{
+							"name": "Current Devices",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{JWT}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/users/me/devices",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"users",
+										"me",
+										"devices"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Device",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{JWT_USER}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"token\": \"fjaodjfiel;adfj.cjvodajp;eoiaffjaljdfe2f\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/users/me/devices",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"users",
+										"me",
+										"devices"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Device",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/users/me/devices/1",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"users",
+										"me",
+										"devices",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `token`\n    \n- `userId`\n    \n\n#### 🔄 Sortable Fields\n\n- `createdAt`\n    \n- `updatedAt`"
+				},
+				{
+					"name": "Topics",
+					"item": [
+						{
+							"name": "Topics",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/users/me/topics",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"users",
+										"me",
+										"topics"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Subscribe All Devices",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{JWT_USER}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/users/me/topics/global_announcements",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"users",
+										"me",
+										"topics",
+										"global_announcements"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Unsubscribe All Devices",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/users/me/topics/admin",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"users",
+										"me",
+										"topics",
+										"admin"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `name`\n    \n- `description`\n    \n- `public`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `name`\n    \n- `createdAt`\n    \n- `updatedAt`"
+				},
+				{
+					"name": "Role",
+					"item": [
+						{
+							"name": "Assign Role",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{JWT}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"roleId\": 3\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/users/3/role",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"users",
+										"3",
+										"role"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Progress",
+					"item": [
+						{
+							"name": "All Progress",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/me/progress",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"me",
+										"progress"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Current User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/users/me",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User [ID]",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "dsfsd",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/users/5?fields",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"5"
+							],
+							"query": [
+								{
+									"key": "fields",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/users",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Current User",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"facultyId\": 1,\n    \"yearId\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/users/me?fields=id,roleId",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							],
+							"query": [
+								{
+									"key": "fields",
+									"value": "id,roleId"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": true,\n    \"facultyId\": 1,\n    \"yearId\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/users/6?fields=givenName,email",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"6"
+							],
+							"query": [
+								{
+									"key": "fields",
+									"value": "givenName,email"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Current User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/users/me",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/users/7",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"7"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `roleId`\n    \n- `email`\n    \n- `givenName`\n    \n- `familyName`\n    \n- `picture`\n    \n- `yearId`\n    \n- `facultyId`\n    \n\n#### 🔄 Sortable Fields\n\n- `givenName`\n    \n- `email`\n    \n- `createdAt`\n    \n- `updatedAt`"
+		},
+		{
+			"name": "Role",
+			"item": [
+				{
+					"name": "Permission",
+					"item": [
+						{
+							"name": "All Permissions",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{JWT_USER}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/roles/2/permissions",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"roles",
+										"2",
+										"permissions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Permission",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"permissions\": [1, 2, 3, 10, 20, 30]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/roles/6/permissions",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"roles",
+										"6",
+										"permissions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Permission",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"permissions\": [1, 2, 3, 10, 20, 30, 40]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/roles/6/permissions",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"roles",
+										"6",
+										"permissions"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "All Roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/roles",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Role [ID]",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/roles/1?include=permissions.permission",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"roles",
+								"1"
+							],
+							"query": [
+								{
+									"key": "include",
+									"value": "permissions.permission"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Role",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"TestRole5\",\n    \"description\": \"A role for testing role creation. Expect a ton of these to fill the database 🥸\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/roles",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Role [ID]",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated name\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/roles/6",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"roles",
+								"6"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Role [ID]",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/roles/5",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"roles",
+								"5"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `name`\n    \n- `description`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `name`\n    \n- `createdAt`\n    \n- `updatedAt`"
+		},
+		{
+			"name": "Permission",
+			"item": [
+				{
+					"name": "All Permissions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/permissions?size=100",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"permissions"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "100"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Permission [ID]",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/permissions/50",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"permissions",
+								"50"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `description`\n    \n- `action`\n    \n- `scope`\n    \n- `resource`\n    \n\n#### 🔄 Sortable Fields\n\n- `action`"
+		},
+		{
+			"name": "Faculties",
+			"item": [
+				{
+					"name": "Studying Years",
+					"item": [
+						{
+							"name": "All Years",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url_remote}}/faculties/1/years",
+									"host": [
+										"{{url_remote}}"
+									],
+									"path": [
+										"faculties",
+										"1",
+										"years"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Year",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 79,\n    \"title\": \"Fala7 year\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/faculties/4/years",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"faculties",
+										"4",
+										"years"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "All Faculties",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/faculties",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"faculties"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Faculty [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/faculties/19",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"faculties",
+								"19"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Faculty",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Fala7 College45324\",\n    \"city\": \"Fala7 City\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/faculties",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"faculties"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Faculty [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"city\": \"Telegram\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/faculties/5",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"faculties",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Faculty [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/faculties/4",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"faculties",
+								"4"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `name`\n    \n- `city`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `name`\n    \n- `city`\n    \n- `createdAt`\n    \n- `updatedAt`"
+		},
+		{
+			"name": "Studying Years",
+			"item": [
+				{
+					"name": "Module",
+					"item": [
+						{
+							"name": "All Modules",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{JWT_USER}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/years/2/modules",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"years",
+										"2",
+										"modules"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Module",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{JWT}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Fala7 Module 3\",\n    \"semesterName\": 4,\n    \"icon\": \"https://www.fala7.com/icon.png\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/years/2/modules",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"years",
+										"2",
+										"modules"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Year [ID]",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/years/5",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"years",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Year [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Fala7 year patched\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/years/55?fields=title,facultyId",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"years",
+								"55"
+							],
+							"query": [
+								{
+									"key": "fields",
+									"value": "title,facultyId"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Year [ID]",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/years/55",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"years",
+								"55"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `title`\n    \n- `facultyId`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `title`\n    \n- `createdAt`\n    \n- `updatedAt`"
+		},
+		{
+			"name": "Modules",
+			"item": [
+				{
+					"name": "Subjects",
+					"item": [
+						{
+							"name": "All Subjects",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{JWT}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/modules/2/subjects?fields=id,name,icon",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"modules",
+										"2",
+										"subjects"
+									],
+									"query": [
+										{
+											"key": "fields",
+											"value": "id,name,icon"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Subject",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{JWT}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"MY_SUBJECT 5\",\r\n    \"icon\": \"https://fala7.com/icon.png\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/modules/2/subjects",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"modules",
+										"2",
+										"subjects"
+									]
+								},
+								"description": "`{{url}}/subjects/:moduleId/:subjectId/update`"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Module [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/modules/6?fields=icon,id",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"modules",
+								"6"
+							],
+							"query": [
+								{
+									"key": "fields",
+									"value": "icon,id"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Module [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"yearId\": 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/modules/6?fields=creatorId",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"modules",
+								"6"
+							],
+							"query": [
+								{
+									"key": "fields",
+									"value": "creatorId"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Module [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/modules/7",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"modules",
+								"7"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `name`\n    \n- `semesterName`\n    \n- `yearId`\n    \n- `icon`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `name`\n    \n- `createdAt`\n    \n- `updatedAt`"
+		},
+		{
+			"name": "Subjects",
+			"item": [
+				{
+					"name": "Lectures",
+					"item": [
+						{
+							"name": "All Lectures",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{JWT_USER}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/subjects/4/lectures?size=5&sort=-title&fields=id,type,title,subTitle",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"subjects",
+										"4",
+										"lectures"
+									],
+									"query": [
+										{
+											"key": "size",
+											"value": "5"
+										},
+										{
+											"key": "sort",
+											"value": "-title"
+										},
+										{
+											"key": "fields",
+											"value": "id,type,title,subTitle"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Lecture",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{JWT_USER}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Fala7 Lecture\",\n    \"date\": \"2020-01-01\",\n    \"type\": \"Normal\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/subjects/4/lectures",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"subjects",
+										"4",
+										"lectures"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Subject [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/subjects/9?include=module",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"subjects",
+								"9"
+							],
+							"query": [
+								{
+									"key": "include",
+									"value": "module"
+								}
+							]
+						},
+						"description": "`{{url}}/subjects/:moduleId/`"
+					},
+					"response": []
+				},
+				{
+					"name": "Subject [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"PATCHED SUBJ\",\r\n    \"icon\": \"https://hi.there.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/subjects/7",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"subjects",
+								"7"
+							]
+						},
+						"description": "`{{url}}/subjects/:moduleId/:subjectId/update`"
+					},
+					"response": []
+				},
+				{
+					"name": "Subject [ID]",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/subjects/9",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"subjects",
+								"9"
+							]
+						},
+						"description": "`{{url}}/subjects/:moduleId/:subjectId/update`"
+					},
+					"response": []
+				}
+			],
+			"description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `name`\n    \n- `icon`\n    \n- `moduleId`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `name`\n    \n- `createdAt`\n    \n- `updatedAt`"
+		},
+		{
+			"name": "Lectures",
+			"item": [
+				{
+					"name": "Quizzes",
+					"item": [
+						{
+							"name": "All Quizzes",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/lectures/4/quizzes?fields=id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"lectures",
+										"4",
+										"quizzes"
+									],
+									"query": [
+										{
+											"key": "fields",
+											"value": "id"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Quiz",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Fala7 Quiz3\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/lectures/8/quizzes",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"lectures",
+										"8",
+										"quizzes"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Links",
+					"item": [
+						{
+							"name": "All Links",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/lectures/8/links?fields=id,type,category,title,subTitle",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"lectures",
+										"8",
+										"links"
+									],
+									"query": [
+										{
+											"key": "fields",
+											"value": "id,type,category,title,subTitle"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Link",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{JWT_USER}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Fala7 Link\",\n    \"url\": \"https://fala7.com\",\n    \"category\": \"Data\",\n    \"type\": \"Video\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/lectures/8/links",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"lectures",
+										"8",
+										"links"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "All Lectures",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/lectures",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"lectures"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lecture [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/lectures/9?fields=title,type",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"lectures",
+								"9"
+							],
+							"query": [
+								{
+									"key": "fields",
+									"value": "title,type"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lecture [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"subTitle\": \"Test subtitle.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/lectures/8?fields=title,subTitle",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"lectures",
+								"8"
+							],
+							"query": [
+								{
+									"key": "fields",
+									"value": "title,subTitle"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lecture [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/lectures/2",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"lectures",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Quizzes",
+			"item": [
+				{
+					"name": "Attempts",
+					"item": [
+						{
+							"name": "All Attempts",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/quizzes/5/attempts",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"quizzes",
+										"5",
+										"attempts"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Attempt",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/quizzes/5/attempts",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"quizzes",
+										"5",
+										"attempts"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Quiz [ID]",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/quizzes/459?include=questions",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"quizzes",
+								"459"
+							],
+							"query": [
+								{
+									"key": "include",
+									"value": "questions"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Quiz [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"notifiable\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/quizzes/8?fields=title",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"quizzes",
+								"8"
+							],
+							"query": [
+								{
+									"key": "fields",
+									"value": "title"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Quiz [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/quizzes/8",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"quizzes",
+								"8"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `lectureId`\n    \n- `title`\n    \n- `notifiable`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `title`\n    \n- `createdAt`\n    \n- `updatedAt`"
+		},
+		{
+			"name": "Links",
+			"item": [
+				{
+					"name": "Link [ID]",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/links/4",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"links",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Link [ID]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"subTitle\": \"Fala7 subtitle\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/links/2",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"links",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Link",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/links/6",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"links",
+								"6"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `type`\n    \n- `category`\n    \n- `notifiable`\n    \n- `title`\n    \n- `subTitle`\n    \n- `url`\n    \n- `lectureId`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `title`\n    \n- `subTitle`\n    \n- `createdAt`\n    \n- `updatedAt`"
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Topics",
+					"item": [
+						{
+							"name": "CRUD",
+							"item": [
+								{
+									"name": "All Topics",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{JWT}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{url}}/notifications/topics",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"notifications",
+												"topics"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Topic",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"global_announcements\",\n    \"public\": true\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{url}}/notifications/topics",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"notifications",
+												"topics"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Topic",
+									"request": {
+										"method": "PATCH",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"description\": \"Topic for general announcments.\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{url}}/notifications/topics/global_announcment",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"notifications",
+												"topics",
+												"global_announcment"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Topic",
+									"request": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{url}}/notifications/topics/global_announcments",
+											"host": [
+												"{{url}}"
+											],
+											"path": [
+												"notifications",
+												"topics",
+												"global_announcments"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Broadcast to Topic",
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"type\": \"autogenerated\",\n    \"yearId\": 20,\n    \"notify\": {\n        \"links\": []\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/notifications/topics/global_announcments",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"notifications",
+										"topics",
+										"global_announcments"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "#### ✅ Projectable Fields\n\n- `id`\n    \n- `name`\n    \n- `description`\n    \n- `public`\n    \n- `creatorId`\n    \n\n#### 🔄 Sortable Fields\n\n- `name`\n    \n- `createdAt`\n    \n- `updatedAt`"
+				},
+				{
+					"name": "Broadcast (global topic)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"notification\": {}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/notifications",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"notifications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"notification\": {\n        \n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/notifications/test",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"notifications",
+								"test"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Quiz Attempts",
+			"item": [
+				{
+					"name": "Answers",
+					"item": [
+						{
+							"name": "All Answers",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/quiz-attempts/3/answers",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"quiz-attempts",
+										"3",
+										"answers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Answer [Question ID]",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/quiz-attempts/3/answers",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"quiz-attempts",
+										"3",
+										"answers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Answers",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"questionAttempts\": [\n        {\n            \"questionId\": 10762,\n            \"answerIndex\": 3\n        }\n\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/quiz-attempts/5/answers",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"quiz-attempts",
+										"5",
+										"answers"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Attempt [ID]",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/quiz-attempts/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"quiz-attempts",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Submit Attempt [ID]",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/quiz-attempts/3/submit",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"quiz-attempts",
+								"3",
+								"submit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Attempt [ID]",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/quiz-attempts/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"quiz-attempts",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{JWT}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "http://localhost:8080/api/v2",
+			"type": "string"
+		},
+		{
+			"key": "url_remote",
+			"value": "https://doc-reader-guide-server.online:8433/api/v2",
+			"type": "string"
+		},
+		{
+			"key": "JWT",
+			"value": "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9.eyJpZCI6Niwicm9sZSI6IlVzZXIiLCJpYXQiOjE3NTIyNzIzNDcsImV4cCI6MTc2MDA0ODM0N30.gsQ-CVEgr71IJCUPDTG1vw5ftTYaFNXqGr2Yipn8_woCQkNdlqb90wEdmyD49Ex3-9muDsFxgaAKjV7Y14tYm0Ncyftjjerb81GavqX4buDq-UQzJJGjUWcFnG8c-2gQ",
+			"type": "default"
+		},
+		{
+			"key": "JWT_USER",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "JWT_REMOTE",
+			"value": "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwicm9sZSI6IlVzZXIiLCJpYXQiOjE3NTMyOTc1MTksImV4cCI6MTc2MTA3MzUxOX0.7TzRTWJHQUuWsoO183dWrPDL2ufFyEdeweVcNpqI8dsr1IrzgTeJ_a7Qn9da4N6ufMD8MA1XK2yBvlVHv5STWQhuSWgMoiJxccQ1ktcKTS6aRAh0jmrXzF-xybFEaVi7",
+			"type": "string"
+		},
+		{
+			"key": "JWT_USER_REMOTE",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "GOOGLE_CLIENT_ID",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "GOOGLE_CLIENT_SECRET",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "GOOGLE_API_ACCESS_TOKEN",
+			"value": "",
+			"type": "default"
+		}
+	]
 }
