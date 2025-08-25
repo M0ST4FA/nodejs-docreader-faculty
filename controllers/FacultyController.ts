@@ -11,32 +11,15 @@ export default class FacultyController {
   ) {
     req.body.creatorId = req.user.id;
 
-    if (req.query.select !== undefined)
-      req.query.select = QueryParamsService.addFieldsToList(
-        req.query,
-        'select',
-        ['name'],
-      );
-
     const faculty = (await FacultyModel.createOne(
       req.body,
       req.query,
     )) as FacultyModel;
-    const topic = await TopicModel.createOne(
-      {
-        creatorId: req.user.id,
-        name: faculty.id.toString(),
-        description: `Topic for notifications of ${faculty.name!} faculty.`,
-        public: true,
-      },
-      {},
-    );
 
     res.status(201).json({
       status: 'success',
       data: {
         faculty,
-        topic,
       },
     });
   });
@@ -102,11 +85,8 @@ export default class FacultyController {
   ) {
     const id = Number.parseInt(req.params.id);
 
-    const faculty = await FacultyModel.deleteOne(id);
+    await FacultyModel.deleteOne(id);
 
-    res.status(204).json({
-      status: 'success',
-      data: null,
-    });
+    res.status(204).send();
   });
 }

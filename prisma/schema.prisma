@@ -168,8 +168,11 @@ model StudyingYear {
   facultyId Int
   faculty   Faculty   @relation(fields: [facultyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  creator   User?      @relation(name: "YearCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creator   User?     @relation(name: "YearCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   creatorId Int?
+
+  topicId   Int?
+  topic     Topic?    @relation(fields: [topicId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
@@ -282,6 +285,7 @@ model Topic {
   updatedAt       DateTime?          @updatedAt @db.Timestamp()
 
   @@index([name])
+  year StudyingYear[]
 }
 
 model DeviceTopic {

@@ -101,9 +101,6 @@ export default class DeviceController {
 
     await DeviceModel.deleteOne(id);
 
-    res.status(204).json({
-      status: 'success',
-      data: null,
-    });
+    res.status(204).send();
   });
 }
