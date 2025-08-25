@@ -75,6 +75,8 @@ export default class LinkModel {
     yearId: number,
     ids: number[],
   ) {
+    if (ids.length === 0) return [];
+
     const where = {
       AND: [
         { id: { in: ids } },
@@ -87,22 +89,16 @@ export default class LinkModel {
       data: { notifiable: false },
       include: {
         lectureData: {
-          select: {
-            id: true,
-            title: true,
-          },
           include: {
             subject: {
-              select: {
-                id: true,
-                name: true,
-              },
               include: {
                 module: {
-                  select: {
-                    id: true,
-                    name: true,
-                    semesterName: true,
+                  include: {
+                    year: {
+                      include: {
+                        faculty: true,
+                      },
+                    },
                   },
                 },
               },

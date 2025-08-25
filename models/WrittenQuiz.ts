@@ -119,6 +119,8 @@ export default class WrittenQuizModel {
     yearId: number,
     ids: number[],
   ) {
+    if (ids.length === 0) return [];
+
     const where = {
       AND: [
         { id: { in: ids } },

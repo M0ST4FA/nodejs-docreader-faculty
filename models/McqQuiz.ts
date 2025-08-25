@@ -115,24 +115,10 @@ export default class McqQuizModel {
       data: { notifiable: false },
       include: {
         lectureData: {
-          select: {
-            id: true,
-            title: true,
-            type: true,
-          },
           include: {
             subject: {
-              select: {
-                id: true,
-                name: true,
-              },
               include: {
                 module: {
-                  select: {
-                    id: true,
-                    name: true,
-                    semesterName: true,
-                  },
                   include: {
                     year: {
                       include: {
