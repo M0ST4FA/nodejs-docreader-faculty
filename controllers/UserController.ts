@@ -60,30 +60,26 @@ export default class UserController {
     });
   });
 
-  private static async extractDataForTokenOperation(req: Request) {
+  private static async extractDataForTokenOperation(oldUser: UserModel) {
     // Fetch user devices
-    const userId = req.user.id;
-    const devices = await DeviceModel.findMany(
-      { userId },
-      { fields: 'token,id' },
-    );
+    const devices = oldUser.toJSON().devices;
 
     // If the user has at least one device
-    const deviceTokens = devices.map(device => device.token) as string[];
+    const deviceTokens = devices.map((device: any) => device.token) as string[];
     const tokenToDeviceId = new Map(
-      devices.map(device => [device.token, device.id]),
+      devices.map((device: any) => [device.token, device.id]),
     ) as Map<string, number>;
 
     return { deviceTokens, tokenToDeviceId };
   }
 
   private static async moveTopicSubscriptionToNewYear(
-    req: Request,
     oldUser: UserModel,
     newYearId: number,
   ) {
     const { deviceTokens, tokenToDeviceId } =
-      await UserController.extractDataForTokenOperation(req);
+      await UserController.extractDataForTokenOperation(oldUser);
+
     await Promise.all([
       NotificationService.unsubscribeDevicesFromTopic(
         deviceTokens,
@@ -131,7 +127,7 @@ export default class UserController {
     const updatedUser = await UserModel.updateOne(id, req.body, req.query);
 
     if (oldUser && oldUser.yearId !== newYearId)
-      UserController.moveTopicSubscriptionToNewYear(req, oldUser, newYearId);
+      UserController.moveTopicSubscriptionToNewYear(oldUser, newYearId);
 
     res.status(200).json({
       status: 'success',
