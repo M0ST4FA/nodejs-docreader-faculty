@@ -67,10 +67,12 @@ export default class LectureModel {
         contains: search,
         mode: 'insensitive',
       },
-      date: {
-        gte: new Date(startDate).toISOString(),
-        lte: new Date(endDate).toISOString(),
-      },
+      date: startDate
+        ? {
+            gte: new Date(startDate).toISOString(),
+            lte: new Date(endDate).toISOString(),
+          }
+        : undefined,
       subject: subjectFilterForDateBoundQueries,
       ...where,
     };
