@@ -98,6 +98,20 @@ export default class UserController {
     ]);
   }
 
+  private static checkUserIsNotUpdatingTheirOwnRole(
+    req: Request,
+    userId: number,
+  ) {
+    const roleId = req.body.roleId;
+
+    if (roleId === undefined) return;
+
+    const loggedInUserId = req.user.id;
+
+    if (loggedInUserId === userId)
+      throw new AppError('A user cannot modify their own role.', 403);
+  }
+
   public static updateUser = catchAsync(async function (
     req: Request,
     res: Response,
@@ -105,6 +119,8 @@ export default class UserController {
   ) {
     const id = UserController.extractAndValidateId(req);
     const newYearId = Number.parseInt(req.body.yearId);
+
+    UserController.checkUserIsNotUpdatingTheirOwnRole(req, id);
 
     let oldUser: UserModel | undefined = undefined;
     if (!Number.isNaN(newYearId))
