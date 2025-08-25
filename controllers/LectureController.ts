@@ -69,7 +69,13 @@ export default class LectureController {
     res: Response,
     next: NextFunction,
   ) {
-    const lectures = await LectureModel.findMany({}, req.query);
+    const yearId = req.user.yearId;
+    const facultyId = req.user.facultyId;
+
+    const lectures = await LectureModel.findMany(
+      { yearId, facultyId },
+      req.query,
+    );
 
     res.status(200).json({
       status: 'success',

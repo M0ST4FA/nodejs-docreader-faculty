@@ -32,10 +32,24 @@ export default class LectureModel {
   );
 
   static async findMany(where: any, query: any) {
+    // Extract search parameters
     const search = query?.search;
-    const date = query?.date;
     delete query?.search;
-    delete query?.date;
+
+    // Extract date bound query parameters
+    const startDate = query?.startDate;
+    const endDate = query?.endDate || startDate;
+    const yearId = where?.yearId;
+    const facultyId = where?.facultyId;
+    delete query?.startDate;
+    delete query?.endDate;
+    delete where?.yearId;
+    delete where?.facultyId;
+    const subjectFilterForDateBoundQueries = startDate
+      ? {
+          module: { year: { id: yearId, facultyId } },
+        }
+      : undefined;
 
     const validatedQueryParams: any = QueryParamsService.parse<
       typeof lectureSchema.query
@@ -53,7 +67,11 @@ export default class LectureModel {
         contains: search,
         mode: 'insensitive',
       },
-      date: new Date(date).toISOString(),
+      date: {
+        gte: new Date(startDate).toISOString(),
+        lte: new Date(endDate).toISOString(),
+      },
+      subject: subjectFilterForDateBoundQueries,
       ...where,
     };
 
