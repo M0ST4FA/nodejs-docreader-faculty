@@ -2,6 +2,7 @@ import catchAsync from '../utils/catchAsync';
 import { Request, Response, NextFunction } from 'express';
 import FacultyModel from '../models/Faculty';
 import TopicModel from '../models/Topic';
+import { QueryParamsService } from '../utils/QueryParamsService';
 export default class FacultyController {
   public static createFaculty = catchAsync(async function (
     req: Request,
@@ -14,21 +15,11 @@ export default class FacultyController {
       req.body,
       req.query,
     )) as FacultyModel;
-    const topic = await TopicModel.createOne(
-      {
-        creatorId: req.user.id,
-        name: faculty.id.toString(),
-        description: `Topic for notifications of ${faculty.name!} faculty.`,
-        public: true,
-      },
-      {},
-    );
 
     res.status(201).json({
       status: 'success',
       data: {
         faculty,
-        topic,
       },
     });
   });
@@ -96,9 +87,6 @@ export default class FacultyController {
 
     await FacultyModel.deleteOne(id);
 
-    res.status(204).json({
-      status: 'success',
-      data: null,
-    });
+    res.status(204).send();
   });
 }

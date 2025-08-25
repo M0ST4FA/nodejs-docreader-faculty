@@ -2,6 +2,7 @@ import yearSchema from '../schema/year.schema';
 import { StudyingYear as PrismaYear } from '@prisma/client';
 import db from '../prisma/db';
 import { ModelFactory } from './ModelFactory';
+import AppError from '../utils/AppError';
 
 export default class YearModel {
   private data: Partial<PrismaYear>;
@@ -16,6 +17,20 @@ export default class YearModel {
 
   toJSON() {
     return this.data;
+  }
+
+  get id(): number {
+    if (this.data.id === undefined)
+      throw new AppError("'id' field not defined on year!", 500);
+
+    return this.data.id;
+  }
+
+  get title(): string {
+    if (this.data.title === undefined)
+      throw new AppError("'title' field not defined on year!", 500);
+
+    return this.data.title;
   }
 
   static createOne = ModelFactory.createOne(

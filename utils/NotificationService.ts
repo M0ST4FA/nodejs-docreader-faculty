@@ -1,7 +1,10 @@
 import LinkModel from '../models/Link';
 import McqQuizModel from '../models/McqQuiz';
+import TopicModel from '../models/Topic';
 import WrittenQuizModel from '../models/WrittenQuiz';
+import db from '../prisma/db';
 import { NotificationSchemaType } from '../schema/notification.schema';
+import AppError from './AppError';
 import fcmService from './FCMService';
 
 type NotificationBody = {
@@ -20,6 +23,17 @@ type ResourceIds = {
   writtenQuizzes: number[];
 };
 
+type SubscriptionResult = {
+  successfulTokens: string[];
+  failedTokens: { token: string | null; message: string; errorCode: any }[];
+  removedInvalidTokensCount: number;
+};
+
+interface FailedTokenDetails {
+  token: string | null;
+  message: string;
+  errorCode?: string;
+}
 class NotificationService {
   private static removeDuplicateResources<T extends { id: number }>(
     array: T[],
@@ -243,6 +257,112 @@ class NotificationService {
       );
 
     return messageId;
+  };
+
+  private static async cleanUpInvalidDevices(
+    failedTokens: FailedTokenDetails[],
+    tokenToDeviceId: Map<string, number>,
+  ): Promise<number> {
+    const tokensToRemoveFromDb: string[] = [];
+
+    failedTokens.forEach(failed => {
+      // Identify tokens that should be removed from your database based on FCM error codes
+      if (
+        failed.errorCode === 'messaging/invalid-argument' ||
+        failed.errorCode === 'messaging/registration-token-not-registered' ||
+        failed.errorCode === 'messaging/invalid-registration-token' ||
+        failed.errorCode === 'messaging/unregistered' // Older code, but good to include
+      ) {
+        if (failed.token) {
+          tokensToRemoveFromDb.push(failed.token);
+        }
+      }
+    });
+
+    if (tokensToRemoveFromDb.length > 0) {
+      const deviceIdsToRemove = tokensToRemoveFromDb
+        .map(token => tokenToDeviceId.get(token))
+        .filter((id): id is number => id !== undefined); // Filter out any undefined/null device IDs
+
+      if (deviceIdsToRemove.length > 0)
+        try {
+          await db.device.deleteMany({
+            where: {
+              id: {
+                in: deviceIdsToRemove,
+              },
+            },
+          });
+        } catch {
+          throw new AppError(
+            'Failed to remove invalid FCM devices from database.',
+            500,
+          );
+        }
+    }
+
+    return tokensToRemoveFromDb.length;
+  }
+
+  public static subscribeDevicesToTopic = async function (
+    deviceTokens: string[],
+    tokenToDeviceId: Map<string, number>,
+    topicName: string,
+  ): Promise<SubscriptionResult> {
+    // Make sure the topic exists first
+    const topic = await TopicModel.findOneByName(topicName, {});
+
+    // Group successes and failures
+    const { failedTokens, successfulTokens } =
+      await fcmService.subscribeDevicesToTopic(deviceTokens, topicName);
+
+    // Remove any invalid token
+    const removedInvalidTokensCount =
+      await NotificationService.cleanUpInvalidDevices(
+        failedTokens,
+        tokenToDeviceId,
+      );
+
+    await db.deviceTopic.createMany({
+      data: successfulTokens.map(token => ({
+        deviceId: tokenToDeviceId.get(token)!,
+        topicId: topic.id,
+      })),
+      skipDuplicates: true,
+    });
+
+    return { successfulTokens, failedTokens, removedInvalidTokensCount };
+  };
+
+  public static unsubscribeDevicesFromTopic = async function (
+    deviceTokens: string[],
+    tokenToDeviceId: Map<string, number>,
+    topicName: string,
+  ): Promise<SubscriptionResult> {
+    // Group response into successes and failures
+    const { failedTokens, successfulTokens } =
+      await fcmService.unsubscribeDevicesFromTopic(deviceTokens, topicName);
+
+    // Note: All of their errors will be handled by global error handler
+    const topic = await TopicModel.findOneByName(topicName, {});
+
+    // Remove any invalid token
+    const removedInvalidTokensCount =
+      await NotificationService.cleanUpInvalidDevices(
+        failedTokens,
+        tokenToDeviceId,
+      );
+
+    await db.deviceTopic.deleteMany({
+      where: {
+        deviceId: {
+          in: successfulTokens.map(token => tokenToDeviceId.get(token)!),
+        },
+        topicId: topic.id,
+      },
+    });
+
+    return { successfulTokens, failedTokens, removedInvalidTokensCount };
   };
 }
 

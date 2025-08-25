@@ -164,4 +164,24 @@ export default class TopicModel {
       successfulTokens,
     };
   }
+
+  static async deleteAllFacultyTopics(facultyId: number) {
+    const where = { name: { startsWith: `faculty_${facultyId}` } };
+
+    const topics = await db.topic.findMany({
+      where,
+    });
+
+    const result = await Promise.all(
+      topics.map(topic =>
+        TopicModel.unsubscribeAllDevicesFromTopic(topic.name),
+      ),
+    );
+
+    await db.topic.deleteMany({
+      where,
+    });
+
+    return result;
+  }
 }

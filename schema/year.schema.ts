@@ -13,6 +13,7 @@ const fullSchema = z
       .number()
       .int({ message: 'Current semester must be an integer.' }),
     facultyId: z.number().int({ message: 'Faculty ID must be an integer.' }),
+    topicId: z.number().int({ message: 'Topic ID must be an integer.' }),
 
     creatorId: z.number().int({ message: 'Creator ID must be an integer.' }),
     createdAt: z.date(),
@@ -36,11 +37,19 @@ const yearSchema = createModelSchema(
       'title',
 
       'facultyId',
+      'topicId',
       'creatorId',
       'updatedAt',
       'createdAt',
     ],
-    defaultFields: ['id', 'title', 'currentSemester', 'facultyId', 'creatorId'],
+    defaultFields: [
+      'id',
+      'title',
+      'currentSemester',
+      'facultyId',
+      'topicId',
+      'creatorId',
+    ],
     sortableFields: ['title', 'createdAt', 'updatedAt'],
   },
 );

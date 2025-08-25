@@ -168,8 +168,11 @@ model StudyingYear {
   facultyId Int
   faculty   Faculty   @relation(fields: [facultyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  creator   User?      @relation(name: "YearCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  creator   User?     @relation(name: "YearCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   creatorId Int?
+
+  topicId   Int?
+  topic     Topic?    @relation(fields: [topicId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   createdAt DateTime? @default(now()) @db.Timestamp()
   updatedAt DateTime? @updatedAt @db.Timestamp()
@@ -278,10 +281,11 @@ model Topic {
   creator     User? @relation(name: "TopicCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   creatorId   Int?
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt       DateTime?          @default(now()) @db.Timestamp()
+  updatedAt       DateTime?          @updatedAt @db.Timestamp()
 
   @@index([name])
+  year StudyingYear[]
 }
 
 model DeviceTopic {
@@ -292,8 +296,8 @@ model DeviceTopic {
   device    Device @relation(fields: [deviceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   topic     Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt       DateTime?          @default(now()) @db.Timestamp()
+  updatedAt       DateTime?          @updatedAt @db.Timestamp()
 
   @@unique([deviceId, topicId])
 }
@@ -309,8 +313,8 @@ model McqQuiz {
   creator   User? @relation(name: "McqQuizCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   creatorId Int?
 
-  createdAt DateTime? @default(now()) @db.Timestamp()
-  updatedAt DateTime? @updatedAt @db.Timestamp()
+  createdAt       DateTime?          @default(now()) @db.Timestamp()
+  updatedAt       DateTime?          @updatedAt @db.Timestamp()
 
   @@map("Quiz")
 }
@@ -328,8 +332,8 @@ model McqQuestion {
   creator   User? @relation(name: "McqQuestionCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   creatorId Int?
 
-  createdAt DateTime? @default(now()) @db.Timestamp()
-  updatedAt DateTime? @updatedAt @db.Timestamp()
+  createdAt       DateTime?          @default(now()) @db.Timestamp()
+  updatedAt       DateTime?          @updatedAt @db.Timestamp()
 
   @@map("Question")
 }
@@ -345,8 +349,8 @@ model WrittenQuiz {
   creator   User? @relation(name: "WrittenQuizCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   creatorId Int?
 
-  createdAt   DateTime?           @db.Timestamp()
-  updatedAt   DateTime?           @updatedAt @db.Timestamp()
+  createdAt DateTime?             @default(now()) @db.Timestamp()
+  updatedAt DateTime?             @updatedAt @db.Timestamp()
 }
 
 model WrittenQuestion {
@@ -363,8 +367,8 @@ model WrittenQuestion {
   creator   User? @relation(name: "WrittenQuestionCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   creatorId Int?
 
-  createdAt        DateTime?         @db.Timestamp()
-  updatedAt        DateTime?         @updatedAt @db.Timestamp()
+  createdAt       DateTime?          @default(now()) @db.Timestamp()
+  updatedAt       DateTime?          @updatedAt @db.Timestamp()
 }
 
 model Rect {
@@ -381,8 +385,8 @@ model Rect {
   creator   User? @relation(name: "RectCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   creatorId Int?
 
-  createdAt      DateTime?          @db.Timestamp()
-  updatedAt      DateTime?          @updatedAt @db.Timestamp()
+  createdAt       DateTime?          @default(now()) @db.Timestamp()
+  updatedAt       DateTime?          @updatedAt @db.Timestamp()
 }
 
 model SubQuestion {
@@ -395,6 +399,6 @@ model SubQuestion {
   creator   User? @relation(name: "SubQuestionCreator", fields: [creatorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   creatorId Int?
 
-  createdAt  DateTime?         @db.Timestamp()
-  updatedAt  DateTime?         @updatedAt @db.Timestamp()
+  createdAt       DateTime?          @default(now()) @db.Timestamp()
+  updatedAt       DateTime?          @updatedAt @db.Timestamp()
 }

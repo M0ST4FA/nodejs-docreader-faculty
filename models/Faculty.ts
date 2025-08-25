@@ -3,6 +3,7 @@ import { Faculty as PrismaFaculty } from '@prisma/client';
 import db from '../prisma/db';
 import { ModelFactory } from './ModelFactory';
 import AppError from '../utils/AppError';
+import TopicModel from './Topic';
 
 export default class FacultyModel {
   private data: Partial<PrismaFaculty>;
@@ -59,5 +60,12 @@ export default class FacultyModel {
     FacultyModel.wrapper,
   );
 
-  static deleteOne = ModelFactory.deleteOne(db.faculty, FacultyModel.wrapper);
+  static deleteOne = async function (id: number) {
+    const [result, __] = await Promise.all([
+      db.faculty.delete({ where: { id } }),
+      TopicModel.deleteAllFacultyTopics(id),
+    ]);
+
+    return new FacultyModel(result);
+  };
 }

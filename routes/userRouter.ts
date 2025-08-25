@@ -78,10 +78,11 @@ router
   );
 
 // ROLE ROUTES
-router.route('/:id/role').put(
-  // You must be able to create roles to be able to assign them (there is no "assign" action, so that is an indirect permission)
-  AuthController.requirePermission('ASSIGN', 'ANY', 'ROLE'),
-  UserController.assignRole,
-);
+router
+  .route('/:id/role')
+  .put(
+    AuthController.requirePermission('ASSIGN', 'ANY', 'ROLE'),
+    UserController.assignRole,
+  );
 
 export default router;

@@ -59,6 +59,9 @@ NODE_ENV='production'||'development' # defaults to 'production'
 # Connection variables
 PORT=tcp_port
 
+# CORS variables (needed in dev only; prod should handle CORS via Nginx)
+FRONTEND_URL=url_of_frontend_server
+
 # Cookie variables
 COOKIE_DOMAIN=domains_allowed_to_set_httpOnly_cookies
 
