@@ -45,12 +45,11 @@ export default class LectureModel {
     delete query?.endDate;
     delete where?.yearId;
     delete where?.facultyId;
-    const facultyAndYearFilter =
-      yearId && facultyId
-        ? {
-            module: { year: { id: yearId, facultyId } },
-          }
-        : undefined;
+    const facultyAndYearFilter = startDate
+      ? {
+          module: { year: { id: yearId, facultyId } },
+        }
+      : undefined;
 
     const validatedQueryParams: any = QueryParamsService.parse<
       typeof lectureSchema.query
