@@ -30,7 +30,12 @@ router
 
 router
   .route('/written-quizzes/:id/questions')
-  .post(upload.single('image'), WrittenQuizController.createQuestion);
+  .post(
+    AuthController.requirePermission('CREATE', 'OWN', 'QUESTION'),
+    AuthController.checkUserIsResourceCreator(WrittenQuestionModel),
+    upload.single('image'),
+    WrittenQuizController.createQuestion,
+  );
 
 router
   .route('/written-questions/:id')
