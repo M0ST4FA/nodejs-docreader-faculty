@@ -77,10 +77,9 @@ export default class UserController {
     return { deviceTokens, tokenToDeviceId };
   }
 
-  private static async moveTopicSubscriptionToNewFaculty(
+  private static async moveTopicSubscriptionToNewYear(
     req: Request,
     oldUser: UserModel,
-    newFacultyId: number,
     newYearId: number,
   ) {
     const { deviceTokens, tokenToDeviceId } =
@@ -89,12 +88,12 @@ export default class UserController {
       NotificationService.unsubscribeDevicesFromTopic(
         deviceTokens,
         tokenToDeviceId,
-        `faculty_${oldUser.facultyId}_year_${oldUser.yearId}`,
+        oldUser.yearId.toString(),
       ),
       NotificationService.subscribeDevicesToTopic(
         deviceTokens,
         tokenToDeviceId,
-        `faculty_${newFacultyId}_year_${newYearId}`,
+        newYearId.toString(),
       ),
     ]);
   }
@@ -105,27 +104,18 @@ export default class UserController {
     next: NextFunction,
   ) {
     const id = UserController.extractAndValidateId(req);
-    const newFacultyId = Number.parseInt(req.body.facultyId);
     const newYearId = Number.parseInt(req.body.yearId);
 
     let oldUser: UserModel | undefined = undefined;
-    if (!Number.isNaN(newFacultyId) || !Number.isNaN(newYearId))
+    if (!Number.isNaN(newYearId))
       oldUser = (await UserModel.findOneById(id, {
         include: 'devices',
       })) as UserModel;
 
     const updatedUser = await UserModel.updateOne(id, req.body, req.query);
 
-    if (
-      oldUser &&
-      (oldUser.facultyId !== newFacultyId || oldUser.yearId !== newYearId)
-    )
-      UserController.moveTopicSubscriptionToNewFaculty(
-        req,
-        oldUser,
-        newFacultyId,
-        newYearId,
-      );
+    if (oldUser && oldUser.yearId !== newYearId)
+      UserController.moveTopicSubscriptionToNewYear(req, oldUser, newYearId);
 
     res.status(200).json({
       status: 'success',
