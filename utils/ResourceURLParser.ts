@@ -19,7 +19,7 @@ export default class ResourceURLParser {
       if (queryParamStart === -1) return part;
       else return part.substring(0, queryParamStart);
     });
-    parts.splice(0, 3); // Remove the /api/v2 part
+    parts.splice(0, 2); // Remove the v2 part
 
     const primaryResource = parts[0];
     let primaryResourceName: string;

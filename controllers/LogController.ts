@@ -64,7 +64,10 @@ export default class LogController {
           responseTime: diff,
           userAgent: req.headers['user-agent'] || 'Unknown',
           userId: req.user.id,
-          ip: req.ip || null,
+          ip:
+            (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
+            req.ip ||
+            null,
         });
 
         if (LogController.requestLogBuffer.length >= LogController.BATCH_SIZE)

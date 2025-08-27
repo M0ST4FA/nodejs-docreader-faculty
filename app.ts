@@ -32,6 +32,7 @@ app.use(LogController.logRequest);
 
 // SECURITY
 app.use(cors());
+app.set('trust proxy', true);
 
 // Essential middleware
 app.use(express.json({ limit: '10mb' }));

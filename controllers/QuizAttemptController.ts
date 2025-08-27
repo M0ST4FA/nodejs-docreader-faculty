@@ -55,7 +55,7 @@ export default class QuizAttemptController {
     `;
 
       // 2. GET TOTAL QUESTIONS IN QUIZ
-      const totalQuestionCount = await tx.question.count({
+      const totalQuestionCount = await tx.mcqQuestion.count({
         where: { quizId: attempt.quizId },
       });
 
@@ -165,7 +165,7 @@ export default class QuizAttemptController {
       {},
     )) as QuizAttemptModel;
 
-    if (attempt.isSubmitted());
+    // if (attempt.isSubmitted());
   });
 
   public static submitAttempt = catchAsync(async function (
