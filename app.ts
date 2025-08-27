@@ -1,8 +1,10 @@
 import express from 'express';
-import cors from 'cors';
 
 import ErrorController from './controllers/ErrorController';
 import LogController from './controllers/LogController';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import path from 'path';
 
 import authRouter from './routes/authRouter';
 import userRouter from './routes/userRouter';
@@ -13,13 +15,13 @@ import moduleRouter from './routes/moduleRouter';
 import yearRouter from './routes/yearRouter';
 import subjectRouter from './routes/subjectRouter';
 import lectureRouter from './routes/lectureRouter';
-import quizRouter from './routes/quizRouter';
-import quizAttemptRouter from './routes/quizAttemptRouter';
+import mcqQuizRouter from './routes/mcqQuizRouter';
+import writtenQuizRouter from './routes/writtenQuizRouter';
 import linkRouter from './routes/linkRouter';
 import notificationRouter from './routes/notificationRouter';
 
 const app = express();
-const apiRoutesBase = '/api/v2';
+const apiRoutesBase = '/v2';
 
 // LOGGING
 // Console logging in development only
@@ -31,8 +33,18 @@ app.use(LogController.logRequest);
 // SECURITY
 app.use(cors());
 
-// ESSENTIAL MIDDLEWARE
-app.use(express.json());
+// Essential middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, './public')));
+
+if (process.env.NODE_ENV === 'development')
+  app.use(
+    cors({
+      origin: process.env.FRONTEND_URL,
+      credentials: true,
+    }),
+  );
 
 // ROUTES
 app.use(`${apiRoutesBase}/`, authRouter);
@@ -44,8 +56,8 @@ app.use(`${apiRoutesBase}/years`, yearRouter);
 app.use(`${apiRoutesBase}/modules`, moduleRouter);
 app.use(`${apiRoutesBase}/subjects`, subjectRouter);
 app.use(`${apiRoutesBase}/lectures`, lectureRouter);
-app.use(`${apiRoutesBase}/quizzes`, quizRouter);
-app.use(`${apiRoutesBase}/quiz-attempts`, quizAttemptRouter);
+app.use(`${apiRoutesBase}/`, mcqQuizRouter);
+app.use(`${apiRoutesBase}/`, writtenQuizRouter);
 app.use(`${apiRoutesBase}/links`, linkRouter);
 app.use(`${apiRoutesBase}/notifications`, notificationRouter);
 

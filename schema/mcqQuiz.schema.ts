@@ -24,8 +24,8 @@ const quizSchema = createModelSchema(
   ['lectureId', 'title', 'notifiable'],
   {
     defaultPage: 1,
-    defaultSize: 10,
-    maxPageSize: 100,
+    defaultSize: Number.POSITIVE_INFINITY,
+    maxPageSize: Number.POSITIVE_INFINITY,
     projectableFields: [
       'id',
       'lectureId',
@@ -38,10 +38,16 @@ const quizSchema = createModelSchema(
     defaultFields: ['id', 'lectureId', 'title', 'notifiable', 'creatorId'],
     sortableFields: ['title', 'createdAt', 'updatedAt'],
     includableFields: [
-      'lectureData',
-      'lectureData.subject',
-      'lectureData.subject.module',
       'questions',
+      'lectureData.id',
+      'lectureData.type',
+      'lectureData.title',
+      'lectureData.subject.id',
+      'lectureData.subject.name',
+      'lectureData.subject.module.id',
+      'lectureData.subject.module.semesterName',
+      'lectureData.subject.module.name',
+      'lectureData.subject.module.year.faculty',
     ],
   },
 );

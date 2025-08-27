@@ -29,7 +29,7 @@ export default class PermissionController {
     return id;
   }
 
-  public static getAllPermissions = catchAsync(async function (
+  public static getPermissions = catchAsync(async function (
     req: Request,
     res: Response,
     next: NextFunction,

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
-import QuizController from '../controllers/QuizController';
-import QuizModel from '../models/Quiz';
+import QuizController from '../controllers/McqQuizController';
+import QuizModel from '../models/McqQuiz';
 import QuizAttemptController from '../controllers/QuizAttemptController';
 import QuestionAttemptController from '../controllers/QuestionAttemptController';
 
@@ -16,11 +16,13 @@ router
     QuizController.getQuiz,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'QUIZ', QuizModel),
+    AuthController.requirePermission('UPDATE', 'OWN', 'QUIZ'),
+    AuthController.checkUserIsResourceCreator(QuizModel),
     QuizController.updateQuiz,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'OWN', 'QUIZ', QuizModel),
+    AuthController.requirePermission('DELETE', 'OWN', 'QUIZ'),
+    AuthController.checkUserIsResourceCreator(QuizModel),
     QuizController.deleteQuiz,
   );
 

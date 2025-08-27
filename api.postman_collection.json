@@ -67,7 +67,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "{{JWT_USER}}",
+											"value": "{{JWT}}",
 											"type": "string"
 										}
 									]
@@ -105,7 +105,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"token\": \"fjaodjfiel;adfj.cjvodajp;eoiaffjaljdfe2\"\n}",
+									"raw": "{\n    \"token\": \"fjaodjfiel;adfj.cjvodajp;eoiaffjaljdfe2f\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -268,6 +268,29 @@
 					]
 				},
 				{
+					"name": "Progress",
+					"item": [
+						{
+							"name": "All Progress",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/me/progress",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"me",
+										"progress"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
 					"name": "Current User",
 					"request": {
 						"auth": {
@@ -275,7 +298,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{JWT_REMOTE}}",
+									"value": "{{JWT}}",
 									"type": "string"
 								}
 							]
@@ -283,19 +306,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{url}}/users/me?include=role",
+							"raw": "{{url}}/users/me",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"users",
 								"me"
-							],
-							"query": [
-								{
-									"key": "include",
-									"value": "role"
-								}
 							]
 						}
 					},
@@ -312,7 +329,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{JWT_REMOTE}}",
+									"value": "{{JWT}}",
 									"type": "string"
 								}
 							]
@@ -330,13 +347,13 @@
 							]
 						},
 						"url": {
-							"raw": "{{url_remote}}/users/4?fields",
+							"raw": "{{url}}/users/5?fields",
 							"host": [
-								"{{url_remote}}"
+								"{{url}}"
 							],
 							"path": [
 								"users",
-								"4"
+								"5"
 							],
 							"query": [
 								{
@@ -351,6 +368,16 @@
 				{
 					"name": "All Users",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT_USER}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -833,7 +860,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{JWT_REMOTE}}",
+									"value": "{{JWT_USER}}",
 									"type": "string"
 								}
 							]
@@ -850,18 +877,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{url_remote}}/faculties?include=year",
+							"raw": "{{url}}/faculties",
 							"host": [
-								"{{url_remote}}"
+								"{{url}}"
 							],
 							"path": [
 								"faculties"
-							],
-							"query": [
-								{
-									"key": "include",
-									"value": "year"
-								}
 							]
 						}
 					},
@@ -976,7 +997,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{JWT_REMOTE}}",
+									"value": "{{JWT}}",
 									"type": "string"
 								}
 							]
@@ -984,9 +1005,9 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{url_remote}}/faculties/4",
+							"raw": "{{url}}/faculties/4",
 							"host": [
-								"{{url_remote}}"
+								"{{url}}"
 							],
 							"path": [
 								"faculties",
@@ -1021,7 +1042,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{url}}/years/2/modules?fields=id,name,semesterName&sort=-name",
+									"raw": "{{url}}/years/2/modules",
 									"host": [
 										"{{url}}"
 									],
@@ -1029,16 +1050,6 @@
 										"years",
 										"2",
 										"modules"
-									],
-									"query": [
-										{
-											"key": "fields",
-											"value": "id,name,semesterName"
-										},
-										{
-											"key": "sort",
-											"value": "-name"
-										}
 									]
 								}
 							},
@@ -1473,13 +1484,19 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{url}}/subjects/9",
+							"raw": "{{url}}/subjects/9?include=module",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"subjects",
 								"9"
+							],
+							"query": [
+								{
+									"key": "include",
+									"value": "module"
+								}
 							]
 						},
 						"description": "`{{url}}/subjects/:moduleId/`"
@@ -1567,27 +1584,19 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{url}}/lectures/8/quizzes?include=lectureData.quiz&sort=-createdAt&size=2",
+									"raw": "{{url}}/lectures/4/quizzes?fields=id",
 									"host": [
 										"{{url}}"
 									],
 									"path": [
 										"lectures",
-										"8",
+										"4",
 										"quizzes"
 									],
 									"query": [
 										{
-											"key": "include",
-											"value": "lectureData.quiz"
-										},
-										{
-											"key": "sort",
-											"value": "-createdAt"
-										},
-										{
-											"key": "size",
-											"value": "2"
+											"key": "fields",
+											"value": "id"
 										}
 									]
 								}
@@ -1691,6 +1700,23 @@
 							"response": []
 						}
 					]
+				},
+				{
+					"name": "All Lectures",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/lectures",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"lectures"
+							]
+						}
+					},
+					"response": []
 				},
 				{
 					"name": "Lecture [ID]",
@@ -1803,18 +1829,76 @@
 			"name": "Quizzes",
 			"item": [
 				{
+					"name": "Attempts",
+					"item": [
+						{
+							"name": "All Attempts",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/quizzes/5/attempts",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"quizzes",
+										"5",
+										"attempts"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Attempt",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/quizzes/5/attempts",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"quizzes",
+										"5",
+										"attempts"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
 					"name": "Quiz [ID]",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{url}}/quizzes/8",
+							"raw": "{{url}}/quizzes/459?include=questions",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"quizzes",
-								"8"
+								"459"
+							],
+							"query": [
+								{
+									"key": "include",
+									"value": "questions"
+								}
 							]
 						}
 					},
@@ -2000,7 +2084,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "{{JWT_USER}}",
+													"value": "{{JWT}}",
 													"type": "string"
 												}
 											]
@@ -2101,6 +2185,15 @@
 							"request": {
 								"method": "PATCH",
 								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"type\": \"autogenerated\",\n    \"yearId\": 20,\n    \"notify\": {\n        \"links\": []\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
 								"url": {
 									"raw": "{{url}}/notifications/topics/global_announcments",
 									"host": [
@@ -2166,6 +2259,146 @@
 							"path": [
 								"notifications",
 								"test"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Quiz Attempts",
+			"item": [
+				{
+					"name": "Answers",
+					"item": [
+						{
+							"name": "All Answers",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/quiz-attempts/3/answers",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"quiz-attempts",
+										"3",
+										"answers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Answer [Question ID]",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/quiz-attempts/3/answers",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"quiz-attempts",
+										"3",
+										"answers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Answers",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"questionAttempts\": [\n        {\n            \"questionId\": 10762,\n            \"answerIndex\": 3\n        }\n\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/quiz-attempts/5/answers",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"quiz-attempts",
+										"5",
+										"answers"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Attempt [ID]",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/quiz-attempts/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"quiz-attempts",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Submit Attempt [ID]",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/quiz-attempts/3/submit",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"quiz-attempts",
+								"3",
+								"submit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Attempt [ID]",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/quiz-attempts/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"quiz-attempts",
+								"1"
 							]
 						}
 					},

@@ -4,32 +4,12 @@ import db from '../prisma/db';
 import { ModelFactory } from './ModelFactory';
 import AppError from '../utils/AppError';
 import { QueryParamsService } from '../utils/QueryParamsService';
-import fcmService from '../utils/FCMService';
 
 export default class TopicModel {
   private data: Partial<PrismaTopic>;
 
   private static wrapper(data: PrismaTopic): TopicModel {
     return new TopicModel(data);
-  }
-
-  private static async unsubscribeAllDevicesFromTopic(name: string) {
-    const devicesSubscribedToTopic = await db.deviceTopic.findMany({
-      where: { topic: { name } },
-      include: { device: { select: { token: true } } },
-    });
-
-    if (devicesSubscribedToTopic.length === 0)
-      return {
-        failedTokens: [],
-        successfulTokens: [],
-      };
-
-    const deviceTokens = devicesSubscribedToTopic.map(
-      device => device.device.token,
-    );
-
-    return await fcmService.unsubscribeDevicesFromTopic(deviceTokens, name);
   }
 
   constructor(data: Partial<PrismaTopic>) {
@@ -70,17 +50,25 @@ export default class TopicModel {
     TopicModel.wrapper,
   );
 
-  static async findManyByDeviceIds(deviceIds: number[]) {
+  static async findManyByDeviceIds(deviceIds: number[], queryParams: any) {
+    const validatedQueryParams: any = QueryParamsService.parse(
+      topicSchema,
+      queryParams,
+      { projection: true },
+    );
+
     const deviceTopics = await db.deviceTopic.findMany({
       where: {
         deviceId: { in: deviceIds },
       },
       include: {
-        topic: true,
+        topic: {
+          select: validatedQueryParams.select,
+        },
       },
     });
 
-    return deviceTopics.map(topic => new TopicModel(topic));
+    return deviceTopics.map(deviceTopic => new TopicModel(deviceTopic.topic));
   }
 
   static async findOneByName(name: string, queryParams: any) {
@@ -151,17 +139,12 @@ export default class TopicModel {
   }
 
   static async deleteOne(name: string) {
-    const { failedTokens, successfulTokens } =
-      await TopicModel.unsubscribeAllDevicesFromTopic(name);
-
     const result = await db.topic.delete({
       where: { name },
     });
 
     return {
       deletedTopic: new TopicModel(result),
-      failedTokens,
-      successfulTokens,
     };
   }
 }

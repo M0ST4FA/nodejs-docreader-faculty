@@ -1,15 +1,17 @@
 import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
 import LectureController from '../controllers/LectureController';
-import QuizController from '../controllers/QuizController';
+import McqQuizController from '../controllers/McqQuizController';
 import LinkController from '../controllers/LinkController';
 import LectureModel from '../models/Lecture';
-import QuizModel from '../models/Quiz';
-import LinkModel from '../models/Link';
+import WrittenQuizController from '../controllers/WrittenQuizController';
 
 const router = Router();
 
 router.use(AuthController.protect);
+
+router.get('/', LectureController.getAllLectures);
+
 router
   .route('/:id')
   .get(
@@ -17,24 +19,36 @@ router
     LectureController.getLecture,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'LECTURE', LectureModel),
+    AuthController.requirePermission('UPDATE', 'OWN', 'LECTURE'),
+    AuthController.checkUserIsResourceCreator(LectureModel),
     LectureController.updateLecture,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'OWN', 'LECTURE', LectureModel),
+    AuthController.requirePermission('DELETE', 'OWN', 'LECTURE'),
+    AuthController.checkUserIsResourceCreator(LectureModel),
     LectureController.deleteLecture,
   );
 
 // Nested quiz routes
 router
-  .route('/:lectureId/quizzes')
+  .route('/:lectureId/mcq-quizzes')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'QUIZ'),
-    QuizController.getAllQuizzes,
+    McqQuizController.getQuizzes,
   )
   .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'QUIZ', QuizModel),
-    QuizController.createQuiz,
+    AuthController.requirePermission('CREATE', 'ANY', 'QUIZ'),
+    McqQuizController.createQuiz,
+  );
+router
+  .route('/:lectureId/written-quizzes')
+  .get(
+    AuthController.requirePermission('READ', 'ANY', 'QUIZ'),
+    WrittenQuizController.getQuizzes,
+  )
+  .post(
+    AuthController.requirePermission('CREATE', 'ANY', 'QUIZ'),
+    WrittenQuizController.createQuiz,
   );
 
 // Nested link routes
@@ -42,10 +56,10 @@ router
   .route('/:lectureId/links')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'LINK'),
-    LinkController.getAllLinks,
+    LinkController.getLinks,
   )
   .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'LINK', LinkModel),
+    AuthController.requirePermission('CREATE', 'ANY', 'LINK'),
     LinkController.createLink,
   );
 

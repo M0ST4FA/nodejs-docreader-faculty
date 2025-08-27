@@ -31,17 +31,6 @@ const DEFAULT_ROLES: RoleDescription[] = [
       // -----------------------------------------------------------
       // 2. RESOURCES: Module, Subject, Lecture and Quiz : All permissions
       {
-        action: PermissionAction.CREATE,
-        scope: PermissionScope.ANY,
-        resource: PermissionResource.MODULE,
-      },
-      {
-        action: PermissionAction.CREATE,
-        scope: PermissionScope.ANY,
-        resource: PermissionResource.SUBJECT,
-      },
-
-      {
         action: PermissionAction.UPDATE,
         scope: PermissionScope.ANY,
         resource: PermissionResource.MODULE,
@@ -59,7 +48,17 @@ const DEFAULT_ROLES: RoleDescription[] = [
       {
         action: PermissionAction.UPDATE,
         scope: PermissionScope.ANY,
+        resource: PermissionResource.LINK,
+      },
+      {
+        action: PermissionAction.UPDATE,
+        scope: PermissionScope.ANY,
         resource: PermissionResource.QUIZ,
+      },
+      {
+        action: PermissionAction.UPDATE,
+        scope: PermissionScope.ANY,
+        resource: PermissionResource.QUESTION,
       },
 
       {
@@ -80,7 +79,17 @@ const DEFAULT_ROLES: RoleDescription[] = [
       {
         action: PermissionAction.DELETE,
         scope: PermissionScope.ANY,
+        resource: PermissionResource.LINK,
+      },
+      {
+        action: PermissionAction.DELETE,
+        scope: PermissionScope.ANY,
         resource: PermissionResource.QUIZ,
+      },
+      {
+        action: PermissionAction.DELETE,
+        scope: PermissionScope.ANY,
+        resource: PermissionResource.QUESTION,
       },
 
       // -----------------------------------------------------------
@@ -109,7 +118,17 @@ const DEFAULT_ROLES: RoleDescription[] = [
       // 1. USER, ROLE & PERMISSION: Nothing more than what a normal user can do
 
       // -----------------------------------------------------------
-      // 2. RESOURCES: For Lecture and Quiz: Add, update and delete their OWN material only
+      // 2. RESOURCES: For Module, Subject, Lecture, Link, Quiz, and Question: Add, update and delete their OWN material only
+      {
+        action: PermissionAction.CREATE,
+        scope: PermissionScope.ANY,
+        resource: PermissionResource.MODULE,
+      },
+      {
+        action: PermissionAction.CREATE,
+        scope: PermissionScope.ANY,
+        resource: PermissionResource.SUBJECT,
+      },
       {
         action: PermissionAction.CREATE,
         scope: PermissionScope.ANY,
@@ -118,9 +137,29 @@ const DEFAULT_ROLES: RoleDescription[] = [
       {
         action: PermissionAction.CREATE,
         scope: PermissionScope.ANY,
+        resource: PermissionResource.LINK,
+      },
+      {
+        action: PermissionAction.CREATE,
+        scope: PermissionScope.ANY,
         resource: PermissionResource.QUIZ,
       },
+      {
+        action: PermissionAction.CREATE,
+        scope: PermissionScope.ANY,
+        resource: PermissionResource.QUESTION,
+      },
 
+      {
+        action: PermissionAction.UPDATE,
+        scope: PermissionScope.OWN,
+        resource: PermissionResource.MODULE,
+      },
+      {
+        action: PermissionAction.UPDATE,
+        scope: PermissionScope.OWN,
+        resource: PermissionResource.SUBJECT,
+      },
       {
         action: PermissionAction.UPDATE,
         scope: PermissionScope.OWN,
@@ -129,9 +168,29 @@ const DEFAULT_ROLES: RoleDescription[] = [
       {
         action: PermissionAction.UPDATE,
         scope: PermissionScope.OWN,
+        resource: PermissionResource.LINK,
+      },
+      {
+        action: PermissionAction.UPDATE,
+        scope: PermissionScope.OWN,
         resource: PermissionResource.QUIZ,
       },
+      {
+        action: PermissionAction.UPDATE,
+        scope: PermissionScope.OWN,
+        resource: PermissionResource.QUESTION,
+      },
 
+      {
+        action: PermissionAction.DELETE,
+        scope: PermissionScope.OWN,
+        resource: PermissionResource.MODULE,
+      },
+      {
+        action: PermissionAction.DELETE,
+        scope: PermissionScope.OWN,
+        resource: PermissionResource.SUBJECT,
+      },
       {
         action: PermissionAction.DELETE,
         scope: PermissionScope.OWN,
@@ -140,7 +199,17 @@ const DEFAULT_ROLES: RoleDescription[] = [
       {
         action: PermissionAction.DELETE,
         scope: PermissionScope.OWN,
+        resource: PermissionResource.LINK,
+      },
+      {
+        action: PermissionAction.DELETE,
+        scope: PermissionScope.OWN,
         resource: PermissionResource.QUIZ,
+      },
+      {
+        action: PermissionAction.DELETE,
+        scope: PermissionScope.OWN,
+        resource: PermissionResource.QUESTION,
       },
 
       // -----------------------------------------------------------

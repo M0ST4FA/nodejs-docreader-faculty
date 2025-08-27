@@ -39,6 +39,7 @@ const facultySchema = createModelSchema(
     ],
     defaultFields: ['id', 'name', 'city', 'creatorId'],
     sortableFields: ['name', 'city', 'createdAt', 'updatedAt'],
+    includableFields: ['years'],
   },
 );
 

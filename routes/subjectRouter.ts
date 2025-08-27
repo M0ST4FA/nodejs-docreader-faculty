@@ -8,6 +8,8 @@ const router = Router({ mergeParams: true });
 
 router.use(AuthController.protect);
 
+router.route('/').get(SubjectController.getAllSubjects);
+
 router
   .route('/:id')
   .get(
@@ -15,11 +17,13 @@ router
     SubjectController.getSubject,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'SUBJECT', SubjectModel),
+    AuthController.requirePermission('UPDATE', 'OWN', 'SUBJECT'),
+    AuthController.checkUserIsResourceCreator(SubjectModel),
     SubjectController.updateSubject,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'OWN', 'SUBJECT', SubjectModel),
+    AuthController.requirePermission('DELETE', 'OWN', 'SUBJECT'),
+    AuthController.checkUserIsResourceCreator(SubjectModel),
     SubjectController.deleteSubject,
   );
 
@@ -28,7 +32,7 @@ router
   .route('/:subjectId/lectures')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'LECTURE'),
-    LectureController.getAllLectures,
+    LectureController.getLectures,
   )
   .post(
     AuthController.requirePermission('CREATE', 'ANY', 'LECTURE'),

@@ -90,10 +90,7 @@ export default class RoleController {
 
     await RoleModel.deleteOne(id);
 
-    res.status(204).json({
-      status: 'success',
-      data: null,
-    });
+    res.status(204).send();
   });
 
   public static assignPermissions = catchAsync(async function (
@@ -109,10 +106,7 @@ export default class RoleController {
 
     await new RoleModel({ id }).addPermissions(permissions);
 
-    res.status(204).json({
-      status: 'success',
-      data: null,
-    });
+    res.status(204).send();
   });
 
   public static deletePermissions = catchAsync(async function (
@@ -128,9 +122,6 @@ export default class RoleController {
 
     await new RoleModel({ id }).removePermissions(permissions);
 
-    res.status(204).json({
-      status: 'success',
-      data: null,
-    });
+    res.status(204).send();
   });
 }

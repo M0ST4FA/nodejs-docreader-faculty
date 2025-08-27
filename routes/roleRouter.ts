@@ -26,11 +26,13 @@ router
     RoleController.getRole,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'ROLE', RoleModel),
+    AuthController.requirePermission('UPDATE', 'OWN', 'ROLE'),
+    AuthController.checkUserIsResourceCreator(RoleModel),
     RoleController.updateRole,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'OWN', 'ROLE', RoleModel),
+    AuthController.requirePermission('DELETE', 'OWN', 'ROLE'),
+    AuthController.checkUserIsResourceCreator(RoleModel),
     RoleController.deleteRole,
   );
 
@@ -39,7 +41,7 @@ router
   .route('/:roleId/permissions')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'ROLE'),
-    PermissionController.getAllPermissions,
+    PermissionController.getPermissions,
   )
   .post(
     AuthController.requirePermission('CREATE', 'ANY', 'ROLE'),

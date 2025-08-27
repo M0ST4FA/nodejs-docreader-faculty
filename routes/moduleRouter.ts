@@ -9,6 +9,8 @@ const router = Router();
 
 router.use(AuthController.protect);
 
+router.route('/').get(ModuleController.getAllModules);
+
 router
   .route('/:id')
   .get(
@@ -16,11 +18,13 @@ router
     ModuleController.getModule,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'MODULE', ModuleModel),
+    AuthController.requirePermission('UPDATE', 'OWN', 'MODULE'),
+    AuthController.checkUserIsResourceCreator(ModuleModel),
     ModuleController.updateModule,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'OWN', 'MODULE', ModuleModel),
+    AuthController.requirePermission('DELETE', 'OWN', 'MODULE'),
+    AuthController.checkUserIsResourceCreator(ModuleModel),
     ModuleController.deleteModule,
   );
 
@@ -29,10 +33,11 @@ router
   .route('/:moduleId/subjects')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'SUBJECT'),
-    SubjectController.getAllSubjects,
+    SubjectController.getSubjects,
   )
   .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'SUBJECT', SubjectModel),
+    AuthController.requirePermission('CREATE', 'ANY', 'SUBJECT'),
+    AuthController.checkUserIsResourceCreator(SubjectModel),
     SubjectController.createSubject,
   );
 

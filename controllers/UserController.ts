@@ -4,6 +4,7 @@ import UserModel from '../models/User';
 import AppError from '../utils/AppError';
 import userSchema, { UserQueryParamInput } from '../schema/user.schema';
 import { QueryParamsService } from '../utils/QueryParamsService';
+import NotificationService from '../utils/NotificationService';
 
 export default class UserController {
   private static extractAndValidateId(req: Request): number {
@@ -47,16 +48,73 @@ export default class UserController {
     res: Response,
     next: NextFunction,
   ) {
-    const users = await UserModel.findMany({}, req.query);
+    const [users, total] = await UserModel.findMany(req.query);
 
     res.status(200).json({
       status: 'success',
-      totalCount: users.length,
+      totalCount: total,
       data: {
         users,
       },
     });
   });
+
+  private static async extractDataForTokenOperation(oldUser: UserModel) {
+    // Fetch user devices
+    const devices = oldUser.toJSON().devices;
+
+    // If the user has at least one device
+    const deviceTokens = devices.map((device: any) => device.token) as string[];
+    const tokenToDeviceId = new Map(
+      devices.map((device: any) => [device.token, device.id]),
+    ) as Map<string, number>;
+
+    return { deviceTokens, tokenToDeviceId };
+  }
+
+  private static async moveTopicSubscriptionToNewYear(
+    oldUser: UserModel,
+    newYearId: number,
+  ) {
+    const { deviceTokens, tokenToDeviceId } =
+      await UserController.extractDataForTokenOperation(oldUser);
+
+    const operations: any[] = [];
+
+    // This happens when the user is newly created, a very troublemaking edge case
+    if (oldUser.yearId)
+      operations.push(
+        NotificationService.unsubscribeDevicesFromTopic(
+          deviceTokens,
+          tokenToDeviceId,
+          oldUser.yearId.toString(),
+        ),
+      );
+
+    operations.push(
+      NotificationService.subscribeDevicesToTopic(
+        deviceTokens,
+        tokenToDeviceId,
+        newYearId.toString(),
+      ),
+    );
+
+    await Promise.all(operations);
+  }
+
+  private static checkUserIsNotUpdatingTheirOwnRole(
+    req: Request,
+    userId: number,
+  ) {
+    const roleId = req.body.roleId;
+
+    if (roleId === undefined) return;
+
+    const loggedInUserId = req.user.id;
+
+    if (loggedInUserId === userId)
+      throw new AppError('A user cannot modify their own role.', 403);
+  }
 
   public static updateUser = catchAsync(async function (
     req: Request,
@@ -64,8 +122,20 @@ export default class UserController {
     next: NextFunction,
   ) {
     const id = UserController.extractAndValidateId(req);
+    const newYearId = Number.parseInt(req.body.yearId);
+
+    UserController.checkUserIsNotUpdatingTheirOwnRole(req, id);
+
+    let oldUser: UserModel | undefined = undefined;
+    if (!Number.isNaN(newYearId))
+      oldUser = (await UserModel.findOneById(id, {
+        include: 'devices',
+      })) as UserModel;
 
     const updatedUser = await UserModel.updateOne(id, req.body, req.query);
+
+    if (oldUser && oldUser.yearId !== newYearId)
+      UserController.moveTopicSubscriptionToNewYear(oldUser, newYearId);
 
     res.status(200).json({
       status: 'success',
@@ -111,11 +181,11 @@ export default class UserController {
   ) {
     const id = UserController.extractAndValidateId(req);
 
-    await UserModel.deleteOne(id);
+    const user = await UserModel.deleteOne(id);
 
-    res.status(204).json({
+    res.status(200).json({
       status: 'success',
-      data: null,
+      data: { user },
     });
   });
 }

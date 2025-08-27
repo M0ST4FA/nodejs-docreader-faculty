@@ -2,6 +2,7 @@ import { Router } from 'express';
 import AuthController from '../controllers/AuthController';
 import NotificationController from '../controllers/NotificationController';
 import TopicController from '../controllers/TopicController';
+import TopicModel from '../models/Topic';
 
 const router = Router({ mergeParams: true });
 
@@ -27,6 +28,7 @@ router
   .route('/topics')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'TOPIC'),
+    AuthController.checkAccessToRestrictedResource(TopicModel),
     TopicController.getAllTopics,
   )
   .post(
@@ -36,8 +38,13 @@ router
 
 router
   .route('/topics/:name')
+  .get(
+    AuthController.requirePermission('READ', 'ANY', 'TOPIC'),
+    NotificationController.getNotifiableResources,
+  )
   .patch(
     AuthController.requirePermission('UPDATE', 'OWN', 'TOPIC'),
+    AuthController.checkUserIsResourceCreator(TopicModel),
     TopicController.updateTopic,
   )
   .post(
@@ -46,6 +53,7 @@ router
   )
   .delete(
     AuthController.requirePermission('DELETE', 'OWN', 'TOPIC'),
+    AuthController.checkUserIsResourceCreator(TopicModel),
     TopicController.deleteTopic,
   );
 

@@ -1,6 +1,12 @@
 // models/Factory.types.ts
 
+import { PermissionScope } from '@prisma/client';
 import { ZodSchema } from 'zod';
+
+export interface AuthOptions {
+  scope: PermissionScope;
+  userId: number;
+}
 
 /**
  * Schema container that holds validation schemas used by factory functions.

@@ -1,0 +1,53 @@
+import { Router } from 'express';
+import AuthController from '../controllers/AuthController';
+import WrittenQuizController from '../controllers/WrittenQuizController';
+import multer from 'multer';
+import WrittenQuizModel from '../models/WrittenQuiz';
+import WrittenQuestionModel from '../models/WrittenQuesiton';
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+const router = Router();
+
+router.use(AuthController.protect);
+router.route('/written-quizzes').get(WrittenQuizController.getAllQuizzes);
+router
+  .route('/written-quizzes/:id')
+  .get(
+    AuthController.requirePermission('READ', 'ANY', 'QUIZ'),
+    WrittenQuizController.getQuiz,
+  )
+  .patch(
+    AuthController.requirePermission('UPDATE', 'OWN', 'QUIZ'),
+    AuthController.checkUserIsResourceCreator(WrittenQuizModel),
+    WrittenQuizController.updateQuiz,
+  )
+  .delete(
+    AuthController.requirePermission('DELETE', 'OWN', 'QUIZ'),
+    AuthController.checkUserIsResourceCreator(WrittenQuizModel),
+    WrittenQuizController.deleteQuiz,
+  );
+
+router
+  .route('/written-quizzes/:id/questions')
+  .post(
+    AuthController.requirePermission('CREATE', 'OWN', 'QUESTION'),
+    AuthController.checkUserIsResourceCreator(WrittenQuestionModel),
+    upload.single('image'),
+    WrittenQuizController.createQuestion,
+  );
+
+router
+  .route('/written-questions/:id')
+  .patch(
+    AuthController.requirePermission('UPDATE', 'OWN', 'QUESTION'),
+    AuthController.checkUserIsResourceCreator(WrittenQuestionModel),
+    WrittenQuizController.updateQuestion,
+  )
+  .delete(
+    AuthController.requirePermission('UPDATE', 'OWN', 'QUESTION'),
+    AuthController.checkUserIsResourceCreator(WrittenQuestionModel),
+    WrittenQuizController.deleteQuestion,
+  );
+
+export default router;

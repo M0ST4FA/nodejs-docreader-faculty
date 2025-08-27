@@ -15,7 +15,10 @@ export default class DeviceModel {
     this.data = data;
   }
 
-  get token() {
+  get token(): string {
+    if (this.data.token === undefined)
+      throw new AppError('Device token field is undefined.', 500);
+
     return this.data.token;
   }
 

@@ -9,7 +9,7 @@ router
   .route('/')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'ROLE'),
-    PermissionController.getAllPermissions,
+    PermissionController.getPermissions,
   );
 
 router

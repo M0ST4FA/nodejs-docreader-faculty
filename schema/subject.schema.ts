@@ -24,8 +24,8 @@ const subjectSchema = createModelSchema(
   ['name', 'icon', 'moduleId'],
   {
     defaultPage: 1,
-    defaultSize: 10,
-    maxPageSize: 100,
+    defaultSize: Number.POSITIVE_INFINITY,
+    maxPageSize: Number.POSITIVE_INFINITY,
     projectableFields: [
       'id',
       'name',
@@ -37,7 +37,13 @@ const subjectSchema = createModelSchema(
     ],
     defaultFields: ['id', 'name', 'icon', 'moduleId', 'creatorId'],
     sortableFields: ['name', 'createdAt', 'updatedAt'],
-    includableFields: ['module', 'module.year'],
+    includableFields: [
+      'lectures',
+      'module.id',
+      'module.semesterName',
+      'module.name',
+      'module.year.faculty',
+    ],
   },
 );
 

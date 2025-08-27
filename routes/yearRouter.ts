@@ -4,6 +4,7 @@ import YearController from '../controllers/YearController';
 import ModuleController from '../controllers/ModuleController';
 import YearModel from '../models/Year';
 import ModuleModel from '../models/Module';
+import LectureController from '../controllers/LectureController';
 
 const router = Router();
 
@@ -16,11 +17,13 @@ router
     YearController.getYear,
   )
   .patch(
-    AuthController.requirePermission('UPDATE', 'OWN', 'YEAR', YearModel),
+    AuthController.requirePermission('UPDATE', 'OWN', 'YEAR'),
+    AuthController.checkUserIsResourceCreator(YearModel),
     YearController.updateYear,
   )
   .delete(
-    AuthController.requirePermission('DELETE', 'OWN', 'YEAR', YearModel),
+    AuthController.requirePermission('DELETE', 'OWN', 'YEAR'),
+    AuthController.checkUserIsResourceCreator(YearModel),
     YearController.deleteYear,
   );
 
@@ -29,11 +32,15 @@ router
   .route('/:yearId/modules/')
   .get(
     AuthController.requirePermission('READ', 'ANY', 'MODULE'),
-    ModuleController.getAllModules,
+    ModuleController.getModules,
   )
   .post(
-    AuthController.requirePermission('CREATE', 'ANY', 'MODULE', ModuleModel),
+    AuthController.requirePermission('CREATE', 'ANY', 'MODULE'),
+    AuthController.checkUserIsResourceCreator(ModuleModel),
     ModuleController.createModule,
   );
+
+// Nested lecture routes
+router.route('/:yearId/lectures').get(LectureController.getYearLectures);
 
 export default router;

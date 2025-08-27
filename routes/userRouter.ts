@@ -28,25 +28,29 @@ router
 
 router.delete(
   '/me/devices/:id',
-  AuthController.requirePermission('DELETE', 'OWN', 'DEVICE', DeviceModel),
+  AuthController.requirePermission('DELETE', 'OWN', 'DEVICE'),
+  AuthController.checkUserIsResourceCreator(DeviceModel),
   DeviceController.deleteDevice,
 );
 
 // TOPIC ROUTES
 router.get(
   '/me/topics',
-  AuthController.requirePermission('READ', 'ANY', 'TOPIC', TopicModel),
+  AuthController.requirePermission('READ', 'ANY', 'TOPIC'),
+  AuthController.checkAccessToRestrictedResource(TopicModel),
   TopicController.getUserDevicesTopics,
 );
 
 router
   .route('/me/topics/:name')
   .post(
-    AuthController.requirePermission('SUBSCRIBE', 'ANY', 'TOPIC', TopicModel),
+    AuthController.requirePermission('SUBSCRIBE', 'ANY', 'TOPIC'),
+    AuthController.checkAccessToRestrictedResource(TopicModel),
     TopicController.subscribeUserDevicesToTopic,
   )
   .delete(
-    AuthController.requirePermission('SUBSCRIBE', 'ANY', 'TOPIC', TopicModel),
+    AuthController.requirePermission('SUBSCRIBE', 'ANY', 'TOPIC'),
+    AuthController.checkUserIsResourceCreator(TopicModel),
     TopicController.unsubscribeUserDevicesFromTopic,
   );
 
@@ -74,16 +78,11 @@ router
   );
 
 // ROLE ROUTES
-router.route('/:id/role').put(
-  // You must be able to create roles to be able to assign them (there is no "assign" action, so that is an indirect permission)
-  AuthController.requirePermission('ASSIGN', 'ANY', 'ROLE'),
-  UserController.assignRole,
-);
-
-// STATISTICS ROUTES
-router.route(
-  '/:id/statistics/admin-statistics',
-  UserController.getAdminStatistics,
-);
+router
+  .route('/:id/role')
+  .put(
+    AuthController.requirePermission('ASSIGN', 'ANY', 'ROLE'),
+    UserController.assignRole,
+  );
 
 export default router;

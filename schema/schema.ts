@@ -1,4 +1,5 @@
 import { z, ZodObject, ZodRawShape } from 'zod';
+import buildInclude from '../utils/buildInclude';
 
 export default function createModelSchema<
   T extends ZodRawShape,
@@ -117,12 +118,23 @@ export default function createModelSchema<
         ),
       include: z
         .string()
-        .refine(val => includableFields.includes(val), {
-          message: `Field used in join is not permitted.`,
-        })
+        .refine(
+          val => {
+            const parts = val.split(',');
+            if (parts.find(part => !includableFields.includes(part)))
+              return false;
+            return true;
+          },
+          {
+            message: `Field used in join is not permitted.`,
+          },
+        )
         .optional(),
     })
-    .strict({ message: 'Unrecognized ' })
+    .strict({
+      message:
+        "Unrecognized query parameter. Only accepted ones are: 'page', 'size', 'fields', 'sort', and 'include'. Note that different routes can prohibit some of these.",
+    })
     .transform(({ page, size, fields, sort, include }, ctx) => {
       if (include && fields)
         return ctx.addIssue({
@@ -148,21 +160,14 @@ export default function createModelSchema<
             })
           : undefined;
 
-      const splitInclude = include?.split('.') || [];
-      let join = {};
-
-      if (splitInclude.length > 0)
-        join = splitInclude.reduceRight(
-          (acc, curr, i) => ({
-            [curr]: Object.entries(acc).length === 0 ? true : { include: acc },
-          }),
-          {} as any,
-        );
-      else join = false;
-
-      return { skip, take, select, orderBy, include: join };
+      return {
+        skip: size === Number.POSITIVE_INFINITY ? undefined : skip,
+        take: size === Number.POSITIVE_INFINITY ? undefined : take,
+        select,
+        orderBy,
+        include: include && buildInclude(include),
+      };
     });
-
   // --- Final output ---
   return {
     where: fullSchema.partial().strict(),
